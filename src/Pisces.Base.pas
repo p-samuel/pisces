@@ -69,6 +69,7 @@ type
     constructor Create; virtual;
     destructor Destroy; override;
     procedure Show; virtual;
+    procedure ShowAndHide; virtual;
     procedure AfterCreate; virtual;
 
     // Static methods for activity lifecycle
@@ -903,6 +904,12 @@ begin
     on E: Exception do
       TPscUtils.Log(E.Message, 'Show', TLogger.Error, Self);
   end;
+end;
+
+procedure TPisces.ShowAndHide;
+begin
+  Show;
+  GetAndroidView.setVisibility(TJView.JavaClass.GONE);
 end;
 
 procedure TPisces.ShowView;
