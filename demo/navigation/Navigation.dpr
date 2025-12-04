@@ -1,7 +1,5 @@
 program Navigation;
 
-{$R *.res}
-
 uses
   Pisces.Attributes in '..\..\src\Pisces.Attributes.pas',
   Pisces.Base in '..\..\src\Pisces.Base.pas',
@@ -15,7 +13,12 @@ uses
   Pisces.ViewGroup in '..\..\src\Pisces.ViewGroup.pas',
   Pisces.Lifecycle in '..\..\src\Pisces.Lifecycle.pas',
   Pisces.App in '..\..\src\Pisces.App.pas',
-  View.Home in 'src\View.Home.pas';
+  Pisces.ScreenManager in '..\..\src\Pisces.ScreenManager.pas',
+  View.Home in 'src\View.Home.pas',
+  View.Detail in 'src\View.Detail.pas',
+  View.User in 'src\View.User.pas';
+
+{$R *.res}
 
 begin
 
