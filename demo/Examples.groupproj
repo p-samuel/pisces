@@ -21,6 +21,9 @@
         <Projects Include="lifecycles\Lifecycles.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="navigation\Navigation.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -83,14 +86,23 @@
     <Target Name="Lifecycles:Make">
         <MSBuild Projects="lifecycles\Lifecycles.dproj" Targets="Make"/>
     </Target>
+    <Target Name="Navigation">
+        <MSBuild Projects="navigation\Navigation.dproj"/>
+    </Target>
+    <Target Name="Navigation:Clean">
+        <MSBuild Projects="navigation\Navigation.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Navigation:Make">
+        <MSBuild Projects="navigation\Navigation.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Basic;Santorini;Gestures;Gradients;Carousel;Lifecycles"/>
+        <CallTarget Targets="Basic;Santorini;Gestures;Gradients;Carousel;Lifecycles;Navigation"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Basic:Clean;Santorini:Clean;Gestures:Clean;Gradients:Clean;Carousel:Clean;Lifecycles:Clean"/>
+        <CallTarget Targets="Basic:Clean;Santorini:Clean;Gestures:Clean;Gradients:Clean;Carousel:Clean;Lifecycles:Clean;Navigation:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Basic:Make;Santorini:Make;Gestures:Make;Gradients:Make;Carousel:Make;Lifecycles:Make"/>
+        <CallTarget Targets="Basic:Make;Santorini:Make;Gestures:Make;Gradients:Make;Carousel:Make;Lifecycles:Make;Navigation:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
