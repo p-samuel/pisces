@@ -1,0 +1,96 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{D4CA90F3-D0E9-4543-A203-ADA356AB065B}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="basic\Basic.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="santorini\Santorini.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="touch\Gestures.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="gradients\Gradients.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="carousel\Carousel.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="lifecycles\Lifecycles.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="Basic">
+        <MSBuild Projects="basic\Basic.dproj"/>
+    </Target>
+    <Target Name="Basic:Clean">
+        <MSBuild Projects="basic\Basic.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Basic:Make">
+        <MSBuild Projects="basic\Basic.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Santorini">
+        <MSBuild Projects="santorini\Santorini.dproj"/>
+    </Target>
+    <Target Name="Santorini:Clean">
+        <MSBuild Projects="santorini\Santorini.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Santorini:Make">
+        <MSBuild Projects="santorini\Santorini.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Gestures">
+        <MSBuild Projects="touch\Gestures.dproj"/>
+    </Target>
+    <Target Name="Gestures:Clean">
+        <MSBuild Projects="touch\Gestures.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Gestures:Make">
+        <MSBuild Projects="touch\Gestures.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Gradients">
+        <MSBuild Projects="gradients\Gradients.dproj"/>
+    </Target>
+    <Target Name="Gradients:Clean">
+        <MSBuild Projects="gradients\Gradients.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Gradients:Make">
+        <MSBuild Projects="gradients\Gradients.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Carousel">
+        <MSBuild Projects="carousel\Carousel.dproj"/>
+    </Target>
+    <Target Name="Carousel:Clean">
+        <MSBuild Projects="carousel\Carousel.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Carousel:Make">
+        <MSBuild Projects="carousel\Carousel.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Lifecycles">
+        <MSBuild Projects="lifecycles\Lifecycles.dproj"/>
+    </Target>
+    <Target Name="Lifecycles:Clean">
+        <MSBuild Projects="lifecycles\Lifecycles.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Lifecycles:Make">
+        <MSBuild Projects="lifecycles\Lifecycles.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="Basic;Santorini;Gestures;Gradients;Carousel;Lifecycles"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="Basic:Clean;Santorini:Clean;Gestures:Clean;Gradients:Clean;Carousel:Clean;Lifecycles:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="Basic:Make;Santorini:Make;Gestures:Make;Gradients:Make;Carousel:Make;Lifecycles:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
