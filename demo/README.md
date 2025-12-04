@@ -238,9 +238,6 @@ FrameworkVersion = “v4.5”.
 ```
 ![alt text](img/vars.png)
 
-Inform the path of this script under Build Events > Commands in Delphi.
-![alt text](img/buildevents.png)
-
 Logs are sent using <code>Pisces.Utils</code> and if your terminal supports ASCII escape sequences, you can see them colored displayed like this :
 ![alt text](img/logs.png)
 
@@ -280,6 +277,9 @@ REM Start the app on the emulator
 adb -s %emulator% shell am start -n com.embarcadero.YourProject/com.embarcadero.firemonkey.FMXNativeActivity
 
 ```
+
+Inform the path of this script under Build Events > Commands in Delphi.
+![alt text](img/buildevents.png)
 
 ### Alternative (II) - 👾apkmon 
 Use my [apkmon](https://github.com/p-samuel/apkmon) tool, which deploys the APK automatically as soon as it detects changes in the .so shared libraries, given you inform the projects names and locations. 
