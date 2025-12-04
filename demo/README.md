@@ -1,7 +1,7 @@
 ## What is this?
 This is a simplified wrapper for Android's native Widgets JNI. There are multiple approaches to building Android UIs in Delphi - this represents one alternative path that bypasses FMX overhead by accessing the native layer directly. It's worth noting this is probably not the best solution for every use case.
 
-The project provides rapid access to Android's native UI layer through JNI bindings available in the RTL source. It was developed as a proof-of-concept to explore alternatives for implementing effects and animations that can be challenging with FMX's canvas techniques. This is experimental work in the study phase, so it comes with limitations and bugs. Only a subset of the most essential widget functions are currently implemented, as covering the entire Android widget API would be an extensive undertaking. 
+The library provides rapid access to Android's native UI layer through JNI bindings available in the RTL source. It was developed as a proof-of-concept to explore alternatives for implementing Android Views. This is an experimental work in the study phase, so it comes with limitations and bugs. Only a subset of the most essential widget functions are currently implemented, as covering the entire Android widget API would be a time consuming task. 
 
 
 ## Widgets JNI Inheritance
@@ -238,6 +238,23 @@ FrameworkVersion = “v4.5”.
 ```
 ![alt text](img/vars.png)
 
+Inform the path of this script under Build Events > Commands in Delphi.
+![alt text](img/buildevents.png)
+
+Logs are sent using <code>Pisces.Utils</code> and if your terminal supports ASCII escape sequences, you can see them colored displayed like this :
+![alt text](img/logs.png)
+
+But you will only see it if you fetch them from logcat, filtering by your app's package name.
+
+```shell
+  adb devices
+  adb -s <emulator-name> logcat | grep -e "com.embarcadero"
+```
+
+## Build and Deploy  
+Since I'm skipping PAServer, I may have two alternatives to perform the deployment thus avoiding the "F9 magic trap". Deploying the app in the emulator or physical device with the F9 key forces a bunch of junk/unnecessary files to be delivered with it, which can bloat the APK and consume device storage..  
+
+### Alternative (I) - Script 
 Create this script and add it to your project's folder:
 
 ```bat
@@ -263,15 +280,14 @@ REM Start the app on the emulator
 adb -s %emulator% shell am start -n com.embarcadero.YourProject/com.embarcadero.firemonkey.FMXNativeActivity
 
 ```
-Inform the path of this script under Build Events > Commands in Delphi.
-![alt text](img/buildevents.png)
 
-Logs are sent using <code>Pisces.Utils</code> and if your terminal supports ASCII escape sequences, you can see them colored displayed like this :
-![alt text](img/logs.png)
+### Alternative (II) - 👾apkmon 
+Use my [apkmon](https://github.com/p-samuel/apkmon) tool, which deploys the APK automatically as soon as it detects changes in the .so shared libraries, given you inform the projects names and locations. 
 
-But you will only see it if you fetch them from logcat, filtering by your app's package name.
 
-```shell
-  adb devices
-  adb -s <emulator-name> logcat | grep -e "com.embarcadero"
+## Notes
+
+I wish I could have provided other examples that were in my list but due to the time consuming nature of other projects I had to work on, these were skipped at first place. It's my plan to update this repository with more examples along time. Take my notes as an advice before studying this:
+```
+There are several ways to do one thing, this is just another and certainly not the best one
 ```
