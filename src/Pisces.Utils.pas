@@ -143,6 +143,7 @@ type
     class function ColorStop(Red, Green, Blue: Integer; Alpha: Double = 1.0; Position: Single = -1): TColorStop;
     class procedure SetMultiGradientBackground(View: JView; const ColorStops: TColorStopArray; Orientation: TGradientOrientation; CornerRadius, GradientRadius: Single; Shape: TGradientShape);
     class function Animate: TPscAnimate;
+    class procedure SetScreenOrientation(Orientation: TScreenOrientation);
   end;
 
 implementation
@@ -838,6 +839,37 @@ begin
   Layered := TJLayerDrawable.JavaClass.init(LayerArray);
   View.setClipToOutline(True);
   View.setBackground(Layered);
+end;
+
+class procedure TPscUtils.SetScreenOrientation(Orientation: TScreenOrientation);
+var
+  OrientationValue: Integer;
+begin
+  case Orientation of
+    TScreenOrientation.Portrait:
+      OrientationValue := TJActivityInfo.JavaClass.SCREEN_ORIENTATION_PORTRAIT;
+    TScreenOrientation.Landscape:
+      OrientationValue := TJActivityInfo.JavaClass.SCREEN_ORIENTATION_LANDSCAPE;
+    TScreenOrientation.SensorPortrait:
+      OrientationValue := TJActivityInfo.JavaClass.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+    TScreenOrientation.SensorLandscape:
+      OrientationValue := TJActivityInfo.JavaClass.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+    TScreenOrientation.ReverseLandscape:
+      OrientationValue := TJActivityInfo.JavaClass.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+    TScreenOrientation.ReversePortrait:
+      OrientationValue := TJActivityInfo.JavaClass.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+    TScreenOrientation.Sensor:
+      OrientationValue := TJActivityInfo.JavaClass.SCREEN_ORIENTATION_SENSOR;
+    TScreenOrientation.NoSensor:
+      OrientationValue := TJActivityInfo.JavaClass.SCREEN_ORIENTATION_NOSENSOR;
+    TScreenOrientation.Locked:
+      OrientationValue := TJActivityInfo.JavaClass.SCREEN_ORIENTATION_LOCKED;
+  else
+    OrientationValue := TJActivityInfo.JavaClass.SCREEN_ORIENTATION_UNSPECIFIED;
+  end;
+
+  TAndroidHelper.Activity.setRequestedOrientation(OrientationValue);
+  Log('Screen orientation set', 'TPscUtils', TLogger.Info, 'SetScreenOrientation');
 end;
 
 class procedure TPscUtils.StatusBarColor(Color: Integer);

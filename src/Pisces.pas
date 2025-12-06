@@ -70,6 +70,7 @@ type
   PositionAttribute = Pisces.Attributes.PositionAttribute;
   PaddingAttribute = Pisces.Attributes.PaddingAttribute;
   FullScreenAttribute = Pisces.Attributes.FullScreenAttribute;
+  ScreenOrientationAttribute = Pisces.Attributes.ScreenOrientationAttribute;
   StatusBarColorAttribute = Pisces.Attributes.StatusBarColorAttribute;
   DarkStatusBarIconsAttribute = Pisces.Attributes.DarkStatusBarIconsAttribute;
   ClickableAttribute = Pisces.Attributes.ClickableAttribute;
@@ -1088,6 +1089,7 @@ type
   TGradientOrientation = Pisces.Types.TGradientOrientation;
   TGradientShape = Pisces.Types.TGradientShape;
   TColorStopArray = Pisces.Types.TColorStopArray;
+  TScreenOrientation = Pisces.Types.TScreenOrientation;
 
   // Activity lifecycle
   TPscLifecycleManager = Pisces.Types.TPscLifecycleManager;

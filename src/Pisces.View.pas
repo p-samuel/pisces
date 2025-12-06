@@ -94,6 +94,8 @@ type
     function Padding: IPscViewBase; overload;
     function GetView: JView;
     function FullScreen: IPscViewBase;
+    function ScreenOrientation: IPscViewBase; overload;
+    function ScreenOrientation(Orientation: TScreenOrientation): IPscViewBase; overload;
     function StatusbarColor(Color: Integer): IPscViewBase; overload;
     function StatusbarColor: IPscViewBase; overload;
     function DarkStatusBar: IPscViewBase;
@@ -304,6 +306,7 @@ type
     function RippleColor(Color: Integer): IPscViewBase; overload;
     function Orientation: IPscViewBase; overload;
     function Orientation(Value: Integer): IPscViewBase; overload;
+
     function MultiGradient: IPscViewBase; overload;
     function MultiGradient(const ColorStops: TColorStopArray; Orientation: TGradientOrientation; CornerRadius, GradientRadius: Single; Shape: TGradientShape): IPscViewBase; overload;
   end;
@@ -536,6 +539,7 @@ begin
     Padding;
     StatusbarColor;
     FullScreen;
+    ScreenOrientation;
     DarkStatusBar;
     Clickable;
     Focusable;
@@ -910,6 +914,19 @@ function TPscViewBase.ScreenReaderFocusable(Focusable: Boolean): IPscViewBase;
 begin
   Result := Self;
   FView.setScreenReaderFocusable(Focusable);
+end;
+
+function TPscViewBase.ScreenOrientation(Orientation: TScreenOrientation): IPscViewBase;
+begin
+  Result := Self;
+  TPscUtils.SetScreenOrientation(Orientation);
+end;
+
+function TPscViewBase.ScreenOrientation: IPscViewBase;
+begin
+  Result := Self;
+  if FAttributes.ContainsKey('ScreenOrientationAttribute') then
+    ScreenOrientation(ScreenOrientationAttribute(FAttributes['ScreenOrientationAttribute']).Orientation);
 end;
 
 function TPscViewBase.ScreenReaderFocusable: IPscViewBase;

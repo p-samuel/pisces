@@ -337,6 +337,14 @@ type
     property Value: TImageScaleType read FValue;
   end;
 
+  TScreenOrientationAttribute = class(TCustomAttribute)
+  private
+    FOrientation: TScreenOrientation;
+  public
+    constructor Create(Orientation: TScreenOrientation);
+    property Orientation: TScreenOrientation read FOrientation;
+  end;
+
   {TAutofillIdAttribute = class(TCustomAttribute)
   private
     FId: JAutofillId;
@@ -530,6 +538,7 @@ type
   ElevationAttribute = class(TPiscesIntegerAttribute);
   VisibleAttribute = class(TPiscesBooleanAttribute);
   FullScreenAttribute = class(TPiscesBooleanAttribute);
+  ScreenOrientationAttribute = class(TScreenOrientationAttribute);
   PositionAttribute = class(TPositionAttribute);
   PaddingAttribute = class(TPaddingAttribute);
   DarkStatusBarIconsAttribute = class(TPiscesBooleanAttribute);
@@ -1296,6 +1305,13 @@ begin
     end;
   end else
     Result := nil;
+end;
+
+{ TScreenOrientationAttribute }
+
+constructor TScreenOrientationAttribute.Create(Orientation: TScreenOrientation);
+begin
+  FOrientation := Orientation;
 end;
 
 end.

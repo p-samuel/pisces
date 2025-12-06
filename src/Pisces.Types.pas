@@ -806,6 +806,10 @@ type
     TopToBottom, LeftToRight, BottomToTop, RightToLeft, TopLeftToBottomRight,
     TopRightToBottomLeft, BottomLeftToTopRight, BottomRightToTopLeft);
 
+  TScreenOrientation = (
+    Unspecified, Portrait, Landscape, SensorPortrait, SensorLandscape,
+    ReverseLandscape, ReversePortrait, Sensor, NoSensor, Locked);
+
   {$SCOPEDENUMS OFF}
 
   TGravitySet = set of TGravity;
