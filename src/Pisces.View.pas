@@ -521,6 +521,7 @@ uses
   Androidapi.JNI.JavaTypes,
   Androidapi.Helpers,
   Androidapi.JNI.App,
+  Androidapi.JNI.Util,
   Pisces.Utils,
   Pisces.Attributes;
 
@@ -2117,15 +2118,29 @@ end;
 function TPscViewBase.Layout: IPscViewBase;
 var
   Width, Height: Integer;
+  DisplayMetrics: JDisplayMetrics;
+  ScreenWidth, ScreenHeight: Integer;
 begin
   Result := Self;
 
-  if (FAttributes.ContainsKey('WidthAttribute')) then
+  // Get screen dimensions for percentage calculations
+  DisplayMetrics := TJDisplayMetrics.JavaClass.init;
+  TAndroidHelper.Activity.getWindowManager.getDefaultDisplay.getMetrics(DisplayMetrics);
+  ScreenWidth := DisplayMetrics.widthPixels;
+  ScreenHeight := DisplayMetrics.heightPixels;
+
+  // Handle Width
+  if (FAttributes.ContainsKey('WidthPercentAttribute')) then
+    Width := Round(ScreenWidth * WidthPercentAttribute(FAttributes['WidthPercentAttribute']).Value)
+  else if (FAttributes.ContainsKey('WidthAttribute')) then
     Width := WidthAttribute(FAttributes['WidthAttribute']).Value
   else
     Width := TJViewGroup_LayoutParams.JavaClass.MATCH_PARENT;
 
-  if (FAttributes.ContainsKey('HeightAttribute')) then
+  // Handle Height
+  if (FAttributes.ContainsKey('HeightPercentAttribute')) then
+    Height := Round(ScreenHeight * HeightPercentAttribute(FAttributes['HeightPercentAttribute']).Value)
+  else if (FAttributes.ContainsKey('HeightAttribute')) then
     Height := HeightAttribute(FAttributes['HeightAttribute']).Value
   else
     Height := TJViewGroup_LayoutParams.JavaClass.MATCH_PARENT;

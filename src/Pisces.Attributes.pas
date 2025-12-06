@@ -122,6 +122,22 @@ type
     property Value: Integer read FValue;
   end;
 
+  TWidthPercentAttribute = class(TCustomAttribute)
+  private
+    FValue: Single;
+  public
+    constructor Create(APercent: Single);
+    property Value: Single read FValue;
+  end;
+
+  THeightPercentAttribute = class(TCustomAttribute)
+  private
+    FValue: Single;
+  public
+    constructor Create(APercent: Single);
+    property Value: Single read FValue;
+  end;
+
   TPositionAttribute = class(TCustomAttribute)
   private
     FX, FY: Single;
@@ -531,6 +547,8 @@ type
   //JView
   HeightAttribute = class(THeightAttribute);
   WidthAttribute = class(TWidthAttribute);
+  WidthPercentAttribute = class(TWidthPercentAttribute);
+  HeightPercentAttribute = class(THeightPercentAttribute);
   IdAttribute = class(TPiscesIntegerAttribute);
   BackgroundColorAttribute = class(TPiscesColorAttribute);
   TextColorAttribute = class(TPiscesColorAttribute);
@@ -852,6 +870,20 @@ end;
 constructor TWidthAttribute.Create(AWidth: Integer);
 begin
   FValue := AWidth;
+end;
+
+{ TWidthPercentAttribute }
+
+constructor TWidthPercentAttribute.Create(APercent: Single);
+begin
+  FValue := APercent;
+end;
+
+{ THeightPercentAttribute }
+
+constructor THeightPercentAttribute.Create(APercent: Single);
+begin
+  FValue := APercent;
 end;
 
 { TPositionAttribute }

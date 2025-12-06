@@ -63,6 +63,8 @@ type
   // JView
   HeightAttribute = Pisces.Attributes.HeightAttribute;
   WidthAttribute = Pisces.Attributes.WidthAttribute;
+  WidthPercentAttribute = Pisces.Attributes.WidthPercentAttribute;
+  HeightPercentAttribute = Pisces.Attributes.HeightPercentAttribute;
   IdAttribute = Pisces.Attributes.IdAttribute;
   BackgroundColorAttribute = Pisces.Attributes.BackgroundColorAttribute;
   ElevationAttribute = Pisces.Attributes.ElevationAttribute;
