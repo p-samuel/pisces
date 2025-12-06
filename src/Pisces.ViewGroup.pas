@@ -1833,7 +1833,6 @@ end;
 
 function TPscCalendarView.Date: IPscCalendar;
 var
-  Calendar: JCalendar;
   TimeInMillis: Int64;
 begin
   Result := Self;

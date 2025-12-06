@@ -12,9 +12,9 @@ type
     Text('Home Screen'),
     TextSize(32),
     TextColor(255, 255, 255),
-    Gravity([TGravity.Center]),
     Height(150),
-    Padding(0, 0, 0, 40)
+    Padding(0, 0, 0, 40),
+    Gravity([TGravity.Center])
   ] TTitle = class(TPisces)
   end;
 
@@ -23,8 +23,7 @@ type
     TextSize(20),
     TextColor(255, 255, 255),
     BackgroundTintList(29, 94, 120),
-    Height(120),
-    Gravity([TGravity.Center])
+    Height(120)
   ] TDetailButton = class(TPisces)
   public
     constructor Create; override;
@@ -37,8 +36,7 @@ type
     TextSize(20),
     TextColor(255, 255, 255),
     BackgroundTintList(29, 94, 120),
-    Height(120),
-    Gravity([TGravity.Center])
+    Height(120)
   ] TUserButton = class(TPisces)
   public
     constructor Create; override;

@@ -21,9 +21,9 @@ type
     Text('User ID: 123'),
     TextSize(16),
     TextColor(100, 100, 100),
-    Gravity([TGravity.Center]),
     Height(150),
-    Padding(0, 16, 0, 0)
+    Padding(0, 16, 0, 0),
+    Gravity([TGravity.Center])
   ] TUserIdText = class(TPisces)
   end;
 
@@ -32,8 +32,7 @@ type
     TextSize(18),
     TextColor(255, 255, 255),
     BackgroundTintList(100, 149, 237),
-    Height(120),
-    Gravity([TGravity.Center])
+    Height(120)
   ] TUserBackButton = class(TPisces)
   public
     constructor Create; override;

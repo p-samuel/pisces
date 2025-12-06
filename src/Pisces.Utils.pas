@@ -217,7 +217,7 @@ const
   DAYS_FROM_1970_TO_2000 = 10957;
   DaysInMonth: array[1..12] of Integer = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
 var
-  TotalDays, Y, M: Integer;
+  TotalDays, M: Integer;
 begin
   // Calculate days from year
   TotalDays := (Year - 1970) * 365;

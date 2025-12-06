@@ -57,7 +57,6 @@ type
     procedure BuildScreen;
     procedure AddAndroidChildView(ParentView: IInterface; View: IInterface; ClassInstance: TPisces);
     procedure AddChild(Child: TPisces);
-    procedure RemoveChild(Child: TPisces);
     procedure RegisterView(const RegistrationInfo: TViewRegistrationInfo; AType: TRttiType);
     procedure CreateViewIdentification;
     procedure SetParent(const AParent: TPisces);
@@ -135,18 +134,6 @@ begin
   RegistrationInfo.View.setId(Id);
   TPscUtils.RegisterView(RegistrationInfo);
 
-end;
-
-procedure TPisces.RemoveChild(Child: TPisces);
-var
-  UniqueId: Integer;
-begin
-  if Assigned(Child) then
-  begin
-    UniqueId := Abs(THashBobJenkins.GetHashValue(Child.ClassName));
-    FChildren.Remove(UniqueId);
-    Child.SetParent(nil);
-  end;
 end;
 
 procedure TPisces.ProcessFields(ParentClass: TObject);
@@ -423,7 +410,6 @@ end;
 procedure TPisces.AddAndroidChildView(ParentView: IInterface; View: IInterface; ClassInstance: TPisces);
 var
   RttiContext: TRttiContext;
-  RegInfo: TViewRegistrationInfo;
 begin
   RttiContext := TRttiContext.Create;
   try
