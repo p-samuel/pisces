@@ -209,7 +209,7 @@ finalization
 
 ```
 
-You simply need to declare the view as a field in the screen class. Then, create and show. The views are automatically instantiated and added to the view by RTTI. They are also automatically destroyed when you free the parent class, because each TPisces instance holds a dictionary of children instances. I'm not sure if this is the best approach, but it works. I think there is a better way by using visual design time components, and making them bypassing  FMX, but I'm not the best guy to do this, it's outside the scope of my knowledge.
+You simply need to declare the view as a field in the screen class. Then, create and show. The views are automatically instantiated and added to the view by RTTI. They are also automatically destroyed when you free the parent class, because each TPisces instance holds a dictionary of children instances. I'm not sure if this is the best approach, but it works. Read the [introduction notes](https://github.com/p-samuel/pisces/wiki/%E2%99%93-Introduction) under the wiki page to understand more about how Delphi's ecosystem works to render the UI under the hood.
 
 ## Debugging 
 
@@ -287,7 +287,8 @@ Use my [apkmon](https://github.com/p-samuel/apkmon) tool, which deploys the APK 
 
 ## Notes
 
-I wish I could have provided other examples that were in my list but due to the time consuming nature of other projects I had to work on, these were skipped at first place. It's my plan to update this repository with more examples along time. Take my notes as an advice before studying this:
+I wish I could have provided other examples that were in my list but due to the time consuming nature of other projects I had to work on, these were skipped at first place. It's my plan to update this repository with more examples along time. Take my notes as an advice before studying it:
 ```
-There are several ways to do one thing, this is just another and certainly not the best one
+There are several ways to do one thing, this is just another and certainly not the best one.
 ```
+
