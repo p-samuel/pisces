@@ -50,6 +50,7 @@ type
     FOnActivityStop: TProc<JActivity>;
     FOnActivityDestroy: TProc<JActivity>;
     FOnActivitySaveInstanceState: TProc<JActivity, JBundle>;
+    FOnConfigurationChanged: TProc<JActivity>;
 
     procedure ReadAttributes;
     procedure ProcessFields(ParentClass: TObject);
@@ -69,6 +70,7 @@ type
     destructor Destroy; override;
     procedure Show; virtual;
     procedure ShowAndHide; virtual;
+    procedure Hide; virtual;
     procedure AfterCreate; virtual;
 
     // Static methods for activity lifecycle
@@ -108,6 +110,7 @@ type
     property OnActivityStop: TProc<JActivity> read FOnActivityStop write FOnActivityStop;
     property OnActivityDestroy: TProc<JActivity> read FOnActivityDestroy write FOnActivityDestroy;
     property OnActivitySaveInstanceState: TProc<JActivity, JBundle> read FOnActivitySaveInstanceState write FOnActivitySaveInstanceState;
+    property OnConfigurationChanged: TProc<JActivity> read FOnConfigurationChanged write FOnConfigurationChanged;
     class function GetLifecycleManager: TPscLifecycleManager;
   end;
 
@@ -698,6 +701,11 @@ begin
   end;
 end;
 
+procedure TPisces.Hide;
+begin
+  GetAndroidView.setVisibility(TJView.JavaClass.GONE);
+end;
+
 function TPisces.IsDescendantOfPisces(AType: TRttiType): Boolean;
 begin
   Result := False;
@@ -951,6 +959,11 @@ begin
       if Assigned(FOnActivityDestroy) then begin
         Manager.ActivityLifecycleListener.OnDestroy := FOnActivityDestroy;
         TPscUtils.Log('Assigned OnDestroy handler from property', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
+      end;
+
+      if Assigned(FOnConfigurationChanged) then begin
+        Manager.ActivityLifecycleListener.OnConfigurationChanged := OnConfigurationChanged;
+        TPscUtils.Log('Assgined OnConfiguration handler from property', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
       end;
 
       if Assigned(FOnActivitySaveInstanceState) then begin

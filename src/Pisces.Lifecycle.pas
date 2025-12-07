@@ -22,6 +22,7 @@ type
       FOnRestart: TProc<JActivity>;
       FOnSaveInstanceState: TProc<JActivity, JBundle>;
       FOnBackPressed: TProc<JActivity>;
+      FOnConfigurationChanged: TProc<JActivity>;
       // Pre/Post event handlers (optional)
       FOnPreCreated: TProc<JActivity, JBundle>;
       FOnPostCreated: TProc<JActivity, JBundle>;
@@ -37,7 +38,6 @@ type
       FOnPostDestroyed: TProc<JActivity>;
       FOnPreSaveInstanceState: TProc<JActivity, JBundle>;
       FOnPostSaveInstanceState: TProc<JActivity, JBundle>;
-      FOnConfigurationChanged: TProc<JActivity>;
 
     public
       constructor Create;
@@ -50,6 +50,8 @@ type
       procedure onActivityStopped(activity: JActivity); cdecl;
       procedure onActivityDestroyed(activity: JActivity); cdecl;
       procedure onActivitySaveInstanceState(activity: JActivity; outState: JBundle); cdecl;
+      procedure onActivityBackPressed(activity: JActivity); cdecl;
+      procedure onActivityConfigurationChanged(activity: JActivity); cdecl;
 
       // Pre/Post methods (required by interface)
       procedure onActivityPreCreated(activity: JActivity; savedInstanceState: JBundle); cdecl;
@@ -66,8 +68,6 @@ type
       procedure onActivityPostDestroyed(activity: JActivity); cdecl;
       procedure onActivityPreSaveInstanceState(activity: JActivity; outState: JBundle); cdecl;
       procedure onActivityPostSaveInstanceState(activity: JActivity; outState: JBundle); cdecl;
-      procedure onActivityBackPressed(activity: JActivity); cdecl;
-      procedure onActivityConfigurationChanged(activity: JActivity); cdecl;
     published
       property OnCreate: TProc<JActivity, JBundle> read FOnCreate write FOnCreate;
       property OnStart: TProc<JActivity> read FOnStart write FOnStart;
@@ -77,6 +77,8 @@ type
       property OnDestroy: TProc<JActivity> read FOnDestroy write FOnDestroy;
       property OnRestart: TProc<JActivity> read FOnRestart write FOnRestart;
       property OnSaveInstanceState: TProc<JActivity, JBundle> read FOnSaveInstanceState write FOnSaveInstanceState;
+      property OnBackPressed: TProc<JActivity> read FOnBackPressed write FOnBackPressed;
+      property OnConfigurationChanged: TProc<JActivity> read FOnConfigurationChanged write FOnConfigurationChanged;
 
       // Optional Pre/Post properties
       property OnPreCreated: TProc<JActivity, JBundle> read FOnPreCreated write FOnPreCreated;
@@ -93,8 +95,6 @@ type
       property OnPostDestroyed: TProc<JActivity> read FOnPostDestroyed write FOnPostDestroyed;
       property OnPreSaveInstanceState: TProc<JActivity, JBundle> read FOnPreSaveInstanceState write FOnPreSaveInstanceState;
       property OnPostSaveInstanceState: TProc<JActivity, JBundle> read FOnPostSaveInstanceState write FOnPostSaveInstanceState;
-      property OnBackPressed: TProc<JActivity> read FOnBackPressed write FOnBackPressed;
-      property OnConfigurationChanged: TProc<JActivity> read FOnConfigurationChanged write FOnConfigurationChanged;
     end;
 
   // Individual view lifecycle events
