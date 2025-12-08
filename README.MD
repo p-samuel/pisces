@@ -3,7 +3,7 @@
 </div>
 
 ## Pisces - 双鱼座
-Pisces is a set of classes to provide rapid implementation for Android Widgets JNIs (<code>Android.JNI.Widget</code>). It serves a few list of attributes to build native Android views (JView) using only simple pascal classes . Long story [here](https://github.com/p-samuel/pisces/tree/master/demo).
+Pisces is a set of classes to provide rapid implementation for Android Widgets JNIs (<code>Android.JNI.Widget</code>). It serves a few list of attributes to build native Android views (JView) using only simple pascal classes. Introductory notes can be found [here](https://github.com/p-samuel/pisces/wiki/%E2%99%93-Introduction).
 
 
 ## Setup
