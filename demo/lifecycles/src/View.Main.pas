@@ -43,6 +43,8 @@ type
     procedure ActivityPause(Activity: JActivity);
     procedure ActivityStop(Activity: JActivity);
     procedure ActivityDestroy(Activity: JActivity);
+    procedure ActivityConfigurationChanged(Activity: JActivity);
+
 
     // View lifecycle handlers
     procedure OnViewAttached(View: JView);
@@ -80,6 +82,7 @@ begin
   OnActivityPause := ActivityPause;
   OnActivityStop := ActivityStop;
   OnActivityDestroy := ActivityDestroy;
+  OnConfigurationChanged := ActivityConfigurationChanged;
 
   // Option 2:  Direct Assignment (Advanced Control) ***
   // You can also do direct assignment for immediate handlers
@@ -105,15 +108,22 @@ begin
   inherited; // This will call BuildScreen and assign the handlers
 end;
 
+procedure TScreen.ActivityConfigurationChanged(Activity: JActivity);
+begin
+  TPscUtils.Log('*** ACTIVITY CONFIGURATION CHANGED! ***', 'ActivityLifecycle', TLogger.Warning, Self);
+  TPscUtils.Toast('App Configuration Changed!', TJToast.JavaClass.LENGTH_SHORT);
+end;
+
 procedure TScreen.ActivityCreate(Activity: JActivity; SavedState: JBundle);
 begin
   TPscUtils.Log('*** ACTIVITY CREATED! ***', 'ActivityLifecycle', TLogger.Warning, Self);
-  TPscUtils.Toast('App Started!', TJToast.JavaClass.LENGTH_SHORT);
+  TPscUtils.Toast('App Created!', TJToast.JavaClass.LENGTH_SHORT);
 end;
 
 procedure TScreen.ActivityStart(Activity: JActivity);
 begin
   TPscUtils.Log('*** ACTIVITY STARTED! ***', 'ActivityLifecycle', TLogger.Warning, Self);
+  TPscUtils.Toast('App Started!', TJToast.JavaClass.LENGTH_SHORT);
 end;
 
 procedure TScreen.ActivityResume(Activity: JActivity);
