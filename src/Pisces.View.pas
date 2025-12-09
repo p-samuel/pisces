@@ -2120,23 +2120,17 @@ var
   Width, Height: Integer;
   DisplayMetrics: JDisplayMetrics;
   ScreenWidth, ScreenHeight: Integer;
-  NeedsDisplayMetrics: Boolean;
 begin
   Result := Self;
 
-  // Only get screen dimensions if percentage attributes are present
-  NeedsDisplayMetrics := FAttributes.ContainsKey('WidthPercentAttribute') or
-                         FAttributes.ContainsKey('HeightPercentAttribute');
-
-  if NeedsDisplayMetrics then begin
-    DisplayMetrics := TJDisplayMetrics.JavaClass.init;
-    TAndroidHelper.Activity.getWindowManager.getDefaultDisplay.getMetrics(DisplayMetrics);
-    ScreenWidth := DisplayMetrics.widthPixels;
-    ScreenHeight := DisplayMetrics.heightPixels;
-  end;
+  // Get screen dimensions for percentage calculations
+  DisplayMetrics := TJDisplayMetrics.JavaClass.init;
+  TAndroidHelper.Activity.getWindowManager.getDefaultDisplay.getMetrics(DisplayMetrics);
+  ScreenWidth := DisplayMetrics.widthPixels;
+  ScreenHeight := DisplayMetrics.heightPixels;
 
   // Handle Width
-  if NeedsDisplayMetrics and (FAttributes.ContainsKey('WidthPercentAttribute')) then
+  if (FAttributes.ContainsKey('WidthPercentAttribute')) then
     Width := Round(ScreenWidth * WidthPercentAttribute(FAttributes['WidthPercentAttribute']).Value)
   else if (FAttributes.ContainsKey('WidthAttribute')) then
     Width := WidthAttribute(FAttributes['WidthAttribute']).Value
@@ -2144,7 +2138,7 @@ begin
     Width := TJViewGroup_LayoutParams.JavaClass.MATCH_PARENT;
 
   // Handle Height
-  if NeedsDisplayMetrics and (FAttributes.ContainsKey('HeightPercentAttribute')) then
+  if (FAttributes.ContainsKey('HeightPercentAttribute')) then
     Height := Round(ScreenHeight * HeightPercentAttribute(FAttributes['HeightPercentAttribute']).Value)
   else if (FAttributes.ContainsKey('HeightAttribute')) then
     Height := HeightAttribute(FAttributes['HeightAttribute']).Value
