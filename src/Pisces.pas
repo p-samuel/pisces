@@ -11,7 +11,8 @@ uses
   Pisces.View,
   Pisces.ViewGroup,
   Pisces.Base,
-  Pisces.Utils;
+  Pisces.Utils,
+  Pisces.Audio;
 
 type
   // Where everything lies
@@ -1099,6 +1100,10 @@ type
   TPscViewLifecycleListener = Pisces.Types.TPscViewLifecycleListener;
   TPscWindowFocusChangeListener = Pisces.Types.TPscWindowFocusChangeListener;
   TPiscesApplication = Pisces.App.TPiscesApplication;
+
+  // Audio
+  TPscSound = Pisces.Audio.TPscSound;
+  TPscMusic = Pisces.Audio.TPscMusic;
 
 implementation
 

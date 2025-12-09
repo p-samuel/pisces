@@ -32,9 +32,13 @@ type
 <img src="https://img.shields.io/badge/Android-x64-green"></img>
 
 ## Notes 
+- ⚠️ In development
 - Not a production-ready libray, it's just a proof of concept.
 - Not a cross-platform library, it only works on Android.
 - Not taked into account the many versions of Android and the different versions of the Android SDK. It assumes the latest version being [Android 14 with the Android SDK API level 34](https://www.embarcadero.com/products/rad-studio/whats-new-in-12-athens).
+
+____
+
 
 ###### Art By @Macrovector from Freepik
 

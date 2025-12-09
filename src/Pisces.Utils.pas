@@ -9,7 +9,7 @@ uses
   Androidapi.JNI.JavaTypes,
   Androidapi.JNI.Widget,
   System.SysUtils,
-  Pisces.Types, Pisces.Registry;
+  Pisces.Types, Pisces.Registry, Pisces.Audio;
 
 type
 
@@ -144,6 +144,8 @@ type
     class procedure SetMultiGradientBackground(View: JView; const ColorStops: TColorStopArray; Orientation: TGradientOrientation; CornerRadius, GradientRadius: Single; Shape: TGradientShape);
     class function Animate: TPscAnimate;
     class procedure SetScreenOrientation(Orientation: TScreenOrientation);
+    class function Sound: TPscSound;
+    class function Music: TPscMusic;
   end;
 
 implementation
@@ -870,6 +872,16 @@ begin
 
   TAndroidHelper.Activity.setRequestedOrientation(OrientationValue);
   Log('Screen orientation set', 'TPscUtils', TLogger.Info, 'SetScreenOrientation');
+end;
+
+class function TPscUtils.Sound: TPscSound;
+begin
+  Result := TPscSound.Instance;
+end;
+
+class function TPscUtils.Music: TPscMusic;
+begin
+  Result := TPscMusic.Instance;
 end;
 
 class procedure TPscUtils.StatusBarColor(Color: Integer);
