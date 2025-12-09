@@ -28,8 +28,7 @@ initialization
   MainScreen.Show;
 
 finalization
-  if Assigned(MainScreen) then
-    MainScreen.Free;
+  MainScreen.Free;
 
 end.
 

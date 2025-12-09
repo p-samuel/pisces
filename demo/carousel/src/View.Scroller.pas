@@ -35,7 +35,7 @@ type
   [ ScrollView('horizontal-scroller'),
     VerticalScrollBarEnabled(True),
     HorizontalScrollBarEnabled(True),
-    Height(1100),
+    HeightPercent(0.5),
     Rotation(90),
     FillViewport(True)
   ] THorizontalScroller = class(TPisces)
@@ -56,7 +56,7 @@ type
   [ ScrollView('vertical-scroller'),
     VerticalScrollBarEnabled(True),
     HorizontalScrollBarEnabled(True),
-    Height(900),
+    HeightPercent(0.33),
     Width(1100),
     FillViewport(False),
     NestedScrollingEnabled(True),

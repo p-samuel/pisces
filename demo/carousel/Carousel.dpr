@@ -16,7 +16,8 @@ uses
   View.Scroller in 'src\View.Scroller.pas',
   Global.WebImage in 'src\Global.WebImage.pas',
   Pisces.Lifecycle in '..\..\src\Pisces.Lifecycle.pas',
-  Pisces.App in '..\..\src\Pisces.App.pas';
+  Pisces.App in '..\..\src\Pisces.App.pas',
+  Pisces.ScreenManager in '..\..\src\Pisces.ScreenManager.pas';
 
 {$R *.res}
 

@@ -240,6 +240,7 @@
         <DCCReference Include="..\..\src\Pisces.Lifecycle.pas"/>
         <DCCReference Include="src\View.Main.pas"/>
         <DCCReference Include="..\..\src\Pisces.App.pas"/>
+        <DCCReference Include="..\..\src\Pisces.ScreenManager.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

@@ -13,7 +13,8 @@ uses
   Pisces.View in '..\..\src\Pisces.View.pas',
   Pisces.ViewGroup in '..\..\src\Pisces.ViewGroup.pas',
   Pisces.Lifecycle in '..\..\src\Pisces.Lifecycle.pas',
-  Pisces.App in '..\..\src\Pisces.App.pas';
+  Pisces.App in '..\..\src\Pisces.App.pas',
+  Pisces.ScreenManager in '..\..\src\Pisces.ScreenManager.pas';
 
 {$R *.res}
 

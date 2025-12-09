@@ -1,7 +1,6 @@
 program Santorini;
 
 uses
-  View.Main in 'src\View.Main.pas',
   Pisces.Attributes in '..\..\src\Pisces.Attributes.pas',
   Pisces.Base in '..\..\src\Pisces.Base.pas',
   Pisces.EventListeners in '..\..\src\Pisces.EventListeners.pas',
@@ -13,7 +12,9 @@ uses
   Pisces.View in '..\..\src\Pisces.View.pas',
   Pisces.ViewGroup in '..\..\src\Pisces.ViewGroup.pas',
   Pisces.Lifecycle in '..\..\src\Pisces.Lifecycle.pas',
-  Pisces.App in '..\..\src\Pisces.App.pas';
+  Pisces.App in '..\..\src\Pisces.App.pas',
+  Pisces.ScreenManager in '..\..\src\Pisces.ScreenManager.pas',
+  View.Main in 'src\View.Main.pas';
 
 {$R *.res}
 

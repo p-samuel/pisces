@@ -9,8 +9,8 @@ type
 
   [ ImageView('img'),
     ImageResource('santo', 'drawable'),
-    Height(700),
     RippleColor(233, 233, 236, 0.2),
+    HeightPercent(0.5),
     Elevation(100),
     Alpha(0.8),
     ScaleType(TImageScaleType.CenterCrop)
@@ -19,7 +19,7 @@ type
   end;
 
   [ TextView('title'),
-    Text('Santorini'),
+    Text('Santorini Island'),
     Gravity([TGravity.Center]),
     TextSize(34),
     TextColor(255, 255, 255),
@@ -36,31 +36,27 @@ type
     Padding(50, 0, 50, 0),
     AutoLinkMask(1)
   ] TDescription = class(TPisces)
-  public
     procedure AfterCreate; override;
   end;
 
   [ LinearLayout('layout'),
     Orientation(TOrientation.Vertical),
-    Gravity([TGravity.Top, TGravity.Center])
+    Gravity([TGravity.Top, TGravity.Center]),
   ] TLayout = class(TPisces)
     Image: TImage;
     Title: TTitle;
     Description: TDescription;
-    procedure Swipe(AView: JView; Direction: TSwipeDirection; X, Y: Single);
-    constructor Create; override;
   end;
 
   [ ScrollView('scrow'),
-    //Width(2000),
     FullScreen(True),
+    VerticalScrollBarEnabled(True),
     BackgroundColor(0, 0, 0),
-    //Padding(50, 80, 50, 0),
-    VerticalScrollBarEnabled(False),
     DarkStatusBarIcons(True)
   ] TScroll = class(TPisces)
     Content: TLayout;
     procedure Swipe(AView: JView; Direction: TSwipeDirection; X, Y: Single);
+    procedure ConfigurationChanged(Activity: JActivity);
     constructor Create; override;
   end;
 
@@ -68,10 +64,6 @@ var
   Screen: TScroll;
 
 implementation
-
-uses
-  Pisces.Registry;
-
 
 { AfterCreate }
 
@@ -100,9 +92,16 @@ end;
 
 { TScroll }
 
+procedure TScroll.ConfigurationChanged(Activity: JActivity);
+begin
+  Screen.Hide;
+  Screen.Show;
+end;
+
 constructor TScroll.Create;
 begin
   OnSwipe := Swipe;
+  OnConfigurationChanged := ConfigurationChanged;
   inherited;
 end;
 
@@ -118,25 +117,6 @@ begin
   end;
 end;
 
-{ TLayout }
-
-constructor TLayout.Create;
-begin
-  OnSwipe := Swipe;
-  inherited;
-end;
-
-procedure TLayout.Swipe(AView: JView; Direction: TSwipeDirection; X, Y: Single);
-begin
-  case Direction of
-    TSwipeDirection.Left: TPscUtils.Log('Left', 'Swipe', TLogger.Info, Self);
-    TSwipeDirection.Right: TPscUtils.Log('Right', 'Swipe', TLogger.Info, Self);
-    TSwipeDirection.Up: TPscUtils.Log('Up', 'Swipe', TLogger.Info, Self);
-    TSwipeDirection.Down: TPscUtils.Log('Down', 'Swipe', TLogger.Info, Self);
-    TSwipeDirection.Touch: TPscUtils.Log('Touch', 'Swipe', TLogger.Info, Self);
-    TSwipeDirection.Leave: TPscUtils.Log('Leave', 'Swipe', TLogger.Info, Self);
-  end;
-end;
 
 initialization
   Screen := TScroll.Create;
