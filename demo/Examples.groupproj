@@ -24,6 +24,9 @@
         <Projects Include="navigation\Navigation.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="tictactoe\TicTacToe.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -95,14 +98,23 @@
     <Target Name="Navigation:Make">
         <MSBuild Projects="navigation\Navigation.dproj" Targets="Make"/>
     </Target>
+    <Target Name="TicTacToe">
+        <MSBuild Projects="tictactoe\TicTacToe.dproj"/>
+    </Target>
+    <Target Name="TicTacToe:Clean">
+        <MSBuild Projects="tictactoe\TicTacToe.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TicTacToe:Make">
+        <MSBuild Projects="tictactoe\TicTacToe.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Basic;Santorini;Gestures;Gradients;Carousel;Lifecycles;Navigation"/>
+        <CallTarget Targets="Basic;Santorini;Gestures;Gradients;Carousel;Lifecycles;Navigation;TicTacToe"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Basic:Clean;Santorini:Clean;Gestures:Clean;Gradients:Clean;Carousel:Clean;Lifecycles:Clean;Navigation:Clean"/>
+        <CallTarget Targets="Basic:Clean;Santorini:Clean;Gestures:Clean;Gradients:Clean;Carousel:Clean;Lifecycles:Clean;Navigation:Clean;TicTacToe:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Basic:Make;Santorini:Make;Gestures:Make;Gradients:Make;Carousel:Make;Lifecycles:Make;Navigation:Make"/>
+        <CallTarget Targets="Basic:Make;Santorini:Make;Gestures:Make;Gradients:Make;Carousel:Make;Lifecycles:Make;Navigation:Make;TicTacToe:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
