@@ -82,6 +82,7 @@ type
     // View's identification
     property AndroidParentView: JView read GetParentView;
     property AndroidView: JView read GetAndroidView;
+    property Parent: TPisces read FParent;
     property ViewId: Integer read FViewId;
     property ViewName: String read FViewName;
     property ViewGUID: String read FViewGUID;
