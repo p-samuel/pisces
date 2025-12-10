@@ -65,6 +65,8 @@ type
     function IsDescendantOfPisces(AType: TRttiType): Boolean;
     function GetAndroidView: JView;
     function GetParentView: JView;
+    function GetVisible: Boolean;
+    procedure SetVisible(const Value: Boolean);
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -83,6 +85,7 @@ type
     property AndroidParentView: JView read GetParentView;
     property AndroidView: JView read GetAndroidView;
     property Parent: TPisces read FParent;
+    property Visible: Boolean read GetVisible write SetVisible;
     property ViewId: Integer read FViewId;
     property ViewName: String read FViewName;
     property ViewGUID: String read FViewGUID;
@@ -705,6 +708,19 @@ end;
 procedure TPisces.Hide;
 begin
   GetAndroidView.setVisibility(TJView.JavaClass.GONE);
+end;
+
+function TPisces.GetVisible: Boolean;
+begin
+  Result := GetAndroidView.getVisibility = TJView.JavaClass.VISIBLE;
+end;
+
+procedure TPisces.SetVisible(const Value: Boolean);
+begin
+  if Value then
+    GetAndroidView.setVisibility(TJView.JavaClass.VISIBLE)
+  else
+    GetAndroidView.setVisibility(TJView.JavaClass.GONE);
 end;
 
 function TPisces.IsDescendantOfPisces(AType: TRttiType): Boolean;
