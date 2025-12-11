@@ -19,7 +19,7 @@ type
   end;
 
   [ TextView('title'),
-    Text('Santorini Island'),
+    Text('Santorini'),
     Gravity([TGravity.Center]),
     TextSize(34),
     TextColor(255, 255, 255),
@@ -41,7 +41,7 @@ type
 
   [ LinearLayout('layout'),
     Orientation(TOrientation.Vertical),
-    Gravity([TGravity.Top, TGravity.Center]),
+    Gravity([TGravity.Top, TGravity.Center])
   ] TLayout = class(TPisces)
     Image: TImage;
     Title: TTitle;

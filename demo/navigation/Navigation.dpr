@@ -16,7 +16,8 @@ uses
   Pisces.ScreenManager in '..\..\src\Pisces.ScreenManager.pas',
   View.Home in 'src\View.Home.pas',
   View.Detail in 'src\View.Detail.pas',
-  View.User in 'src\View.User.pas';
+  View.User in 'src\View.User.pas',
+  Pisces.Audio in '..\..\src\Pisces.Audio.pas';
 
 {$R *.res}
 

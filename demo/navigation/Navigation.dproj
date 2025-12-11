@@ -243,6 +243,7 @@
         <DCCReference Include="src\View.Home.pas"/>
         <DCCReference Include="src\View.Detail.pas"/>
         <DCCReference Include="src\View.User.pas"/>
+        <DCCReference Include="..\..\src\Pisces.Audio.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
