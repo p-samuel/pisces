@@ -84,6 +84,7 @@ type
   [ LinearLayout('footer-container'),
     Orientation(TOrientation.Horizontal),
     Gravity([TGravity.Center, TGravity.CenterVertical]),
+    ClipChildren(False),
     Height(100)
   ] TFooterContainer = class(TPisces)
   public
@@ -101,6 +102,7 @@ var
   Footer: TFooterContainer;
 
 procedure UpdateScores;
+procedure AnimateWinner;
 
 implementation
 
@@ -139,6 +141,58 @@ begin
     JTextView(Footer.FP1Score.AndroidView).setText(StrToJCharSequence(Game.WinsX.ToString));
   if Assigned(Footer) and Assigned(Footer.FP2Score) then
     JTextView(Footer.FP2Score.AndroidView).setText(StrToJCharSequence(Game.WinsO.ToString));
+end;
+
+procedure AnimateWinner;
+begin
+  // animate winner here
+  if Game.Status in [gsWinX] then begin
+     if Assigned(Footer) and Assigned(Footer.FP1Score) then
+      TPscUtils.Animate
+        .FromView(Footer.FP1Score.AndroidView)
+        .Scale(1, 4)
+        .Rotation(0, 360)
+        .Duration(200)
+        .WithStartAction(
+        procedure begin
+          TPscUtils.Toast('Player 1 wins!', TJToast.JavaClass.LENGTH_SHORT);
+        end)
+       .WithEndAction(
+        procedure
+        begin
+          Footer.FP1Score.AndroidView.setRotation(0);
+          TPscUtils.Animate
+            .FromView(Footer.FP1Score.AndroidView)
+            .Scale(4, 1)
+            .Duration(300)
+            .Run;
+        end)
+        .Run;
+  end;
+
+  if Game.Status in [gsWinO] then begin
+    if Assigned(Footer) and Assigned(Footer.FP2Score) then
+      TPscUtils.Animate
+        .FromView(Footer.FP2Score.AndroidView)
+        .Rotation(0, 360)
+        .Scale(1, 4)
+        .Duration(200)
+        .WithStartAction(
+        procedure begin
+          TPscUtils.Toast('Player 2 wins!', TJToast.JavaClass.LENGTH_SHORT);
+        end)
+       .WithEndAction(
+        procedure
+        begin
+          Footer.FP2Score.AndroidView.setRotation(0);
+          TPscUtils.Animate
+            .FromView(Footer.FP2Score.AndroidView)
+            .Scale(4, 1)
+            .Duration(300)
+            .Run;
+        end)
+        .Run;
+  end;
 end;
 
 end.

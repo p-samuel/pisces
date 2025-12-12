@@ -142,6 +142,7 @@ begin
     if Game.Status in [gsWinX, gsWinO] then begin
       TPscUtils.Sound.Play('win');
       UpdateScores;
+      AnimateWinner;
     end;
   end;
 
