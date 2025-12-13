@@ -26,7 +26,7 @@ type
     FParent: TPisces;
     FOnClick: TProc<JView>;                                       // Views
     FOnLongClick: TProc<JView>;
-    FOnNavigationClick: TProc<JView>;                             // Toolbars
+    FOnBackPressed: TProc<JView>;                                 // Toolbars
     FOnTimeChange: TProc<JTimePicker, Integer, Integer>;          // Calendars, dates and time pickers
     FOnDateChange: TProc<JDatePicker, Integer, Integer, Integer>;
     FOnCalendarDateChange: TProc<JCalendarView, Integer, Integer, Integer>;
@@ -75,6 +75,12 @@ type
     procedure Hide; virtual;
     procedure AfterCreate; virtual;
 
+    // Screen lifecycle methods - called by ScreenManager during navigation
+    procedure DoShow; virtual;   // Called when screen becomes visible (push target or pop back)
+    procedure DoHide; virtual;   // Called when screen becomes hidden (push source or pop source)
+    procedure DoCreate; virtual; // Called after screen is created and registered
+    procedure DoDestroy; virtual; // Called before screen is destroyed
+
     // Static methods for activity lifecycle
     procedure SetLifecycles;
     procedure SetupViewLifecycle;
@@ -93,7 +99,7 @@ type
     // Basic event handlers
     property OnClick: TProc<JView> read FOnClick write FOnClick;
     property OnLongClick: TProc<JView> read FOnLongClick write FOnLongClick;
-    property OnNavigationClick: TProc<JView> read FOnNavigationClick write FOnNavigationClick;
+    property OnBackPressed: TProc<JView> read FOnBackPressed write FOnBackPressed;
     property OnTimeChange: TProc<JTimePicker, Integer, Integer> read FOnTimeChange write FOnTimeChange;
     property OnDateChange: TProc<JDatePicker, Integer, Integer, Integer> read FOnDateChange write FOnDateChange;
     property OnCalendarDateChange: TProc<JCalendarView, Integer, Integer, Integer> read FOnCalendarDateChange write FOnCalendarDateChange;
@@ -223,7 +229,7 @@ begin
           OnClickHandler := FieldInstance.OnClick;
           OnLongClickHandler := FieldInstance.OnLongClick;
           OnTimeChangeHandler := FieldInstance.OnTimeChange;
-          OnNavigationClickHandler := FieldInstance.OnNavigationClick;
+          OnNavigationClickHandler := FieldInstance.OnBackPressed;
           OnDateChangeHandler := FieldInstance.OnDateChange;
           OnCalendarDateChangeHandler := FieldInstance.OnCalendarDateChange;
           OnItemClickHandler := FieldInstance.OnItemClick;
@@ -386,6 +392,7 @@ begin
           RegInfo.ViewGUID := FieldInstance.FViewGUID;  // Child's GUID, not parent's
           RegInfo.ViewID := FieldInstance.FViewId;      // Child's ID, not parent's
           RegInfo.View := IPscView(FieldInstance.FView).GetView;
+          RegInfo.Instance := FieldInstance;  // Store reference to TPisces instance
           FieldInstance.RegisterView(RegInfo, RttiContext.GetType(FieldInstance.ClassType));
 
           // Calls after create for user defined settings
@@ -477,6 +484,38 @@ begin
   TPscUtils.Log('', 'AfterCreate', TLogger.Info, Self);
 end;
 
+procedure TPisces.DoShow;
+var
+  Child: TPisces;
+begin
+  TPscUtils.Log('Screen becoming visible', 'DoShow', TLogger.Info, Self);
+  // Propagate to children
+  for Child in FChildren.Values do
+    if Assigned(Child) then
+      Child.DoShow;
+end;
+
+procedure TPisces.DoHide;
+var
+  Child: TPisces;
+begin
+  TPscUtils.Log('Screen becoming hidden', 'DoHide', TLogger.Info, Self);
+  // Propagate to children
+  for Child in FChildren.Values do
+    if Assigned(Child) then
+      Child.DoHide;
+end;
+
+procedure TPisces.DoCreate;
+begin
+  TPscUtils.Log('Screen created', 'DoCreate', TLogger.Info, Self);
+end;
+
+procedure TPisces.DoDestroy;
+begin
+  TPscUtils.Log('Screen being destroyed', 'DoDestroy', TLogger.Info, Self);
+end;
+
 procedure TPisces.BuildScreen;
 var
   RttiContext: TRttiContext;
@@ -563,7 +602,7 @@ begin
     end else if Supports(FView, IPscToolBar) then begin
       IPscToolBar(FView)
         .BuildScreen
-        .OnNavigationClick(FOnNavigationClick)
+        .OnNavigationClick(FOnBackPressed)
         .OnClick(FOnClick)
         .OnLongClick(FOnLongClick);
     end else if Supports(FView, IPscViewGroup) then begin
@@ -589,6 +628,7 @@ begin
       RegInfo.ViewGUID := FViewGUID;
       RegInfo.ViewID := FViewId;
       RegInfo.View := IPscView(FView).GetView;
+      RegInfo.Instance := Self;  // Store reference to TPisces instance
       RegisterView(RegInfo, RttiType);
     finally
       RttiContext.Free;

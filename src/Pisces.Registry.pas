@@ -7,11 +7,15 @@ uses
   System.Generics.Collections;
 
 type
+  // Forward declaration for TPisces reference
+  TPiscesInstance = TObject;
+
   TViewRegistrationInfo = record
     ViewName: String;
     ViewGUID: String;
     ViewID: Integer;
     View: JView;
+    Instance: TPiscesInstance;  // Reference to the TPisces instance
   end;
 
 var

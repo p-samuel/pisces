@@ -8,7 +8,8 @@ uses
   Androidapi.JNI.GraphicsContentViewText,
   Pisces.Types,
   Pisces.Registry,
-  Pisces.Utils;
+  Pisces.Utils,
+  Pisces.Base;
 
 type
 
@@ -73,19 +74,21 @@ end;
 procedure TPscScreenManager.Push(const ScreenGUID: String);
 var
   CurrentView, NewView: JView;
-  RegInfo: TViewRegistrationInfo;
+  RegInfo, NewRegInfo: TViewRegistrationInfo;
+  CurrentInstance, NewInstance: TPisces;
 begin
   TPscUtils.Log(Format('Pushing screen with GUID: %s', [ScreenGUID]), 'Push', TLogger.Info, 'TPscScreenManager');
 
   // Check if screen exists in registry
-  if not ViewsRegistry.TryGetValue(ScreenGUID, RegInfo) then
+  if not ViewsRegistry.TryGetValue(ScreenGUID, NewRegInfo) then
   begin
     TPscUtils.Log(Format('Screen GUID not found in registry: %s', [ScreenGUID]), 'Push', TLogger.Error, 'TPscScreenManager');
     Exit;
   end;
 
-  NewView := RegInfo.View;
-  TPscUtils.Log(Format('Found screen: %s', [RegInfo.ViewName]), 'Push', TLogger.Info, 'TPscScreenManager');
+  NewView := NewRegInfo.View;
+  NewInstance := TPisces(NewRegInfo.Instance);
+  TPscUtils.Log(Format('Found screen: %s', [NewRegInfo.ViewName]), 'Push', TLogger.Info, 'TPscScreenManager');
 
   // Hide current screen if exists
   if FCurrentScreenGUID <> '' then
@@ -94,7 +97,13 @@ begin
     if ViewsRegistry.TryGetValue(FCurrentScreenGUID, RegInfo) then
     begin
       CurrentView := RegInfo.View;
+      CurrentInstance := TPisces(RegInfo.Instance);
       TPscUtils.Log(Format('Current screen name: %s', [RegInfo.ViewName]), 'Push', TLogger.Info, 'TPscScreenManager');
+
+      // Call DoHide lifecycle method on current screen
+      if Assigned(CurrentInstance) then
+        CurrentInstance.DoHide;
+
       CurrentView.setVisibility(TJView.JavaClass.GONE);
       TPscUtils.Log('Current screen hidden', 'Push', TLogger.Info, 'TPscScreenManager');
     end;
@@ -116,6 +125,10 @@ begin
     .setDuration(300)
     .start;
 
+  // Call DoShow lifecycle method on new screen
+  if Assigned(NewInstance) then
+    NewInstance.DoShow;
+
   TPscUtils.Log('Screen pushed successfully', 'Push', TLogger.Info, 'TPscScreenManager');
 end;
 
@@ -123,7 +136,8 @@ procedure TPscScreenManager.Pop;
 var
   CurrentView, PreviousView: JView;
   PreviousGUID: String;
-  RegInfo: TViewRegistrationInfo;
+  RegInfo, PreviousRegInfo: TViewRegistrationInfo;
+  CurrentInstance, PreviousInstance: TPisces;
 begin
   if FScreenStack.Count = 0 then
   begin
@@ -140,6 +154,12 @@ begin
   if ViewsRegistry.TryGetValue(FCurrentScreenGUID, RegInfo) then
   begin
     CurrentView := RegInfo.View;
+    CurrentInstance := TPisces(RegInfo.Instance);
+
+    // Call DoHide lifecycle method on current screen
+    if Assigned(CurrentInstance) then
+      CurrentInstance.DoHide;
+
     CurrentView.animate
       .alpha(0)
       .setDuration(300)
@@ -152,15 +172,20 @@ begin
   end;
 
   // Show previous screen
-  if ViewsRegistry.TryGetValue(PreviousGUID, RegInfo) then
+  if ViewsRegistry.TryGetValue(PreviousGUID, PreviousRegInfo) then
   begin
-    PreviousView := RegInfo.View;
+    PreviousView := PreviousRegInfo.View;
+    PreviousInstance := TPisces(PreviousRegInfo.Instance);
     PreviousView.setAlpha(0);
     PreviousView.setVisibility(TJView.JavaClass.VISIBLE);
     PreviousView.animate
       .alpha(1)
       .setDuration(300)
       .start;
+
+    // Call DoShow lifecycle method on previous screen (returning to it)
+    if Assigned(PreviousInstance) then
+      PreviousInstance.DoShow;
   end;
 
   FCurrentScreenGUID := PreviousGUID;
