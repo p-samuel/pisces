@@ -245,6 +245,7 @@
         <DCCReference Include="src\View.Detail.pas"/>
         <DCCReference Include="src\View.Settings.pas"/>
         <DCCReference Include="src\View.Toolbar.pas"/>
+        <DCCReference Include="src\View.Popup.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

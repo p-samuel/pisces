@@ -18,7 +18,8 @@ uses
   View.Home in 'src\View.Home.pas',
   View.Detail in 'src\View.Detail.pas',
   View.Settings in 'src\View.Settings.pas',
-  View.Toolbar in 'src\View.Toolbar.pas';
+  View.Toolbar in 'src\View.Toolbar.pas',
+  View.Popup in 'src\View.Popup.pas';
 
 begin
 

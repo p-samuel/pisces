@@ -9,6 +9,7 @@ uses
 type
   [ ToolBar('toolbarheader'),
     Title('Toolbar Demo'),
+    RippleColor(233, 233, 233, 0.2),
     TitleTextColor(255, 255, 255),
     SubtitleTextColor(200, 200, 200),
     BackgroundColor(33, 150, 243),
@@ -18,6 +19,7 @@ type
   ] TToolbarHeader = class(TPisces)
   private
     procedure BackPressed(AView: JView);
+    procedure LongClick(AView: JView);
   public
     constructor Create; override;
     procedure DoShow; override;
@@ -35,13 +37,16 @@ implementation
 
 uses
   Androidapi.Helpers,
-  Pisces.ScreenManager;
+  System.SysUtils,
+  Pisces.ScreenManager,
+  View.Popup;
 
 { TToolbarHeader }
 
 constructor TToolbarHeader.Create;
 begin
   OnBackPressed := BackPressed;
+  OnLongClick := LongClick;
 
   if not Assigned(ToolbarHeader) then begin
     ToolbarHeader := Self;
@@ -82,6 +87,21 @@ procedure TToolbarHeader.HideBackButton;
 begin
   if Assigned(AndroidView) then
     JToolbar(AndroidView).setNavigationIcon(nil);
+end;
+
+procedure TToolbarHeader.LongClick(AView: JView);
+begin
+  ViewPopup.Visible := True;
+  TPscUtils.PopupWindow
+    .Content(ViewPopup.AndroidView)
+    .Width(300)
+    .Height(700)
+    .Focusable(True)
+    .OnDismiss(procedure begin
+      TPscUtils.Toast('Dismissed waited', TJToast.JavaClass.LENGTH_SHORT);
+      ViewPopup.Visible := False;
+    end)
+    .ShowAsDropDown(AndroidView, 0, 0, TJGravity.JavaClass.RIGHT or TJGravity.JavaClass.TOP)
 end;
 
 procedure TToolbarHeader.DoHide;
