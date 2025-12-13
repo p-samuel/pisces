@@ -960,7 +960,7 @@ end;
 procedure TPisces.ShowAndHide;
 begin
   Show;
-  GetAndroidView.setVisibility(TJView.JavaClass.GONE);
+  Hide;
 end;
 
 procedure TPisces.ShowView;

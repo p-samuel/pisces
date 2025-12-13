@@ -63,6 +63,29 @@ type
     function Show: IPscImage;
   end;
 
+  IPscPopupWindow = interface(IPscViewBase)
+    ['{7F6BEBF1-0EAA-4996-92CC-F847C8972569}']
+    function Content(AView: JView): IPscPopupWindow;
+    function Width(AValue: Integer): IPscPopupWindow;
+    function Height(AValue: Integer): IPscPopupWindow;
+    function Focusable(AValue: Boolean): IPscPopupWindow;
+    function OutsideTouchable(AValue: Boolean): IPscPopupWindow;
+    function ClippingEnabled(AValue: Boolean): IPscPopupWindow;
+    function Elevation(AValue: Single): IPscPopupWindow;
+    function BackgroundColor(AColor: Integer): IPscPopupWindow;
+    function AnimationStyle(AStyle: Integer): IPscPopupWindow;
+    function Offset(AX, AY: Integer): IPscPopupWindow;
+    function OnDismiss(AProc: TProc): IPscPopupWindow;
+    function ShowAsDropDown(AAnchor: JView): IPscPopupWindow; overload;
+    function ShowAsDropDown(AAnchor: JView; AXOff, AYOff, AGravity: Integer): IPscPopupWindow; overload;
+    function ShowAtLocation(AParent: JView; AGravity, AX, AY: Integer): IPscPopupWindow;
+    function Update(AWidth, AHeight: Integer): IPscPopupWindow; overload;
+    function Update(AX, AY, AWidth, AHeight: Integer): IPscPopupWindow; overload;
+    function Dismiss: IPscPopupWindow;
+    function IsShowing: Boolean;
+    function GetPopupWindow: JPopupWindow;
+  end;
+
   TPscViewBase = class(TInterfacedObject, IPscViewBase)
   private
     FAttributes: TDictionary<String, TCustomAttribute>;
@@ -513,6 +536,42 @@ type
     function ImageResource: IPscImage; overload;
     function ScaleType: IPscImage; overload;
     function ScaleType(Value: TImageScaleType): IPscImage; overload;
+  end;
+
+  TPscPopupWindow = class(TInterfacedObject, IPscPopupWindow)
+  private
+    FPopupWindow: JPopupWindow;
+    FContentView: JView;
+    FWidth: Integer;
+    FHeight: Integer;
+    FOffsetX: Integer;
+    FOffsetY: Integer;
+    FOnDismiss: TProc;
+    FDismissListener: JPopupWindow_OnDismissListener;
+    procedure EnsurePopupWindow;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    class function New: IPscPopupWindow;
+    function Content(AView: JView): IPscPopupWindow;
+    function Width(AValue: Integer): IPscPopupWindow;
+    function Height(AValue: Integer): IPscPopupWindow;
+    function Focusable(AValue: Boolean): IPscPopupWindow;
+    function OutsideTouchable(AValue: Boolean): IPscPopupWindow;
+    function ClippingEnabled(AValue: Boolean): IPscPopupWindow;
+    function Elevation(AValue: Single): IPscPopupWindow;
+    function BackgroundColor(AColor: Integer): IPscPopupWindow;
+    function AnimationStyle(AStyle: Integer): IPscPopupWindow;
+    function Offset(AX, AY: Integer): IPscPopupWindow;
+    function OnDismiss(AProc: TProc): IPscPopupWindow;
+    function ShowAsDropDown(AAnchor: JView): IPscPopupWindow; overload;
+    function ShowAsDropDown(AAnchor: JView; AXOff, AYOff, AGravity: Integer): IPscPopupWindow; overload;
+    function ShowAtLocation(AParent: JView; AGravity, AX, AY: Integer): IPscPopupWindow;
+    function Update(AWidth, AHeight: Integer): IPscPopupWindow; overload;
+    function Update(AX, AY, AWidth, AHeight: Integer): IPscPopupWindow; overload;
+    function Dismiss: IPscPopupWindow;
+    function IsShowing: Boolean;
+    function GetPopupWindow: JPopupWindow;
   end;
 
 implementation
@@ -3605,6 +3664,229 @@ begin
   Result := Self;
   if FAttributes.ContainsKey('ThumbTextPaddingAttribute') then
     ThumbTextPadding(ThumbTextPaddingAttribute(FAttributes['ThumbTextPaddingAttribute']).Value);
+end;
+
+{ TPscPopupWindow }
+
+constructor TPscPopupWindow.Create;
+begin
+  inherited Create;
+  FPopupWindow := nil;
+  FContentView := nil;
+  FWidth := TJViewGroup_LayoutParams.JavaClass.WRAP_CONTENT;
+  FHeight := TJViewGroup_LayoutParams.JavaClass.WRAP_CONTENT;
+  FOffsetX := 0;
+  FOffsetY := 0;
+  FOnDismiss := nil;
+  FDismissListener := nil;
+end;
+
+destructor TPscPopupWindow.Destroy;
+begin
+  // Don't dismiss - let the Java PopupWindow manage its own lifecycle
+  // The popup stays visible until user taps outside or calls Dismiss explicitly
+  FDismissListener := nil;
+  inherited Destroy;
+end;
+
+class function TPscPopupWindow.New: IPscPopupWindow;
+begin
+  Result := TPscPopupWindow.Create;
+end;
+
+procedure TPscPopupWindow.EnsurePopupWindow;
+begin
+  if FPopupWindow = nil then
+    FPopupWindow := TJPopupWindow.JavaClass.init;
+end;
+
+function TPscPopupWindow.Content(AView: JView): IPscPopupWindow;
+var
+  Parent: JViewGroup;
+begin
+  Result := Self;
+  FContentView := AView;
+  EnsurePopupWindow;
+
+  // Remove from parent if already attached
+  if AView.getParent <> nil then
+  begin
+    Parent := TJViewGroup.Wrap(AView.getParent);
+    if Parent <> nil then
+      Parent.removeView(AView);
+  end;
+
+  FPopupWindow.setContentView(AView);
+end;
+
+function TPscPopupWindow.Width(AValue: Integer): IPscPopupWindow;
+begin
+  Result := Self;
+  FWidth := AValue;
+  EnsurePopupWindow;
+  FPopupWindow.setWidth(AValue);
+end;
+
+function TPscPopupWindow.Height(AValue: Integer): IPscPopupWindow;
+begin
+  Result := Self;
+  FHeight := AValue;
+  EnsurePopupWindow;
+  FPopupWindow.setHeight(AValue);
+end;
+
+function TPscPopupWindow.Focusable(AValue: Boolean): IPscPopupWindow;
+begin
+  Result := Self;
+  EnsurePopupWindow;
+  FPopupWindow.setFocusable(AValue);
+end;
+
+function TPscPopupWindow.OutsideTouchable(AValue: Boolean): IPscPopupWindow;
+begin
+  Result := Self;
+  EnsurePopupWindow;
+  FPopupWindow.setOutsideTouchable(AValue);
+end;
+
+function TPscPopupWindow.ClippingEnabled(AValue: Boolean): IPscPopupWindow;
+begin
+  Result := Self;
+  EnsurePopupWindow;
+  FPopupWindow.setClippingEnabled(AValue);
+end;
+
+function TPscPopupWindow.Elevation(AValue: Single): IPscPopupWindow;
+begin
+  Result := Self;
+  EnsurePopupWindow;
+  FPopupWindow.setElevation(AValue);
+end;
+
+function TPscPopupWindow.BackgroundColor(AColor: Integer): IPscPopupWindow;
+var
+  Drawable: JColorDrawable;
+begin
+  Result := Self;
+  EnsurePopupWindow;
+  Drawable := TJColorDrawable.JavaClass.init(AColor);
+  FPopupWindow.setBackgroundDrawable(Drawable);
+end;
+
+function TPscPopupWindow.AnimationStyle(AStyle: Integer): IPscPopupWindow;
+begin
+  Result := Self;
+  EnsurePopupWindow;
+  FPopupWindow.setAnimationStyle(AStyle);
+end;
+
+function TPscPopupWindow.Offset(AX, AY: Integer): IPscPopupWindow;
+begin
+  Result := Self;
+  FOffsetX := AX;
+  FOffsetY := AY;
+end;
+
+function TPscPopupWindow.OnDismiss(AProc: TProc): IPscPopupWindow;
+begin
+  Result := Self;
+  FOnDismiss := AProc;
+  EnsurePopupWindow;
+  FDismissListener := TPscPopupWindowDismissListener.Create(AProc);
+  FPopupWindow.setOnDismissListener(FDismissListener);
+end;
+
+function TPscPopupWindow.ShowAsDropDown(AAnchor: JView): IPscPopupWindow;
+begin
+  Result := Self;
+  EnsurePopupWindow;
+  if AAnchor <> nil then
+  begin
+    try
+      if (FOffsetX <> 0) or (FOffsetY <> 0) then
+        FPopupWindow.showAsDropDown(AAnchor, FOffsetX, FOffsetY)
+      else
+        FPopupWindow.showAsDropDown(AAnchor);
+    except
+      on E: Exception do
+        TPscUtils.Log('Error showing popup: ' + E.Message, 'ShowAsDropDown', TLogger.Error, nil);
+    end;
+  end
+  else
+    TPscUtils.Log('Anchor view is nil', 'ShowAsDropDown', TLogger.Warning, nil);
+end;
+
+function TPscPopupWindow.ShowAsDropDown(AAnchor: JView; AXOff, AYOff, AGravity: Integer): IPscPopupWindow;
+begin
+  Result := Self;
+  EnsurePopupWindow;
+  if AAnchor <> nil then
+  begin
+    try
+      FPopupWindow.showAsDropDown(AAnchor, AXOff, AYOff, AGravity);
+    except
+      on E: Exception do
+        TPscUtils.Log('Error showing popup: ' + E.Message, 'ShowAsDropDown', TLogger.Error, nil);
+    end;
+  end
+  else
+    TPscUtils.Log('Anchor view is nil', 'ShowAsDropDown', TLogger.Warning, nil);
+end;
+
+function TPscPopupWindow.ShowAtLocation(AParent: JView; AGravity, AX, AY: Integer): IPscPopupWindow;
+begin
+  Result := Self;
+  EnsurePopupWindow;
+  if AParent <> nil then
+  begin
+    try
+      FPopupWindow.showAtLocation(AParent, AGravity, AX, AY);
+    except
+      on E: Exception do
+        TPscUtils.Log('Error showing popup at location: ' + E.Message, 'ShowAtLocation', TLogger.Error, nil);
+    end;
+  end
+  else
+    TPscUtils.Log('Parent view is nil', 'ShowAtLocation', TLogger.Warning, nil);
+end;
+
+function TPscPopupWindow.Update(AWidth, AHeight: Integer): IPscPopupWindow;
+begin
+  Result := Self;
+  FWidth := AWidth;
+  FHeight := AHeight;
+  if FPopupWindow <> nil then
+    FPopupWindow.update(AWidth, AHeight);
+end;
+
+function TPscPopupWindow.Update(AX, AY, AWidth, AHeight: Integer): IPscPopupWindow;
+begin
+  Result := Self;
+  FWidth := AWidth;
+  FHeight := AHeight;
+  if FPopupWindow <> nil then
+    FPopupWindow.update(AX, AY, AWidth, AHeight);
+end;
+
+function TPscPopupWindow.Dismiss: IPscPopupWindow;
+begin
+  Result := Self;
+  if (FPopupWindow <> nil) and FPopupWindow.isShowing then
+    FPopupWindow.dismiss;
+end;
+
+function TPscPopupWindow.IsShowing: Boolean;
+begin
+  if FPopupWindow <> nil then
+    Result := FPopupWindow.isShowing
+  else
+    Result := False;
+end;
+
+function TPscPopupWindow.GetPopupWindow: JPopupWindow;
+begin
+  EnsurePopupWindow;
+  Result := FPopupWindow;
 end;
 
 end.

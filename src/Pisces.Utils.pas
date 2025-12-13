@@ -9,7 +9,7 @@ uses
   Androidapi.JNI.JavaTypes,
   Androidapi.JNI.Widget,
   System.SysUtils,
-  Pisces.Types, Pisces.Registry, Pisces.Audio;
+  Pisces.Types, Pisces.Registry, Pisces.Audio, Pisces.View;
 
 type
 
@@ -106,46 +106,53 @@ type
 
   TPscUtils = class
   public
-    class function IsDarkMode: Boolean;
+    { View Registry & Lookup }
     class function FindObjectId(ObjectName: String): Integer;
     class function FindResourceId(ResourceName, Location: String): Integer;
-    class procedure RegisterView(const RegistrationInfo: TViewRegistrationInfo);
     class function FindViewByName(const AName: string): JView;
     class function FindViewById(const AId: Integer): JView;
     class function FindViewByGUID(const AGUID: String): JView;
+    class procedure RegisterView(const RegistrationInfo: TViewRegistrationInfo);
+
+    { System UI & Status Bar }
+    class function IsDarkMode: Boolean;
     class procedure EnableFullScreenOnView(View: JView);
     class procedure StatusBarColor(Color: Integer);
     class procedure StatusBarLightIcons(View: JView);
     class procedure StatusBarDarkIcons(View: JView);
-//    class procedure SetBorder(View: JView; CornerRadius: Single); overload;
-//    class procedure SetBorder(View: JView; CornerRadius: Single; Color: Integer); overload;
-//    class procedure SetBorder(View: JView; TopLeft, TopRight, BottomRight, BottomLeft: Single; BoxColor: Integer); overload;
-//    class procedure SetBorder(View: JView; TopLeft, TopRight, BottomRight, BottomLeft: Single; BoxColor: Integer; BorderColor: Integer; BorderWidth: Integer);  overload;
-//    class procedure SetBorder(View: JView; TopLeft, TopRight, BottomRight, BottomLeft: Single; BorderColor: Integer; BorderWidth: Integer);  overload;
-//    class procedure SetBorder(View: JView; Radius: Single; BoxColor: Integer; BorderColor: Integer; BorderWidth: Integer; TextColor, HintTextColor: Integer);  overload;
-//    class procedure SetBorder(View: JView; Radius: Single; BoxColor: Integer; BorderColor: Integer; BorderWidth: Integer);  overload;
-    class procedure Toast(Text: String; Duration: Integer);
-    class procedure ConvertAttributesToDictionary(const Attributes: TArray<TCustomAttribute>; var Dict: TDictionary<String, TCustomAttribute>);
-    class procedure Log(Msg, MethodName: String; LogType: TLogger; ClassInstance: TObject); overload;
-    class procedure Log(Msg, MethodName: String; LogType: TLogger; ClassInstanceName: String); overload;
-    class function GetPackageName: String;
-    class function Intent: TPscUtilsIntent;
-    class function Runnable(AView: JView; AProc: TProc<JView>): TPscRunnable;
-    class procedure SetRoundedCorners(View: JView; CornerRadius: Single; BackgroundColor: Integer); overload;
+    class procedure SetScreenOrientation(Orientation: TScreenOrientation);
+
+    { Visual Effects & Styling }
     class procedure SetRoundedCorners(View: JView; CornerRadius: Single); overload;
+    class procedure SetRoundedCorners(View: JView; CornerRadius: Single; BackgroundColor: Integer); overload;
     class procedure SetBackgroundWithRipple(View: JView; BackgroundColor: Integer; RippleColor: Integer; CornerRadius: Single); overload;
     class procedure SetBackgroundWithRipple(View: JView; ResourceDrawable: JDrawable; RippleColor: Integer; CornerRadius: Single); overload;
     class procedure SetForegroundRipple(View: JView; RippleColor: Integer; CornerRadius: Single);
-    class function GetDrawable(Resname, Location: String): JDrawable;
-    class function DateToMillis(Year, Month, Day: Integer): Int64;
-    class procedure SmoothScrollTo(View: JView; TargetX, TargetY: Integer; Duration: Integer = 1000);
-    class procedure ShowPopupWindow(Anchor: JView; ContentView: JView; AWidth, AHeight: Integer);
-    class function ColorStop(Red, Green, Blue: Integer; Alpha: Double = 1.0; Position: Single = -1): TColorStop;
     class procedure SetMultiGradientBackground(View: JView; const ColorStops: TColorStopArray; Orientation: TGradientOrientation; CornerRadius, GradientRadius: Single; Shape: TGradientShape);
+    class function ColorStop(Red, Green, Blue: Integer; Alpha: Double = 1.0; Position: Single = -1): TColorStop;
+    class function GetDrawable(Resname, Location: String): JDrawable;
+
+    { UI Components }
+    class function PopupWindow: IPscPopupWindow;
+    class procedure ShowPopupWindow(Anchor: JView; ContentView: JView; AWidth, AHeight: Integer);
+    class procedure Toast(Text: String; Duration: Integer);
     class function Animate: TPscAnimate;
-    class procedure SetScreenOrientation(Orientation: TScreenOrientation);
+
+    { Audio }
     class function Sound: TPscSound;
     class function Music: TPscMusic;
+
+    { Intents & Actions }
+    class function Intent: TPscUtilsIntent;
+
+    { Utilities }
+    class procedure Log(Msg, MethodName: String; LogType: TLogger; ClassInstance: TObject); overload;
+    class procedure Log(Msg, MethodName: String; LogType: TLogger; ClassInstanceName: String); overload;
+    class function GetPackageName: String;
+    class function DateToMillis(Year, Month, Day: Integer): Int64;
+    class function Runnable(AView: JView; AProc: TProc<JView>): TPscRunnable;
+    class procedure SmoothScrollTo(View: JView; TargetX, TargetY: Integer; Duration: Integer = 1000);
+    class procedure ConvertAttributesToDictionary(const Attributes: TArray<TCustomAttribute>; var Dict: TDictionary<String, TCustomAttribute>);
   end;
 
 implementation
@@ -369,193 +376,6 @@ class function TPscUtils.Runnable(AView: JView; AProc: TProc<JView>): TPscRunnab
 begin
   Result := TPscRunnable.Create(AView, AProc);
 end;
-
-//class procedure TPscUtils.SetBorder(View: JView; CornerRadius: Single; Color: Integer);
-//var
-//  ShapeDrawable: JShapeDrawable;
-//  Oval: JRectF;
-//  OuterRadii, InnerRadii: TJavaArray<Single>;
-//begin
-//  ShapeDrawable := TJShapeDrawable.JavaClass.init;
-//  Oval := TJRectF.JavaClass.init(0, 0, View.getWidth, View.getHeight);
-//  OuterRadii := TJavaArray<Single>.Create(8); // All corners
-//  InnerRadii := TJavaArray<Single>.Create(8); // All corners
-//  OuterRadii[0] := CornerRadius; // Top-left
-//  OuterRadii[1] := CornerRadius; // Top-left
-//  OuterRadii[2] := CornerRadius; // Top-right
-//  OuterRadii[3] := CornerRadius; // Top-right
-//  OuterRadii[4] := CornerRadius; // Bottom-right
-//  OuterRadii[5] := CornerRadius; // Bottom-right
-//  OuterRadii[6] := CornerRadius; // Bottom-left
-//  OuterRadii[7] := CornerRadius; // Bottom-left
-//  InnerRadii[0] := CornerRadius; // Top-left
-//  InnerRadii[1] := CornerRadius; // Top-left
-//  InnerRadii[2] := CornerRadius; // Top-right
-//  InnerRadii[3] := CornerRadius; // Top-right
-//  InnerRadii[4] := CornerRadius; // Bottom-right
-//  InnerRadii[5] := CornerRadius; // Bottom-right
-//  InnerRadii[6] := CornerRadius; // Bottom-left
-//  InnerRadii[7] := CornerRadius; // Bottom-left
-//  ShapeDrawable.getPaint.setColor(Color);
-//  ShapeDrawable.setShape(TJRoundRectShape.JavaClass.init(OuterRadii, Oval, InnerRadii));
-//  View.setBackground(ShapeDrawable);
-//end;
-//
-//class procedure TPscUtils.SetBorder(View: JView; TopLeft, TopRight, BottomRight,
-//  BottomLeft: Single; BoxColor, BorderColor, BorderWidth: Integer);
-//var
-//  RoundedDrawable: JGradientDrawable;
-//  CornerRadii: TJavaArray<Single>;
-//begin
-//  RoundedDrawable := TJGradientDrawable.JavaClass.init;
-//  CornerRadii := TJavaArray<Single>.Create(8);
-//  CornerRadii[0] := TopLeft;  // Top-left X
-//  CornerRadii[1] := TopLeft;  // Top-left Y
-//  CornerRadii[2] := TopRight; // Top-right X
-//  CornerRadii[3] := TopRight; // Top-right Y
-//  CornerRadii[4] := BottomRight; // Bottom-right X
-//  CornerRadii[5] := BottomRight; // Bottom-right Y
-//  CornerRadii[6] := BottomLeft; // Bottom-left X
-//  CornerRadii[7] := BottomLeft; // Bottom-left Y
-//  RoundedDrawable.setCornerRadii(CornerRadii);
-//  RoundedDrawable.setColor(BoxColor);
-//  RoundedDrawable.setStroke(BorderWidth, BorderColor);
-//  View.setBackground(RoundedDrawable);
-//end;
-//
-//class procedure TPscUtils.SetBorder(View: JView; Radius: Single; BoxColor, BorderColor, BorderWidth: Integer; TextColor, HintTextColor: Integer);
-//var
-//  RoundedDrawable: JGradientDrawable;
-//  CornerRadii: TJavaArray<Single>;
-//  TextView: JTextView;
-//begin
-//  RoundedDrawable := TJGradientDrawable.JavaClass.init;
-//  CornerRadii := TJavaArray<Single>.Create(8);
-//  CornerRadii[0] := Radius;  // Top-left X
-//  CornerRadii[1] := Radius;  // Top-left Y
-//  CornerRadii[2] := Radius; // Top-right X
-//  CornerRadii[3] := Radius; // Top-right Y
-//  CornerRadii[4] := Radius; // Bottom-right X
-//  CornerRadii[5] := Radius; // Bottom-right Y
-//  CornerRadii[6] := Radius; // Bottom-left X
-//  CornerRadii[7] := Radius; // Bottom-left Y
-//  RoundedDrawable.setCornerRadii(CornerRadii);
-//  RoundedDrawable.setColor(BoxColor);
-//  RoundedDrawable.setStroke(BorderWidth, BorderColor);
-//
-//  if Supports(View, JTextView) then
-//  begin
-//    TextView := JTextView(View);
-//    TextView.setTextColor(TextColor);
-//    TextView.setHintTextColor(HintTextColor);
-//  end;
-//
-//  View.setBackground(RoundedDrawable);
-//end;
-//
-//class procedure TPscUtils.SetBorder(View: JView; Radius: Single; BoxColor,BorderColor, BorderWidth: Integer);
-//var
-//  RoundedDrawable: JGradientDrawable;
-//  CornerRadii: TJavaArray<Single>;
-//begin
-//  RoundedDrawable := TJGradientDrawable.JavaClass.init;
-//  CornerRadii := TJavaArray<Single>.Create(8);
-//  CornerRadii[0] := Radius;  // Top-left X
-//  CornerRadii[1] := Radius;  // Top-left Y
-//  CornerRadii[2] := Radius; // Top-right X
-//  CornerRadii[3] := Radius; // Top-right Y
-//  CornerRadii[4] := Radius; // Bottom-right X
-//  CornerRadii[5] := Radius; // Bottom-right Y
-//  CornerRadii[6] := Radius; // Bottom-left X
-//  CornerRadii[7] := Radius; // Bottom-left Y
-//  RoundedDrawable.setCornerRadii(CornerRadii);
-//  RoundedDrawable.setColor(BoxColor);
-//  RoundedDrawable.setStroke(BorderWidth, BorderColor);
-//  View.setBackground(RoundedDrawable);
-//end;
-
-//class procedure TPscUtils.SetBorder(View: JView; CornerRadius: Single);
-//var
-//  ShapeDrawable: JShapeDrawable;
-//  Oval: JRectF;
-//  OuterRadii, InnerRadii: TJavaArray<Single>;
-//begin
-//  ShapeDrawable := TJShapeDrawable.JavaClass.init;
-//  Oval := TJRectF.JavaClass.init(0, 0, View.getWidth, View.getHeight);
-//  OuterRadii := TJavaArray<Single>.Create(8); // All corners
-//  InnerRadii := TJavaArray<Single>.Create(8); // All corners
-//  OuterRadii[0] := CornerRadius; // Top-left
-//  OuterRadii[1] := CornerRadius; // Top-left
-//  OuterRadii[2] := CornerRadius; // Top-right
-//  OuterRadii[3] := CornerRadius; // Top-right
-//  OuterRadii[4] := CornerRadius; // Bottom-right
-//  OuterRadii[5] := CornerRadius; // Bottom-right
-//  OuterRadii[6] := CornerRadius; // Bottom-left
-//  OuterRadii[7] := CornerRadius; // Bottom-left
-//  InnerRadii[0] := CornerRadius; // Top-left
-//  InnerRadii[1] := CornerRadius; // Top-left
-//  InnerRadii[2] := CornerRadius; // Top-right
-//  InnerRadii[3] := CornerRadius; // Top-right
-//  InnerRadii[4] := CornerRadius; // Bottom-right
-//  InnerRadii[5] := CornerRadius; // Bottom-right
-//  InnerRadii[6] := CornerRadius; // Bottom-left
-//  InnerRadii[7] := CornerRadius; // Bottom-left
-//  ShapeDrawable.setShape(TJRoundRectShape.JavaClass.init(OuterRadii, Oval, InnerRadii));
-//  View.setBackground(ShapeDrawable);
-//end;
-//
-//
-//class procedure TPscUtils.SetBorder(View: JView; TopLeft, TopRight, BottomRight, BottomLeft: Single; BoxColor: Integer);
-//var
-//  ShapeDrawable: JShapeDrawable;
-//  Oval: JRectF;
-//  OuterRadii, InnerRadii: TJavaArray<Single>;
-//begin
-//  ShapeDrawable := TJShapeDrawable.JavaClass.init;
-//  Oval := TJRectF.JavaClass.init(0, 0, View.getWidth, View.getHeight);
-//  OuterRadii := TJavaArray<Single>.Create(8); // All corners
-//  InnerRadii := TJavaArray<Single>.Create(8); // All corners
-//  OuterRadii[0] := TopLeft; // Top-left
-//  OuterRadii[1] := TopLeft; // Top-left
-//  OuterRadii[2] := TopRight; // Top-right
-//  OuterRadii[3] := TopRight; // Top-right
-//  OuterRadii[4] := BottomRight; // Bottom-right
-//  OuterRadii[5] := BottomRight; // Bottom-right
-//  OuterRadii[6] := BottomLeft; // Bottom-left
-//  OuterRadii[7] := BottomLeft; // Bottom-left
-//  InnerRadii[0] := TopLeft; // Top-left
-//  InnerRadii[1] := TopLeft; // Top-left
-//  InnerRadii[2] := TopRight; // Top-right
-//  InnerRadii[3] := TopRight; // Top-right
-//  InnerRadii[4] := BottomRight; // Bottom-right
-//  InnerRadii[5] := BottomRight; // Bottom-right
-//  InnerRadii[6] := BottomLeft; // Bottom-left
-//  InnerRadii[7] := BottomLeft; // Bottom-left
-//  ShapeDrawable.getPaint.setColor(BoxColor);
-//  ShapeDrawable.setShape(TJRoundRectShape.JavaClass.init(OuterRadii, Oval, InnerRadii));
-//  View.setBackground(ShapeDrawable);
-//end;
-//
-//class procedure TPscUtils.SetBorder(View: JView; TopLeft, TopRight, BottomRight,
-//  BottomLeft: Single; BorderColor, BorderWidth: Integer);
-//var
-//  RoundedDrawable: JGradientDrawable;
-//  CornerRadii: TJavaArray<Single>;
-//begin
-//  RoundedDrawable := TJGradientDrawable.JavaClass.init;
-//  CornerRadii := TJavaArray<Single>.Create(8);
-//  CornerRadii[0] := TopLeft;  // Top-left X
-//  CornerRadii[1] := TopLeft;  // Top-left Y
-//  CornerRadii[2] := TopRight; // Top-right X
-//  CornerRadii[3] := TopRight; // Top-right Y
-//  CornerRadii[4] := BottomRight; // Bottom-right X
-//  CornerRadii[5] := BottomRight; // Bottom-right Y
-//  CornerRadii[6] := BottomLeft; // Bottom-left X
-//  CornerRadii[7] := BottomLeft; // Bottom-left Y
-//  RoundedDrawable.setCornerRadii(CornerRadii);
-//  RoundedDrawable.setStroke(BorderWidth, BorderColor);
-//  View.setBackground(RoundedDrawable);
-//end;
 
 class procedure TPscUtils.SetRoundedCorners(View: JView; CornerRadius: Single; BackgroundColor: Integer);
 var
@@ -882,6 +702,11 @@ end;
 class function TPscUtils.Music: TPscMusic;
 begin
   Result := TPscMusic.Instance;
+end;
+
+class function TPscUtils.PopupWindow: IPscPopupWindow;
+begin
+  Result := TPscPopupWindow.New;
 end;
 
 class procedure TPscUtils.StatusBarColor(Color: Integer);
