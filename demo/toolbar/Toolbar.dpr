@@ -1,4 +1,4 @@
-program TicTacToe;
+program Toolbar;
 
 uses
   Pisces.Attributes in '..\..\src\Pisces.Attributes.pas',
@@ -16,11 +16,12 @@ uses
   Pisces.ScreenManager in '..\..\src\Pisces.ScreenManager.pas',
   Pisces.Audio in '..\..\src\Pisces.Audio.pas',
   View.Home in 'src\View.Home.pas',
-  View.Header in 'src\View.Header.pas',
-  View.GameBoard in 'src\View.GameBoard.pas',
-  View.Footer in 'src\View.Footer.pas',
-  Logic.Game in 'src\Logic.Game.pas';
+  View.Detail in 'src\View.Detail.pas',
+  View.Settings in 'src\View.Settings.pas',
+  View.Toolbar in 'src\View.Toolbar.pas';
 
 begin
+
+  // Toolbar Navigation Demo
 
 end.
