@@ -41,6 +41,7 @@ type
   TJListView = Androidapi.JNI.Widget.TJListView;
   TJListAdapter = Androidapi.JNI.Widget.TJListAdapter;
   TJTextView = Androidapi.JNI.Widget.TJTextView;
+  TJSwitch = Androidapi.JNI.Widget.TJSwitch;
   TJScroller = Androidapi.JNI.Widget.TJScroller;
   TJImageView_ScaleType = Androidapi.JNI.Widget.TJImageView_ScaleType;
   TJView_OnLayoutChangeListener = Androidapi.JNI.GraphicsContentViewText.TJView_OnLayoutChangeListener;
@@ -75,6 +76,7 @@ type
   JListAdapter = Androidapi.JNI.Widget.JListAdapter;
   JViewGroup_LayoutParams = Androidapi.JNI.GraphicsContentViewText.JViewGroup_LayoutParams;
   JTextView = Androidapi.JNI.Widget.JTextView;
+  JSwitch = Androidapi.JNI.Widget.JSwitch;
   JScroller = Androidapi.JNI.Widget.JScroller;
   JImageView_ScaleType = Androidapi.JNI.Widget.JImageView_ScaleType;
   JView_OnLayoutChangeListener = Androidapi.JNI.GraphicsContentViewText.JView_OnLayoutChangeListener;

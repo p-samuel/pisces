@@ -350,6 +350,7 @@ type
   TJListAdapter = Pisces.Types.TJListAdapter;
   TJTextView = Pisces.Types.TJTextView;
   TJScroller = Pisces.Types.TJScroller;
+  TJSwitch = Pisces.Types.TJSwitch;
   TJImageView_ScaleType = Pisces.Types.TJImageView_ScaleType;
   TJView_OnLayoutChangeListenerClass = Pisces.Types.TJView_OnLayoutChangeListener;
   JImageView = Pisces.Types.JImageView;
@@ -380,6 +381,7 @@ type
   JListAdapter = Pisces.Types.JListAdapter;
   JViewGroup_LayoutParams = Pisces.Types.JViewGroup_LayoutParams;
   JTextView = Pisces.Types.JTextView;
+  JSwitch = Pisces.Types.JSwitch;
   JScroller = Pisces.Types.JScroller;
   JImageView_ScaleType = Pisces.Types.JImageView_ScaleType;
   JView_OnLayoutChangeListenerClass = Pisces.Types.JView_OnLayoutChangeListener;

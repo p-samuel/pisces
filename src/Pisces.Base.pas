@@ -647,7 +647,6 @@ begin
     CreateViewIdentification;
     ReadAttributes;
     FChildren := TObjectDictionary<Integer, TPisces>.Create;
-
   except
     on E: Exception do
       TPscUtils.Log(E.Message, 'Create', TLogger.Fatal, Self);
@@ -951,6 +950,7 @@ begin
     SetLifecycles;
     ProcessFields(Self);
     ShowView;
+    AfterCreate;
   except
     on E: Exception do
       TPscUtils.Log(E.Message, 'Show', TLogger.Error, Self);
