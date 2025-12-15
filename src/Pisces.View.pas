@@ -4062,20 +4062,18 @@ begin
       JItems.Items[i] := StrToJCharSequence(FItems[i]);
     ClickListener := TPscDialogClickListener.Create(FItemsClickProc);
     FBuilder.setItems(JItems, ClickListener);
-  end;
+  end
   // Set single choice items (radio buttons)
-  //else if Length(FSingleChoiceItems) > 0 then
-  if Length(FSingleChoiceItems) > 0 then
+  else if Length(FSingleChoiceItems) > 0 then
   begin
     JItems := TJavaObjectArray<JCharSequence>.Create(Length(FSingleChoiceItems));
     for i := 0 to High(FSingleChoiceItems) do
       JItems.Items[i] := StrToJCharSequence(FSingleChoiceItems[i]);
     ClickListener := TPscDialogClickListener.Create(FSingleChoiceProc);
     FBuilder.setSingleChoiceItems(JItems, FSingleChoiceChecked, ClickListener);
-  end;
+  end
   // Set multi choice items (checkboxes)
-  //else if Length(FMultiChoiceItems) > 0 then
-  if Length(FMultiChoiceItems) > 0 then
+  else if Length(FMultiChoiceItems) > 0 then
   begin
     JItems := TJavaObjectArray<JCharSequence>.Create(Length(FMultiChoiceItems));
     for i := 0 to High(FMultiChoiceItems) do
