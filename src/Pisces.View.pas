@@ -10,7 +10,7 @@ uses
   Androidapi.JNI.GraphicsContentViewText,
   Androidapi.JNI.Widget,
   Pisces.EventListeners,
-  Pisces.Types;
+  Pisces.Types, Androidapi.JNI.App;
 
 type
 
@@ -84,6 +84,27 @@ type
     function Dismiss: IPscPopupWindow;
     function IsShowing: Boolean;
     function GetPopupWindow: JPopupWindow;
+  end;
+
+  TAlertDialogClickProc = TProc<Integer>;
+  TAlertDialogMultiChoiceProc = TProc<Integer, Boolean>;
+
+  IPscAlertDialog = interface(IPscViewBase)
+    ['{A3D2E8F1-5B7C-4A9E-8D6F-1C2E3B4A5D6E}']
+    function Title(const ATitle: String): IPscAlertDialog;
+    function Message(const AMessage: String): IPscAlertDialog;
+    function Icon(AResourceId: Integer): IPscAlertDialog;
+    function PositiveButton(const AText: String; AProc: TProc): IPscAlertDialog;
+    function NegativeButton(const AText: String; AProc: TProc): IPscAlertDialog;
+    function NeutralButton(const AText: String; AProc: TProc): IPscAlertDialog;
+    function Items(const AItems: TArray<String>; AOnClick: TAlertDialogClickProc): IPscAlertDialog;
+    function SingleChoiceItems(const AItems: TArray<String>; ACheckedItem: Integer; AOnClick: TAlertDialogClickProc): IPscAlertDialog;
+    function MultiChoiceItems(const AItems: TArray<String>; const ACheckedItems: TArray<Boolean>; AOnClick: TAlertDialogMultiChoiceProc): IPscAlertDialog;
+    function Cancelable(AValue: Boolean): IPscAlertDialog;
+    function OnCancel(AProc: TProc): IPscAlertDialog;
+    function OnDismiss(AProc: TProc): IPscAlertDialog;
+    function Show: IPscAlertDialog;
+    function Dismiss: IPscAlertDialog;
   end;
 
   TPscViewBase = class(TInterfacedObject, IPscViewBase)
@@ -574,13 +595,68 @@ type
     function GetPopupWindow: JPopupWindow;
   end;
 
+  TPscAlertDialog = class(TInterfacedObject, IPscAlertDialog)
+  private
+    FBuilder: JAlertDialog_Builder;
+    FDialog: JAlertDialog;
+    FTitle: String;
+    FMessage: String;
+    FIconResId: Integer;
+    FCancelable: Boolean;
+    FOnCancel: TProc;
+    FOnDismissProc: TProc;
+    FPositiveText: String;
+    FPositiveProc: TProc;
+    FNegativeText: String;
+    FNegativeProc: TProc;
+    FNeutralText: String;
+    FNeutralProc: TProc;
+    FItems: TArray<String>;
+    FItemsClickProc: TAlertDialogClickProc;
+    FSingleChoiceItems: TArray<String>;
+    FSingleChoiceChecked: Integer;
+    FSingleChoiceProc: TAlertDialogClickProc;
+    FMultiChoiceItems: TArray<String>;
+    FMultiChoiceChecked: TArray<Boolean>;
+    FMultiChoiceProc: TAlertDialogMultiChoiceProc;
+    FSelectedIndex: Integer;
+    procedure EnsureBuilder;
+    procedure BuildDialog;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    class function New: IPscAlertDialog;
+    // Content
+    function Title(const ATitle: String): IPscAlertDialog;
+    function Message(const AMessage: String): IPscAlertDialog;
+    function Icon(AResourceId: Integer): IPscAlertDialog;
+    // Buttons
+    function PositiveButton(const AText: String; AProc: TProc): IPscAlertDialog;
+    function NegativeButton(const AText: String; AProc: TProc): IPscAlertDialog;
+    function NeutralButton(const AText: String; AProc: TProc): IPscAlertDialog;
+    // List items
+    function Items(const AItems: TArray<String>; AOnClick: TAlertDialogClickProc): IPscAlertDialog;
+    function SingleChoiceItems(const AItems: TArray<String>; ACheckedItem: Integer; AOnClick: TAlertDialogClickProc): IPscAlertDialog;
+    function MultiChoiceItems(const AItems: TArray<String>; const ACheckedItems: TArray<Boolean>; AOnClick: TAlertDialogMultiChoiceProc): IPscAlertDialog;
+    // Behavior
+    function Cancelable(AValue: Boolean): IPscAlertDialog;
+    function OnCancel(AProc: TProc): IPscAlertDialog;
+    function OnDismiss(AProc: TProc): IPscAlertDialog;
+    // Actions
+    function Show: IPscAlertDialog;
+    function Dismiss: IPscAlertDialog;
+    // Property accessors
+    function GetSelectedIndex: Integer;
+    property SelectedIndex: Integer read GetSelectedIndex;
+  end;
+
 implementation
 
 uses
   Androidapi.JNI.JavaTypes,
   Androidapi.Helpers,
-  Androidapi.JNI.App,
   Androidapi.JNI.Util,
+  Androidapi.JNIBridge,
   Pisces.Utils,
   Pisces.Attributes;
 
@@ -3887,6 +3963,232 @@ function TPscPopupWindow.GetPopupWindow: JPopupWindow;
 begin
   EnsurePopupWindow;
   Result := FPopupWindow;
+end;
+
+{ TPscAlertDialog }
+
+constructor TPscAlertDialog.Create;
+begin
+  inherited Create;
+  FBuilder := nil;
+  FDialog := nil;
+  FTitle := '';
+  FMessage := '';
+  FIconResId := 0;
+  FCancelable := True;
+  FOnCancel := nil;
+  FOnDismissProc := nil;
+  FPositiveText := '';
+  FPositiveProc := nil;
+  FNegativeText := '';
+  FNegativeProc := nil;
+  FNeutralText := '';
+  FNeutralProc := nil;
+  FItems := nil;
+  FItemsClickProc := nil;
+  FSingleChoiceItems := nil;
+  FSingleChoiceChecked := -1;
+  FSingleChoiceProc := nil;
+  FMultiChoiceItems := nil;
+  FMultiChoiceChecked := nil;
+  FMultiChoiceProc := nil;
+  FSelectedIndex := -1;
+end;
+
+destructor TPscAlertDialog.Destroy;
+begin
+  FBuilder := nil;
+  FDialog := nil;
+  inherited Destroy;
+end;
+
+class function TPscAlertDialog.New: IPscAlertDialog;
+begin
+  Result := TPscAlertDialog.Create;
+end;
+
+procedure TPscAlertDialog.EnsureBuilder;
+begin
+  if FBuilder = nil then
+    FBuilder := TJAlertDialog_Builder.JavaClass.init(TAndroidHelper.Activity);
+end;
+
+procedure TPscAlertDialog.BuildDialog;
+var
+  JItems: TJavaObjectArray<JCharSequence>;
+  JCheckedItems: TJavaArray<Boolean>;
+  i: Integer;
+  ClickListener: TPscDialogClickListener;
+  MultiClickListener: TPscDialogMultiChoiceClickListener;
+begin
+  EnsureBuilder;
+
+  if FTitle <> '' then
+    FBuilder.setTitle(StrToJCharSequence(FTitle));
+
+  if FMessage <> '' then
+    FBuilder.setMessage(StrToJCharSequence(FMessage));
+
+  if FIconResId > 0 then
+    FBuilder.setIcon(FIconResId);
+
+  FBuilder.setCancelable(FCancelable);
+
+  if Assigned(FOnCancel) then
+    FBuilder.setOnCancelListener(TPscDialogCancelListener.Create(FOnCancel));
+
+  if Assigned(FOnDismissProc) then
+    FBuilder.setOnDismissListener(TPscDialogDismissListener.Create(FOnDismissProc));
+
+  if FPositiveText <> '' then begin
+    ClickListener := TPscDialogClickListener.Create(FPositiveProc);
+    FBuilder.setPositiveButton(StrToJCharSequence(FPositiveText), ClickListener);
+  end;
+
+  if FNegativeText <> '' then begin
+    ClickListener := TPscDialogClickListener.Create(FNegativeProc);
+    FBuilder.setNegativeButton(StrToJCharSequence(FNegativeText), ClickListener);
+  end;
+
+  if FNeutralText <> '' then begin
+    ClickListener := TPscDialogClickListener.Create(FNeutralProc);
+    FBuilder.setNeutralButton(StrToJCharSequence(FNeutralText), ClickListener);
+  end;
+
+  // Set simple list items
+  if Length(FItems) > 0 then begin
+    JItems := TJavaObjectArray<JCharSequence>.Create(Length(FItems));
+    for i := 0 to High(FItems) do
+      JItems.Items[i] := StrToJCharSequence(FItems[i]);
+    ClickListener := TPscDialogClickListener.Create(FItemsClickProc);
+    FBuilder.setItems(JItems, ClickListener);
+  end;
+  // Set single choice items (radio buttons)
+  //else if Length(FSingleChoiceItems) > 0 then
+  if Length(FSingleChoiceItems) > 0 then
+  begin
+    JItems := TJavaObjectArray<JCharSequence>.Create(Length(FSingleChoiceItems));
+    for i := 0 to High(FSingleChoiceItems) do
+      JItems.Items[i] := StrToJCharSequence(FSingleChoiceItems[i]);
+    ClickListener := TPscDialogClickListener.Create(FSingleChoiceProc);
+    FBuilder.setSingleChoiceItems(JItems, FSingleChoiceChecked, ClickListener);
+  end;
+  // Set multi choice items (checkboxes)
+  //else if Length(FMultiChoiceItems) > 0 then
+  if Length(FMultiChoiceItems) > 0 then
+  begin
+    JItems := TJavaObjectArray<JCharSequence>.Create(Length(FMultiChoiceItems));
+    for i := 0 to High(FMultiChoiceItems) do
+      JItems.Items[i] := StrToJCharSequence(FMultiChoiceItems[i]);
+    JCheckedItems := TJavaArray<Boolean>.Create(Length(FMultiChoiceChecked));
+    for i := 0 to High(FMultiChoiceChecked) do
+      JCheckedItems.Items[i] := FMultiChoiceChecked[i];
+    MultiClickListener := TPscDialogMultiChoiceClickListener.Create(FMultiChoiceProc);
+    FBuilder.setMultiChoiceItems(JItems, JCheckedItems, MultiClickListener);
+  end;
+
+  FDialog := FBuilder.create;
+end;
+
+function TPscAlertDialog.Title(const ATitle: String): IPscAlertDialog;
+begin
+  Result := Self;
+  FTitle := ATitle;
+end;
+
+function TPscAlertDialog.Message(const AMessage: String): IPscAlertDialog;
+begin
+  Result := Self;
+  FMessage := AMessage;
+end;
+
+function TPscAlertDialog.Icon(AResourceId: Integer): IPscAlertDialog;
+begin
+  Result := Self;
+  FIconResId := AResourceId;
+end;
+
+function TPscAlertDialog.PositiveButton(const AText: String; AProc: TProc): IPscAlertDialog;
+begin
+  Result := Self;
+  FPositiveText := AText;
+  FPositiveProc := AProc;
+end;
+
+function TPscAlertDialog.NegativeButton(const AText: String; AProc: TProc): IPscAlertDialog;
+begin
+  Result := Self;
+  FNegativeText := AText;
+  FNegativeProc := AProc;
+end;
+
+function TPscAlertDialog.NeutralButton(const AText: String; AProc: TProc): IPscAlertDialog;
+begin
+  Result := Self;
+  FNeutralText := AText;
+  FNeutralProc := AProc;
+end;
+
+function TPscAlertDialog.Items(const AItems: TArray<String>; AOnClick: TAlertDialogClickProc): IPscAlertDialog;
+begin
+  Result := Self;
+  FItems := AItems;
+  FItemsClickProc := AOnClick;
+end;
+
+function TPscAlertDialog.SingleChoiceItems(const AItems: TArray<String>; ACheckedItem: Integer; AOnClick: TAlertDialogClickProc): IPscAlertDialog;
+begin
+  Result := Self;
+  FSingleChoiceItems := AItems;
+  FSingleChoiceChecked := ACheckedItem;
+  FSingleChoiceProc := AOnClick;
+  FSelectedIndex := ACheckedItem;
+end;
+
+function TPscAlertDialog.MultiChoiceItems(const AItems: TArray<String>; const ACheckedItems: TArray<Boolean>; AOnClick: TAlertDialogMultiChoiceProc): IPscAlertDialog;
+begin
+  Result := Self;
+  FMultiChoiceItems := AItems;
+  FMultiChoiceChecked := ACheckedItems;
+  FMultiChoiceProc := AOnClick;
+end;
+
+function TPscAlertDialog.Cancelable(AValue: Boolean): IPscAlertDialog;
+begin
+  Result := Self;
+  FCancelable := AValue;
+end;
+
+function TPscAlertDialog.OnCancel(AProc: TProc): IPscAlertDialog;
+begin
+  Result := Self;
+  FOnCancel := AProc;
+end;
+
+function TPscAlertDialog.OnDismiss(AProc: TProc): IPscAlertDialog;
+begin
+  Result := Self;
+  FOnDismissProc := AProc;
+end;
+
+function TPscAlertDialog.Show: IPscAlertDialog;
+begin
+  Result := Self;
+  BuildDialog;
+  if FDialog <> nil then
+    FDialog.show;
+end;
+
+function TPscAlertDialog.Dismiss: IPscAlertDialog;
+begin
+  Result := Self;
+  if (FDialog <> nil) and FDialog.isShowing then
+    FDialog.dismiss;
+end;
+
+function TPscAlertDialog.GetSelectedIndex: Integer;
+begin
+  Result := FSelectedIndex;
 end;
 
 end.

@@ -141,6 +141,41 @@ type
     property Proc: TProc<JView, TSwipeDirection, Single, Single> read FProc write FProc;
   end;
 
+  // AlertDialog listeners
+  TPscDialogClickListener = class(TJavaLocal, JDialogInterface_OnClickListener)
+  private
+    FProc: TProc;
+    FIndexProc: TProc<Integer>;
+  public
+    constructor Create(AProc: TProc); overload;
+    constructor Create(AIndexProc: TProc<Integer>); overload;
+    procedure onClick(dialog: JDialogInterface; which: Integer); cdecl;
+  end;
+
+  TPscDialogDismissListener = class(TJavaLocal, JDialogInterface_OnDismissListener)
+  private
+    FProc: TProc;
+  public
+    constructor Create(AProc: TProc);
+    procedure onDismiss(dialog: JDialogInterface); cdecl;
+  end;
+
+  TPscDialogCancelListener = class(TJavaLocal, JDialogInterface_OnCancelListener)
+  private
+    FProc: TProc;
+  public
+    constructor Create(AProc: TProc);
+    procedure onCancel(dialog: JDialogInterface); cdecl;
+  end;
+
+  TPscDialogMultiChoiceClickListener = class(TJavaLocal, JDialogInterface_OnMultiChoiceClickListener)
+  private
+    FProc: TProc<Integer, Boolean>;
+  public
+    constructor Create(AProc: TProc<Integer, Boolean>);
+    procedure onClick(dialog: JDialogInterface; which: Integer; isChecked: Boolean); cdecl;
+  end;
+
 implementation
 
 uses
@@ -401,7 +436,7 @@ begin
       
       if (Action = 1) and Assigned(FProc) then
         FProc(v, TSwipeDirection.Leave, CurrentX, CurrentY);
-        
+
       // Log final position
       TPscUtils.Log(Format('X: %.2f Y: %.2f', [CurrentX, CurrentY]), 'Up', TLogger.Warning, Self);
     end;
@@ -409,5 +444,70 @@ begin
 
 end;
 
+{ TPscDialogClickListener }
+
+constructor TPscDialogClickListener.Create(AProc: TProc);
+begin
+  inherited Create;
+  FProc := AProc;
+  FIndexProc := nil;
+end;
+
+constructor TPscDialogClickListener.Create(AIndexProc: TProc<Integer>);
+begin
+  inherited Create;
+  FProc := nil;
+  FIndexProc := AIndexProc;
+end;
+
+procedure TPscDialogClickListener.onClick(dialog: JDialogInterface; which: Integer);
+begin
+  if Assigned(FIndexProc) then
+    FIndexProc(which)
+  else if Assigned(FProc) then
+    FProc();
+end;
+
+{ TPscDialogDismissListener }
+
+constructor TPscDialogDismissListener.Create(AProc: TProc);
+begin
+  inherited Create;
+  FProc := AProc;
+end;
+
+procedure TPscDialogDismissListener.onDismiss(dialog: JDialogInterface);
+begin
+  if Assigned(FProc) then
+    FProc();
+end;
+
+{ TPscDialogCancelListener }
+
+constructor TPscDialogCancelListener.Create(AProc: TProc);
+begin
+  inherited Create;
+  FProc := AProc;
+end;
+
+procedure TPscDialogCancelListener.onCancel(dialog: JDialogInterface);
+begin
+  if Assigned(FProc) then
+    FProc();
+end;
+
+{ TPscDialogMultiChoiceClickListener }
+
+constructor TPscDialogMultiChoiceClickListener.Create(AProc: TProc<Integer, Boolean>);
+begin
+  inherited Create;
+  FProc := AProc;
+end;
+
+procedure TPscDialogMultiChoiceClickListener.onClick(dialog: JDialogInterface; which: Integer; isChecked: Boolean);
+begin
+  if Assigned(FProc) then
+    FProc(which, isChecked);
+end;
 
 end.
