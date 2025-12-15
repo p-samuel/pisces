@@ -13,7 +13,6 @@ type
     TextColor(255, 255, 255),
     BackgroundTintList(33, 150, 243),
     Height(120),
-    Width(TLayout.MATCH),
     Padding(16, 0, 16, 0)
   ] TDetailButton = class(TPisces)
   public
@@ -28,7 +27,6 @@ type
     TextColor(255, 255, 255),
     BackgroundTintList(76, 175, 80),
     Height(120),
-    Width(TLayout.MATCH),
     Padding(16, 0, 16, 0)
   ] TSettingsButton = class(TPisces)
   public
