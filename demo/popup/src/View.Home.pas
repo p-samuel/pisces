@@ -38,8 +38,7 @@ type
   private
     FPosition: TPopupPosition;
   public
-    procedure Click(AView: JView);
-    constructor Create; override;
+    procedure OnClickHandler(AView: JView); override;
     property PopupPosition: TPopupPosition read FPosition write FPosition;
   end;
 
@@ -72,7 +71,7 @@ type
     procedure SetPopupPosition(APosition: TPopupPosition);
     procedure ShowPopUp(APosition: TPopupPosition);
   public
-    procedure AfterCreate; override;
+    procedure AfterShow; override;
   end;
 
 var
@@ -95,7 +94,7 @@ end;
 
 { THomeView }
 
-procedure THomeView.AfterCreate;
+procedure THomeView.AfterShow;
 begin
   inherited;
   JTextView(FMode1.FText.AndroidView).setText(StrToJCharSequence('Top Left'));
@@ -174,15 +173,9 @@ end;
 
 { TText }
 
-procedure TText.Click(AView: JView);
+procedure TText.OnClickHandler(AView: JView);
 begin
   ViewHome.ShowPopUp(FPosition)
-end;
-
-constructor TText.Create;
-begin
-  OnClick := Click;
-  inherited;
 end;
 
 initialization

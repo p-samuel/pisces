@@ -36,7 +36,7 @@ type
     Padding(50, 0, 50, 0),
     AutoLinkMask(1)
   ] TDescription = class(TPisces)
-    procedure AfterCreate; override;
+    procedure AfterShow; override;
   end;
 
   [ LinearLayout('layout'),
@@ -55,9 +55,9 @@ type
     DarkStatusBarIcons(True)
   ] TScroll = class(TPisces)
     Content: TLayout;
-    procedure Swipe(AView: JView; Direction: TSwipeDirection; X, Y: Single);
-    procedure ConfigurationChanged(Activity: JActivity);
-    constructor Create; override;
+  public
+    procedure OnTouchHandler(AView: JView; Direction: TSwipeDirection; X, Y: Single); override;
+    procedure OnActivityConfigurationChangedHandler(Activity: JActivity); override;
   end;
 
 var
@@ -67,7 +67,7 @@ implementation
 
 { AfterCreate }
 
-procedure TDescription.AfterCreate;
+procedure TDescription.AfterShow;
 const
   SantoriniDescription: string =
     'Santorini, known since ancient times as Thira, is one of the most famous '
@@ -92,21 +92,16 @@ end;
 
 { TScroll }
 
-procedure TScroll.ConfigurationChanged(Activity: JActivity);
+procedure TScroll.OnActivityConfigurationChangedHandler(Activity: JActivity);
 begin
+  TPscUtils.Log('Screen Tilted', 'OnConfigurationChangedHandler', TLogger.Info, Self);
   Screen.Hide;
   Screen.Show;
 end;
 
-constructor TScroll.Create;
+procedure TScroll.OnTouchHandler(AView: JView; Direction: TSwipeDirection; X, Y: Single);
 begin
-  OnSwipe := Swipe;
-  OnConfigurationChanged := ConfigurationChanged;
   inherited;
-end;
-
-procedure TScroll.Swipe(AView: JView; Direction: TSwipeDirection; X, Y: Single);
-begin
   case Direction of
     TSwipeDirection.Left: TPscUtils.Log('Left', 'Swipe', TLogger.Info, Self);
     TSwipeDirection.Right: TPscUtils.Log('Right', 'Swipe', TLogger.Info, Self);

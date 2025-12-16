@@ -47,8 +47,7 @@ type
     Gravity([TGravity.Center]),
     Height(80)
   ] TBtnNewGame = class(TPisces)
-    procedure OnNewGameClick(View: JView);
-    constructor Create; override;
+    procedure OnClickHandler(View: JView); override;
   end;
 
   [ TextView('p2-label'),
@@ -95,7 +94,7 @@ type
     FP2Label: TP2Label;
     FP2Dash: TP2Dash;
     FP2Score: TP2Score;
-    procedure AfterCreate; override;
+    procedure AfterShow; override;
   end;
 
 var
@@ -115,13 +114,7 @@ uses
 
 { TBtnNewGame }
 
-constructor TBtnNewGame.Create;
-begin
-  OnClick := OnNewGameClick;
-  inherited;
-end;
-
-procedure TBtnNewGame.OnNewGameClick(View: JView);
+procedure TBtnNewGame.OnClickHandler(View: JView);
 begin
   if Assigned(GameBoard) then
     GameBoard.ResetBoard;
@@ -129,7 +122,7 @@ end;
 
 { TFooterContainer }
 
-procedure TFooterContainer.AfterCreate;
+procedure TFooterContainer.AfterShow;
 begin
   inherited;
   Footer := Self;

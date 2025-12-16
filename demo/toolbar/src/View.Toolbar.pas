@@ -18,8 +18,8 @@ type
     Gravity([TGravity.Bottom])
   ] TToolbarHeader = class(TPisces)
   private
-    procedure BackPressed(AView: JView);
-    procedure LongClick(AView: JView);
+    procedure OnBackPressedHandler(AView: JView); override;
+    procedure OnLongClickHandler(AView: JView); override;
   public
     constructor Create; override;
     procedure DoShow; override;
@@ -45,9 +45,6 @@ uses
 
 constructor TToolbarHeader.Create;
 begin
-  OnBackPressed := BackPressed;
-  OnLongClick := LongClick;
-
   if not Assigned(ToolbarHeader) then begin
     ToolbarHeader := Self;
     TPscUtils.Log('Toolbar header instance assigned', 'Create', TLogger.Info, Self);
@@ -55,7 +52,7 @@ begin
   inherited;
 end;
 
-procedure TToolbarHeader.BackPressed(AView: JView);
+procedure TToolbarHeader.OnBackPressedHandler(AView: JView);
 begin
   TPscScreenManager.Instance.Pop;
 end;
@@ -89,7 +86,7 @@ begin
     JToolbar(AndroidView).setNavigationIcon(nil);
 end;
 
-procedure TToolbarHeader.LongClick(AView: JView);
+procedure TToolbarHeader.OnLongClickHandler(AView: JView);
 begin
   ViewPopup.Visible := True;
   TPscUtils.PopupWindow

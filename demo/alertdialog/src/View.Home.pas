@@ -15,10 +15,7 @@ type
     Width(TLayout.MATCH),
     Padding(16, 0, 16, 0)
   ] TMultiChoiceButton = class(TPisces)
-  public
-    constructor Create; override;
-  private
-    procedure HandleClick(AView: JView);
+    procedure OnClickHandler(AView: JView); override;
   end;
 
   [ Button('btnSimpleAlert'),
@@ -30,10 +27,7 @@ type
     Width(TLayout.MATCH),
     Padding(16, 0, 16, 0)
   ] TSimpleAlertButton = class(TPisces)
-  public
-    constructor Create; override;
-  private
-    procedure HandleClick(AView: JView);
+    procedure OnClickHandler(AView: JView); override;
   end;
 
   [ Button('btnSingleChoice'),
@@ -45,10 +39,7 @@ type
     Width(TLayout.MATCH),
     Padding(16, 0, 16, 0)
   ] TSingleChoiceButton = class(TPisces)
-  public
-    constructor Create; override;
-  private
-    procedure HandleClick(AView: JView);
+    procedure OnClickHandler(AView: JView); override;
   end;
 
   [ LinearLayout('home'),
@@ -71,63 +62,10 @@ implementation
 uses
   System.SysUtils, Pisces.ScreenManager;
 
-{ TSimpleAlertButton }
-
-constructor TSimpleAlertButton.Create;
-begin
-  OnClick := HandleClick;
-  inherited;
-end;
-
-procedure TSimpleAlertButton.HandleClick(AView: JView);
-begin
-  TPscUtils.AlertDialog
-    .Title('Confirmation')
-    .Message('Are you sure you want to proceed with this action?')
-    .PositiveButton('Yes', procedure begin
-      TPscUtils.Toast('You clicked Yes!', 0);
-    end)
-    .NegativeButton('No', procedure begin
-      TPscUtils.Toast('You clicked No!', 0);
-    end)
-    .NeutralButton('Maybe', procedure begin
-      TPscUtils.Toast('You clicked Maybe!', 0);
-    end)
-    .Show;
-end;
-
-{ TSingleChoiceButton }
-
-constructor TSingleChoiceButton.Create;
-begin
-  OnClick := HandleClick;
-  inherited;
-end;
-
-procedure TSingleChoiceButton.HandleClick(AView: JView);
-begin
-  TPscUtils.AlertDialog
-    .Title('Select Theme')
-    .SingleChoiceItems(['Light Mode', 'Dark Mode', 'System Default'], 0,
-      procedure(Index: Integer) begin
-        TPscUtils.Log('Selected index: ' + IntToStr(Index), 'SingleChoice', TLogger.Info, nil);
-      end)
-    .PositiveButton('Apply', procedure begin
-      TPscUtils.Toast('Theme applied!', 0);
-    end)
-    .NegativeButton('Cancel', nil)
-    .Show;
-end;
 
 { TMultiChoiceButton }
 
-constructor TMultiChoiceButton.Create;
-begin
-  OnClick := HandleClick;
-  inherited;
-end;
-
-procedure TMultiChoiceButton.HandleClick(AView: JView);
+procedure TMultiChoiceButton.OnClickHandler(AView: JView);
 begin
   TPscUtils.AlertDialog
     .Title('Select Features')
@@ -141,8 +79,43 @@ begin
     .PositiveButton('Save', procedure begin
       TPscUtils.Toast('Settings saved!', 0);
     end)
+  .Show;
+end;
+
+{ TSimpleAlertButton }
+
+procedure TSimpleAlertButton.OnClickHandler(AView: JView);
+begin
+  TPscUtils.AlertDialog
+    .Title('Confirmation')
+    .Message('Are you sure you want to proceed with this action?')
+    .PositiveButton('Yes', procedure begin
+      TPscUtils.Toast('You clicked Yes!', 0);
+    end)
+    .NegativeButton('No', procedure begin
+      TPscUtils.Toast('You clicked No!', 0);
+    end)
+    .NeutralButton('Maybe', procedure begin
+      TPscUtils.Toast('You clicked Maybe!', 0);
+    end)
+  .Show;
+end;
+
+{ TSingleChoiceButton }
+
+procedure TSingleChoiceButton.OnClickHandler(AView: JView);
+begin
+  TPscUtils.AlertDialog
+    .Title('Select Theme')
+    .SingleChoiceItems(['Light Mode', 'Dark Mode', 'System Default'], 0,
+      procedure(Index: Integer) begin
+        TPscUtils.Log('Selected index: ' + IntToStr(Index), 'SingleChoice', TLogger.Info, nil);
+      end)
+    .PositiveButton('Apply', procedure begin
+      TPscUtils.Toast('Theme applied!', 0);
+    end)
     .NegativeButton('Cancel', nil)
-    .Show;
+  .Show;
 end;
 
 initialization

@@ -25,10 +25,7 @@ type
     BackgroundTintList(29, 94, 120),
     Height(120)
   ] TDetailButton = class(TPisces)
-  public
-    constructor Create; override;
-  private
-    procedure HandleClick(AView: JView);
+    procedure OnClickHandler(AView: JView); override;
   end;
 
   [ Button('btnGoToUser'),
@@ -38,10 +35,7 @@ type
     BackgroundTintList(29, 94, 120),
     Height(120)
   ] TUserButton = class(TPisces)
-  public
-    constructor Create; override;
-  private
-    procedure HandleClick(AView: JView);
+    procedure OnClickHandler(AView: JView); override;
   end;
 
   [ LinearLayout('home'),
@@ -55,8 +49,6 @@ type
     FTitle: TTitle;
     FDetailButton: TDetailButton;
     FUserButton: TUserButton;
-  public
-    procedure AfterCreate; override;
   end;
 
 var
@@ -71,13 +63,7 @@ uses
 
 { TDetailButton }
 
-constructor TDetailButton.Create;
-begin
-  OnClick := HandleClick;
-  inherited;
-end;
-
-procedure TDetailButton.HandleClick(AView: JView);
+procedure TDetailButton.OnClickHandler(AView: JView);
 begin
   TPscUtils.Log('Detail button clicked!', 'HandleClick', TLogger.Info, Self);
   TPscScreenManager.Instance.PushByName('detailScreen');
@@ -85,24 +71,10 @@ end;
 
 { TUserButton }
 
-constructor TUserButton.Create;
-begin
-  OnClick := HandleClick;
-  inherited;
-end;
-
-procedure TUserButton.HandleClick(AView: JView);
+procedure TUserButton.OnClickHandler(AView: JView);
 begin
   TPscUtils.Log('User button clicked!', 'HandleClick', TLogger.Info, Self);
   TPscScreenManager.Instance.PushByName('userScreen');
-end;
-
-{ THomeScreen }
-
-procedure THomeScreen.AfterCreate;
-begin
-  inherited;
-  TPscUtils.Log('Home screen initialized', 'AfterCreate', TLogger.Info, Self);
 end;
 
 initialization

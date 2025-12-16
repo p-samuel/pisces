@@ -10,7 +10,7 @@ type
   [ ImageView('horizontal-image'),
     Height(1100),
     Rotation(-90),
-    ScaleType(TImageScaleType.CenterCrop),
+    ScaleType(TImageScaleType.CenterCrop)
   ] THorizontalWebImage = class(TBaseWebImage)
 
   end;
@@ -23,7 +23,7 @@ type
   end;
 
   [ LinearLayout('horizontal-scroller-layout'),
-    Orientation(TOrientation.Vertical),
+    Orientation(TOrientation.Vertical)
   ] THorizontalScrollerLayout = class(TPisces)
   private
     FImg1: THorizontalWebImage;
@@ -44,7 +44,7 @@ type
   end;
 
   [ LinearLayout('vertical-scroller-layout'),
-    Orientation(TOrientation.Vertical),
+    Orientation(TOrientation.Vertical)
   ] TVerticalScrollerLayout = class(TPisces)
   private
     FImg1: TVerticalWebImage;
@@ -59,7 +59,7 @@ type
     HeightPercent(0.33),
     Width(1100),
     FillViewport(False),
-    NestedScrollingEnabled(True),
+    NestedScrollingEnabled(True)
   ] TVerticalScroller = class(TPisces)
   private
     FScrollerLayout: TVerticalScrollerLayout;

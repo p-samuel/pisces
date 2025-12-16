@@ -37,7 +37,7 @@ type
     FVertScrolle2: TVerticalScroller;
     FStatus: TStatus;
   public
-    procedure AfterCreate; override;
+    procedure AfterShow; override;
   end;
 
 
@@ -45,10 +45,10 @@ implementation
 
 { TContainer }
 
-procedure TContainer.AfterCreate;
+procedure TContainer.AfterShow;
 begin
   inherited;
-  TPscUtils.Log('Container created', 'AfterCreate', TLogger.Info, Self);
+  TPscUtils.Log('Container created', 'AfterShow', TLogger.Info, Self);
 end;
 
 end.

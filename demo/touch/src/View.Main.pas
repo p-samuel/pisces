@@ -34,9 +34,7 @@ type
     RippleColor(165, 263, 156, 0.9)
   ] TTouchOverlay = class(TPisces)
   public
-    constructor Create; override;
-  private
-    procedure Swipe(AView: JView; Dir: TSwipeDirection; X, Y: Single);
+    procedure OnTouchHandler(AView: JView; Dir: TSwipeDirection; X, Y: Single); override;
   end;
 
   [ LinearLayout('content'),
@@ -67,13 +65,7 @@ uses
 
 { TTouchOverlay }
 
-constructor TTouchOverlay.Create;
-begin
-  inherited;
-  OnSwipe := Swipe;
-end;
-
-procedure TTouchOverlay.Swipe(AView: JView; Dir: TSwipeDirection; X, Y: Single);
+procedure TTouchOverlay.OnTouchHandler(AView: JView; Dir: TSwipeDirection; X, Y: Single);
 var
   CoordTextView: JView;
   FormattedCoord: String;

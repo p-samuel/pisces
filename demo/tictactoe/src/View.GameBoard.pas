@@ -28,9 +28,7 @@ type
     BackgroundColor(0, 0, 0, 0.01),
     RippleColor(255, 255, 255, 0.4)
   ] TCellOverlay = class(TPisces)
-  public
-    procedure OverlayClick(View: JView);
-    constructor Create; override;
+    procedure OnClickHandler(View: JView); override;
   end;
 
   [ FrameLayout('cell'),
@@ -45,7 +43,7 @@ type
     FPlayerX: TPlayerX;
     FCellOverlay: TCellOverlay;
     procedure CellClick(View: JView);
-    procedure AfterCreate; override;
+    procedure AfterShow; override;
     procedure UpdateDisplay;
     procedure SetPosition(ARow, ACol: Integer);
     property Row: Integer read FRow;
@@ -77,7 +75,7 @@ type
     FRow1: TRow;
     FRow2: TRow;
     FRow3: TRow;
-    procedure AfterCreate; override;
+    procedure AfterShow; override;
     procedure ResetBoard;
   private
     procedure InitializeCellPositions;
@@ -98,13 +96,7 @@ uses
 
 { TCellOverlay }
 
-constructor TCellOverlay.Create;
-begin
-  OnClick := OverlayClick;
-  inherited;
-end;
-
-procedure TCellOverlay.OverlayClick(View: JView);
+procedure TCellOverlay.OnClickHandler(View: JView);
 begin
   if Assigned(Parent) and (Parent is TCell) then
     TCell(Parent).CellClick(View);
@@ -112,7 +104,7 @@ end;
 
 { TCell }
 
-procedure TCell.AfterCreate;
+procedure TCell.AfterShow;
 begin
   inherited;
   FRow := -1;
@@ -172,7 +164,7 @@ end;
 
 { TGameBoardContainer }
 
-procedure TGameBoardContainer.AfterCreate;
+procedure TGameBoardContainer.AfterShow;
 begin
   inherited;
   GameBoard := Self;

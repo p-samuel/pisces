@@ -34,10 +34,7 @@ type
     BackgroundTintList(100, 149, 237),
     Height(120)
   ] TUserBackButton = class(TPisces)
-  public
-    constructor Create; override;
-  private
-    procedure HandleClick(AView: JView);
+    procedure OnClickHandler(AView: JView); override;
   end;
 
   [ LinearLayout('userScreen'),
@@ -62,13 +59,7 @@ uses
 
 { TUserBackButton }
 
-constructor TUserBackButton.Create;
-begin
-  OnClick := HandleClick;
-  inherited;
-end;
-
-procedure TUserBackButton.HandleClick(AView: JView);
+procedure TUserBackButton.OnClickHandler(AView: JView);
 begin
   TPscUtils.Log('Back button clicked!', 'HandleClick', TLogger.Info, Self);
   TPscScreenManager.Instance.Pop;

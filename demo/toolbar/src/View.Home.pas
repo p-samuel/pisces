@@ -15,10 +15,7 @@ type
     Height(120),
     Padding(16, 0, 16, 0)
   ] TDetailButton = class(TPisces)
-  public
-    constructor Create; override;
-  private
-    procedure HandleClick(AView: JView);
+    procedure OnClickHandler(AView: JView); override;
   end;
 
   [ Button('btnSettings'),
@@ -29,10 +26,7 @@ type
     Height(120),
     Padding(16, 0, 16, 0)
   ] TSettingsButton = class(TPisces)
-  public
-    constructor Create; override;
-  private
-    procedure HandleClick(AView: JView);
+    procedure OnClickHandler(AView: JView); override;
   end;
 
   [ LinearLayout('homeContent'),
@@ -75,13 +69,7 @@ uses
 
 { TDetailButton }
 
-constructor TDetailButton.Create;
-begin
-  OnClick := HandleClick;
-  inherited;
-end;
-
-procedure TDetailButton.HandleClick(AView: JView);
+procedure TDetailButton.OnClickHandler(AView: JView);
 begin
   TPscUtils.Log('Navigating to Detail screen', 'HandleClick', TLogger.Info, Self);
   TPscScreenManager.Instance.PushByName('detail');
@@ -89,13 +77,7 @@ end;
 
 { TSettingsButton }
 
-constructor TSettingsButton.Create;
-begin
-  OnClick := HandleClick;
-  inherited;
-end;
-
-procedure TSettingsButton.HandleClick(AView: JView);
+procedure TSettingsButton.OnClickHandler(AView: JView);
 begin
   TPscUtils.Log('Navigating to Settings screen', 'HandleClick', TLogger.Info, Self);
   TPscScreenManager.Instance.PushByName('settings');

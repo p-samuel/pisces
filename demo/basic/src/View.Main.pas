@@ -29,13 +29,10 @@ type
     Orientation(TOrientation.Vertical),
     Gravity([TGravity.Center])
   ] TScreen = class(TPisces)
-  private
     FText: TText;
-    procedure ShowAlert(AView: JView);
-    procedure ShowLongClick(AView: JView);
   public
-    constructor Create; override ;
-
+    procedure OnClickHandler(AView: JView); override;
+    procedure OnLongClickHandler(AView: JView); override;
   end;
 
 var
@@ -48,21 +45,16 @@ uses
 
 { TScreen }
 
-constructor TScreen.Create;
+procedure TScreen.OnClickHandler(AView: JView);
 begin
-  OnClick := ShowAlert;
-  OnLongClick := ShowLongClick;
   inherited;
-end;
-
-procedure TScreen.ShowAlert(AView: JView);
-begin
   TPscUtils.Toast('You clicked the main screen', TJToast.JavaClass.LENGTH_SHORT);
   TPscUtils.Log('You clicked the main screen', 'ShowAlert', TLogger.Warning, Self);
 end;
 
-procedure TScreen.ShowLongClick(AView: JView);
+procedure TScreen.OnLongClickHandler(AView: JView);
 begin
+  inherited;
   TPscUtils.Toast('You long-clicked the main screen', TJToast.JavaClass.LENGTH_SHORT);
   TPscUtils.Log('You long-clicked the main screen', 'ShowLongClick', TLogger.Fatal, Self);
 end;

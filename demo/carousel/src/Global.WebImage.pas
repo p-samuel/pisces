@@ -33,7 +33,7 @@ type
     procedure UpdateStatus(const StatusText: string);
     procedure SafeSetBitmap(const Bitmap: JBitmap);
   public
-    procedure AfterCreate; override;
+    procedure AfterShow; override;
     procedure LoadImageFromUrl(const Url: string);
     destructor Destroy; override;
   end;
@@ -189,7 +189,7 @@ end;
 
 { TBaseWebImage }
 
-procedure TBaseWebImage.AfterCreate;
+procedure TBaseWebImage.AfterShow;
 begin
   inherited;
 

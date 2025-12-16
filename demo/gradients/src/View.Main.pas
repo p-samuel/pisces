@@ -22,8 +22,7 @@ type
     BackgroundColor(1, 0, 0, 0.1),
     RippleColor(255, 255, 255, 0.4)
   ] TTouchOverlay = class(TBaseLayer)
-  private
-    procedure Touch(AView: JView); override;
+    procedure OnClickHandler(AView: JView); override;
   end;
 
   // Linear
@@ -125,7 +124,6 @@ constructor TBaseLayer.Create;
 begin
   inherited;
   FCurrentTheme := 0;
-  OnClick := Touch;
 end;
 
 procedure TBaseLayer.Touch(AView: JView);
@@ -181,10 +179,10 @@ end;
 
 { TTouchOverlay }
 
-procedure TTouchOverlay.Touch(AView: JView);
+procedure TTouchOverlay.OnClickHandler(AView: JView);
 begin
-  inherited;
   TPscUtils.SetMultiGradientBackground(AndroidParentView, FColorStops, TGradientOrientation.LeftToRight, 0, 0, TGradientShape.Linear);
+  Touch(AView);
 end;
 
 initialization
