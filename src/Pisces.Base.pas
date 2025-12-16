@@ -24,33 +24,9 @@ type
     FViewName: String;
     FViewGUID: String;
     FParent: TPisces;
-    FOnClick: TProc<JView>;                                       // Views
-    FOnLongClick: TProc<JView>;
-    FOnBackPressed: TProc<JView>;                                 // Toolbars
-    FOnTimeChange: TProc<JTimePicker, Integer, Integer>;          // Calendars, dates and time pickers
-    FOnDateChange: TProc<JDatePicker, Integer, Integer, Integer>;
-    FOnCalendarDateChange: TProc<JCalendarView, Integer, Integer, Integer>;
-    FOnItemClick: TProc<JAdapterView, JView, Integer, Int64>;     // Adapters (list view)
-    FOnItemLongClick: TProc<JAdapterView, JView, Integer, Int64>;
-    FOnItemSelected: TProc<JAdapterView, JView, Integer, Int64>;
-    FOnNothingSelected: TProc<JAdapterView>;
-    FOnSwipe: TProc<JView, TSwipeDirection, Single, Single>;      // Gestures
-    FChildren: TObjectDictionary<Integer, TPisces>;               // Dictionary to store child instances
-
-    FViewLifecycleListener: TPscViewLifecycleListener;            // View's Life cycle events
+    FChildren: TObjectDictionary<Integer, TPisces>;               // Dictionary to store children instances
+    FViewLifecycleListener: TPscViewLifecycleListener;            // View's Lifecycle events
     FWindowFocusListener: TPscWindowFocusChangeListener;
-    FOnViewAttachedToWindow: TProc<JView>;
-    FOnViewDetachedFromWindow: TProc<JView>;
-    FOnWindowFocusChanged: TProc<Boolean>;
-
-    FOnActivityCreate: TProc<JActivity, JBundle>;                // Activity lifecycle properties, for optional handlers
-    FOnActivityStart: TProc<JActivity>;                          // you need to use direct assignments (See Lifecycle examples)
-    FOnActivityResume: TProc<JActivity>;
-    FOnActivityPause: TProc<JActivity>;
-    FOnActivityStop: TProc<JActivity>;
-    FOnActivityDestroy: TProc<JActivity>;
-    FOnActivitySaveInstanceState: TProc<JActivity, JBundle>;
-    FOnConfigurationChanged: TProc<JActivity>;
 
     procedure ReadAttributes;
     procedure ProcessFields(ParentClass: TObject);
@@ -61,7 +37,6 @@ type
     procedure RegisterView(const RegistrationInfo: TViewRegistrationInfo; AType: TRttiType);
     procedure CreateViewIdentification;
     procedure SetParent(const AParent: TPisces);
-    procedure CheckAndAssignActivityLifecycleHandlers;
     function IsDescendantOfPisces(AType: TRttiType): Boolean;
     function GetAndroidView: JView;
     function GetParentView: JView;
@@ -73,7 +48,7 @@ type
     procedure Show; virtual;
     procedure ShowAndHide; virtual;
     procedure Hide; virtual;
-    procedure AfterCreate; virtual;
+    procedure AfterShow; virtual;
 
     // Screen lifecycle methods - called by ScreenManager during navigation
     procedure DoShow; virtual;   // Called when screen becomes visible (push target or pop back)
@@ -82,10 +57,11 @@ type
     procedure DoDestroy; virtual; // Called before screen is destroyed
 
     // Static methods for activity lifecycle
-    procedure SetLifecycles;
-    procedure SetupViewLifecycle;
-    procedure SetupWindowFocusListener;
-    procedure SetupActivityLifecycle;
+    procedure SetLifecycles(ParentClass: TObject);
+    procedure SetActivityLifecycleHandlers(ParentClass: TObject);
+    procedure SetViewLifecycleHandlers(ParentClass: TObject);
+    procedure SetWindowFocusListenerHandlers(ParentClass: TObject);
+    procedure InitializeActivityLifecycle;
 
     // View's identification
     property AndroidParentView: JView read GetParentView;
@@ -96,31 +72,31 @@ type
     property ViewName: String read FViewName;
     property ViewGUID: String read FViewGUID;
 
-    // Basic event handlers
-    property OnClick: TProc<JView> read FOnClick write FOnClick;
-    property OnLongClick: TProc<JView> read FOnLongClick write FOnLongClick;
-    property OnBackPressed: TProc<JView> read FOnBackPressed write FOnBackPressed;
-    property OnTimeChange: TProc<JTimePicker, Integer, Integer> read FOnTimeChange write FOnTimeChange;
-    property OnDateChange: TProc<JDatePicker, Integer, Integer, Integer> read FOnDateChange write FOnDateChange;
-    property OnCalendarDateChange: TProc<JCalendarView, Integer, Integer, Integer> read FOnCalendarDateChange write FOnCalendarDateChange;
-    property OnItemClick: TProc<JAdapterView, JView, Integer, Int64> read FOnItemClick write FOnItemClick;
-    property OnItemLongClick: TProc<JAdapterView, JView, Integer, Int64> read FOnItemLongClick write FOnItemLongClick;
-    property OnItemSelected: TProc<JAdapterView, JView, Integer, Int64> read FOnItemSelected write FOnItemSelected;
-    property OnNothingSelected: TProc<JAdapterView> read FOnNothingSelected write FOnNothingSelected;
-    property OnSwipe: TProc<JView, TSwipeDirection, Single, Single> read FOnSwipe write FOnSwipe;
+    // Basic event handler methods (virtual - override in descendants)
+    procedure OnClickHandler(AView: JView); virtual;
+    procedure OnLongClickHandler(AView: JView); virtual;
+    procedure OnBackPressedHandler(AView: JView); virtual;
+    procedure OnTimeChangeHandler(ATimePicker: JTimePicker; AHour, AMinute: Integer); virtual;
+    procedure OnDateChangeHandler(ADatePicker: JDatePicker; AYear, AMonth, ADay: Integer); virtual;
+    procedure OnCalendarDateChangeHandler(ACalendarView: JCalendarView; AYear, AMonth, ADay: Integer); virtual;
+    procedure OnItemClickHandler(AParent: JAdapterView; AView: JView; APosition: Integer; AId: Int64); virtual;
+    procedure OnItemLongClickHandler(AParent: JAdapterView; AView: JView; APosition: Integer; AId: Int64); virtual;
+    procedure OnItemSelectedHandler(AParent: JAdapterView; AView: JView; APosition: Integer; AId: Int64); virtual;
+    procedure OnNothingSelectedHandler(AParent: JAdapterView); virtual;
+    procedure OnTouchHandler(AView: JView; ADirection: TSwipeDirection; AVelocityX, AVelocityY: Single); virtual;
 
-    // Lifecycle properties
-    property OnViewAttachedToWindow: TProc<JView> read FOnViewAttachedToWindow write FOnViewAttachedToWindow;
-    property OnViewDetachedFromWindow: TProc<JView> read FOnViewDetachedFromWindow write FOnViewDetachedFromWindow;
-    property OnWindowFocusChanged: TProc<Boolean> read FOnWindowFocusChanged write FOnWindowFocusChanged;
-    property OnActivityCreate: TProc<JActivity, JBundle> read FOnActivityCreate write FOnActivityCreate;
-    property OnActivityStart: TProc<JActivity> read FOnActivityStart write FOnActivityStart;
-    property OnActivityResume: TProc<JActivity> read FOnActivityResume write FOnActivityResume;
-    property OnActivityPause: TProc<JActivity> read FOnActivityPause write FOnActivityPause;
-    property OnActivityStop: TProc<JActivity> read FOnActivityStop write FOnActivityStop;
-    property OnActivityDestroy: TProc<JActivity> read FOnActivityDestroy write FOnActivityDestroy;
-    property OnActivitySaveInstanceState: TProc<JActivity, JBundle> read FOnActivitySaveInstanceState write FOnActivitySaveInstanceState;
-    property OnConfigurationChanged: TProc<JActivity> read FOnConfigurationChanged write FOnConfigurationChanged;
+    // Lifecycle handler methods (virtual - override in descendants)
+    procedure OnViewAttachedToWindowHandler(AView: JView); virtual;
+    procedure OnViewDetachedFromWindowHandler(AView: JView); virtual;
+    procedure OnWindowFocusChangedHandler(AHasFocus: Boolean); virtual;
+    procedure OnActivityCreateHandler(AActivity: JActivity; ASavedInstanceState: JBundle); virtual;
+    procedure OnActivityStartHandler(AActivity: JActivity); virtual;
+    procedure OnActivityResumeHandler(AActivity: JActivity); virtual;
+    procedure OnActivityPauseHandler(AActivity: JActivity); virtual;
+    procedure OnActivityStopHandler(AActivity: JActivity); virtual;
+    procedure OnActivityDestroyHandler(AActivity: JActivity); virtual;
+    procedure OnActivitySaveInstanceStateHandler(AActivity: JActivity; AOutState: JBundle); virtual;
+    procedure OnActivityConfigurationChangedHandler(AActivity: JActivity); virtual;
     class function GetLifecycleManager: TPscLifecycleManager;
   end;
 
@@ -134,6 +110,69 @@ uses
   Pisces.Attributes,
   Pisces.ViewGroup,
   Pisces.View;
+
+type
+  // Record to capture all event handlers with proper value semantics.
+  // Passing Instance as a parameter prevents closure from capturing loop variable by reference.
+  // When an anonymous method is created within a loop, it captures the variable itself,
+  // not a copy of its value at the time of creation. As a result, if the variable's value
+  // changes before the anonymous method executes, the method will use the updated value,
+  // potentially leading to incorrect behavior.
+  THandlers = record
+    // Basic event handlers
+    OnClick: TProc<JView>;
+    OnLongClick: TProc<JView>;
+    OnBackPressed: TProc<JView>;
+    OnTimeChange: TProc<JTimePicker, Integer, Integer>;
+    OnDateChange: TProc<JDatePicker, Integer, Integer, Integer>;
+    OnCalendarDateChange: TProc<JCalendarView, Integer, Integer, Integer>;
+    OnItemClick: TProc<JAdapterView, JView, Integer, Int64>;
+    OnItemLongClick: TProc<JAdapterView, JView, Integer, Int64>;
+    OnItemSelected: TProc<JAdapterView, JView, Integer, Int64>;
+    OnNothingSelected: TProc<JAdapterView>;
+    OnTouch: TProc<JView, TSwipeDirection, Single, Single>;
+    // Lifecycle handlers
+    OnViewAttachedToWindow: TProc<JView>;
+    OnViewDetachedFromWindow: TProc<JView>;
+    OnWindowFocusChanged: TProc<Boolean>;
+    OnActivityCreate: TProc<JActivity, JBundle>;
+    OnActivityStart: TProc<JActivity>;
+    OnActivityResume: TProc<JActivity>;
+    OnActivityPause: TProc<JActivity>;
+    OnActivityStop: TProc<JActivity>;
+    OnActivityDestroy: TProc<JActivity>;
+    OnActivitySaveInstanceState: TProc<JActivity, JBundle>;
+    OnConfigurationChanged: TProc<JActivity>;
+    class function From(Inst: TPisces): THandlers; static;
+  end;
+
+class function THandlers.From(Inst: TPisces): THandlers;
+begin
+  // Basic event handlers
+  Result.OnClick := Inst.OnClickHandler;
+  Result.OnLongClick := Inst.OnLongClickHandler;
+  Result.OnBackPressed := Inst.OnBackPressedHandler;
+  Result.OnTimeChange := Inst.OnTimeChangeHandler;
+  Result.OnDateChange := Inst.OnDateChangeHandler;
+  Result.OnCalendarDateChange := Inst.OnCalendarDateChangeHandler;
+  Result.OnItemClick := Inst.OnItemClickHandler;
+  Result.OnItemLongClick := Inst.OnItemLongClickHandler;
+  Result.OnItemSelected := Inst.OnItemSelectedHandler;
+  Result.OnNothingSelected := Inst.OnNothingSelectedHandler;
+  Result.OnTouch := Inst.OnTouchHandler;
+  // Lifecycle handlers
+  Result.OnViewAttachedToWindow := Inst.OnViewAttachedToWindowHandler;
+  Result.OnViewDetachedFromWindow := Inst.OnViewDetachedFromWindowHandler;
+  Result.OnWindowFocusChanged := Inst.OnWindowFocusChangedHandler;
+  Result.OnActivityCreate := Inst.OnActivityCreateHandler;
+  Result.OnActivityStart := Inst.OnActivityStartHandler;
+  Result.OnActivityResume := Inst.OnActivityResumeHandler;
+  Result.OnActivityPause := Inst.OnActivityPauseHandler;
+  Result.OnActivityStop := Inst.OnActivityStopHandler;
+  Result.OnActivityDestroy := Inst.OnActivityDestroyHandler;
+  Result.OnActivitySaveInstanceState := Inst.OnActivitySaveInstanceStateHandler;
+  Result.OnConfigurationChanged := Inst.OnActivityConfigurationChangedHandler;
+end;
 
 procedure TPisces.RegisterView(const RegistrationInfo: TViewRegistrationInfo;  AType: TRttiType);
 var
@@ -159,15 +198,7 @@ var
   FieldInstance: TPisces;
   ClassAttributes, FieldAttributes: TArray<TCustomAttribute>;
   Attribute: TCustomAttribute;
-  OnClickHandler, OnLongClickHandler, OnNavigationClickHandler: TProc<JView>;
-  OnTimeChangeHandler: TProc<JTimePicker, Integer, Integer>;
-  OnDateChangeHandler: TProc<JDatePicker, Integer, Integer, Integer>;
-  OnCalendarDateChangeHandler: TProc<JCalendarView, Integer, Integer, Integer>;
-  OnItemClickHandler: TProc<JAdapterView, JView, Integer, Int64>;
-  OnItemLongClickHandler: TProc<JAdapterView, JView, Integer, Int64>;
-  OnItemSelectedHandler: TProc<JAdapterView, JView, Integer, Int64>;
-  OnNothingSelectedHandler: TProc<JAdapterView>;
-  OnSwipeHandler: TProc<JView, TSwipeDirection, Single, Single>;
+  H: THandlers;
   RttiInstType: TRttiInstanceType;
   RttiMethod: TRttiMethod;
   InstanceObj: TObject;
@@ -224,19 +255,12 @@ begin
             RttiField.SetValue(ParentClass, FieldInstance);
           end;
 
+          TPscUtils.Log(Format('Processing field: %s, Instance: %p, ClassName: %s',
+            [RttiField.Name, Pointer(FieldInstance), FieldInstance.ClassName]),'ProcessFields', TLogger.Info, Self);
+
           TPscUtils.Log('Retrieving field event handlers for: ' + FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
           // Retrieve event handlers if they exist
-          OnClickHandler := FieldInstance.OnClick;
-          OnLongClickHandler := FieldInstance.OnLongClick;
-          OnTimeChangeHandler := FieldInstance.OnTimeChange;
-          OnNavigationClickHandler := FieldInstance.OnBackPressed;
-          OnDateChangeHandler := FieldInstance.OnDateChange;
-          OnCalendarDateChangeHandler := FieldInstance.OnCalendarDateChange;
-          OnItemClickHandler := FieldInstance.OnItemClick;
-          OnItemLongClickHandler := FieldInstance.OnItemLongClick;
-          OnItemSelectedHandler := FieldInstance.OnItemSelected;
-          OnNothingSelectedHandler := FieldInstance.OnNothingSelected;
-          OnSwipeHandler := FieldInstance.OnSwipe;
+          H := THandlers.From(FieldInstance);
 
           TPscUtils.Log('Retrieving class and fields attributes for: ' + FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
           // Process class-level and field-level attributes
@@ -250,130 +274,131 @@ begin
               TPscUtils.Log('Creating sub child as IPscSwitch of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscSwitch(FieldInstance.FView)
                 .BuildScreen
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is ButtonAttribute then begin
               TPscUtils.Log('Creating sub child as IPscButton of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscButton(FieldInstance.FView)
                 .BuildScreen
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is EditAttribute then begin
               TPscUtils.Log('Creating sub child as IPscEdit of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscEdit(FieldInstance.FView)
                 .BuildScreen
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is TextViewAttribute then begin
               TPscUtils.Log('Creating sub child as IPscText of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscText(FieldInstance.FView)
                 .BuildScreen
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is ImageViewAttribute then begin
               TPscUtils.Log('Creating sub child as IPscImage of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscImage(FieldInstance.FView)
                 .BuildScreen
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is ListViewAttribute then begin
               TPscUtils.Log('Creating sub child as IPscListView of type ' + FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscListView(FieldInstance.FView)
                 .BuildScreen
-                .OnItemClick(OnItemClickHandler)
-                .OnItemLongClick(OnItemLongClickHandler)
-                .OnItemSelected(OnItemSelectedHandler, OnNothingSelectedHandler)
+                .OnItemClick(H.OnItemClick)
+                .OnItemLongClick(H.OnItemLongClick)
+                .OnItemSelected(H.OnItemSelected, H.OnNothingSelected)
                 .GetView;
             end else if Attribute is CalendarAttribute then begin
               TPscUtils.Log('Creating sub child as IPscCalendar of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscCalendar(FieldInstance.FView)
                 .BuildScreen
-                .OnDateChangeListener(OnCalendarDateChangeHandler)
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnDateChangeListener(H.OnCalendarDateChange)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is DatePickerAttribute then begin
               TPscUtils.Log('Creating sub child as IPscDatePicker of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscDatePicker(FieldInstance.FView)
                 .BuildScreen
-                .OnDateChangeListener(OnDateChangeHandler)
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnDateChangeListener(H.OnDateChange)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is ScrollViewAttribute then begin
               TPscUtils.Log('Creating sub child as IPscScrollView of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscScrollView(FieldInstance.FView)
                 .BuildScreen
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is TimePickerAttribute then begin
               TPscUtils.Log('Creating sub child as IPscTimePicker of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscTimePicker(FieldInstance.FView)
                 .BuildScreen
-                .OnTimeChangeListener(OnTimeChangeHandler)
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnTimeChangeListener(H.OnTimeChange)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is FrameLayoutAttribute then begin
               TPscUtils.Log('Creating sub child as IPscFrameLayout of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscFrameLayout(FieldInstance.FView)
                 .BuildScreen
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is LinearLayoutAttribute then begin
               TPscUtils.Log('Creating sub child as IPscLinearLayout of type ' + FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscLinearLayout(FieldInstance.FView)
                 .BuildScreen
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is RelativelayoutAttribute then begin
               TPscUtils.Log('Creating sub child as IPscRelativeLayout of type ' + FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscRelativeLayout(FieldInstance.FView)
                 .BuildScreen
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is AbsoluteLayoutAttribute then begin
               TPscUtils.Log('Creating sub child as IPscAbsoluteLayout of type ' + FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscAbsoluteLayout(FieldInstance.FView)
                 .BuildScreen
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is ToolBarAttribute then begin
               TPscUtils.Log('Creating sub child as IPscToolBar of type ' + FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscToolBar(FieldInstance.FView)
                 .BuildScreen
-                .OnNavigationClick(OnNavigationClickHandler)
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnNavigationClick(H.OnBackPressed)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is ViewGroupAttribute then begin
               TPscUtils.Log('Creating sub child as IPscViewGroup of type ' + FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscViewGroup(FieldInstance.FView)
                 .BuildScreen
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end else if Attribute is ViewAttribute then begin
               TPscUtils.Log('Creating sub child as IPscView of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscView(FieldInstance.FView)
                 .BuildScreen
-                .OnClick(OnClickHandler)
-                .OnLongClick(OnLongClickHandler)
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
                 .GetView;
             end;
           end;
 
-          IPscView(FieldInstance.FView).OnSwipe(OnSwipeHandler);
+          // Touch handler special case
+          IPscView(FieldInstance.FView).OnTouch(H.OnTouch);
 
           // Add the Android view to the Android parent view
           AddAndroidChildView(FView, SubView, FieldInstance);
@@ -382,7 +407,7 @@ begin
           AddChild(FieldInstance);
 
           // Recursively set view lifecycle
-          FieldInstance.SetLifecycles;
+          FieldInstance.SetLifecycles(FieldInstance);
 
           // Recursively process fields of the class
           FieldInstance.ProcessFields(FieldInstance);
@@ -396,7 +421,7 @@ begin
           FieldInstance.RegisterView(RegInfo, RttiContext.GetType(FieldInstance.ClassType));
 
           // Calls after create for user defined settings
-          FieldInstance.AfterCreate;
+          FieldInstance.AfterShow;
 
         end;
       end;
@@ -479,9 +504,9 @@ begin
   RttiContext.Free;
 end;
 
-procedure TPisces.AfterCreate;
+procedure TPisces.AfterShow;
 begin
-  TPscUtils.Log('', 'AfterCreate', TLogger.Info, Self);
+  TPscUtils.Log('', 'AfterShow', TLogger.Info, Self);
 end;
 
 procedure TPisces.DoShow;
@@ -528,97 +553,97 @@ begin
     if Supports(FView, IPscSwitch) then begin
       IPscSwitch(FView)
         .BuildScreen
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscButton) then begin
       IPscButton(FView)
         .BuildScreen
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscEdit) then begin
       IPscEdit(FView)
         .BuildScreen
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscText) then begin
       IPscText(FView)
         .BuildScreen
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscImage) then begin
       IPscImage(FView)
         .BuildScreen
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPsclistView) then begin
       IPsclistView(FView)
         .BuildScreen
-        .OnItemClick(FOnItemClick)
-        .OnItemLongClick(FOnItemLongClick)
-        .OnItemSelected(FOnItemSelected, FOnNothingSelected);
+        .OnItemClick(OnItemClickHandler)
+        .OnItemLongClick(OnItemLongClickHandler)
+        .OnItemSelected(OnItemSelectedHandler, OnNothingSelectedHandler);
     end else if Supports(FView, IPscCalendar) then begin
       IPscCalendar(FView)
         .BuildScreen
-        .OnDateChangeListener(FOnCalendarDateChange)
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnDateChangeListener(OnCalendarDateChangeHandler)
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscDatePicker) then begin
       IPscDatePicker(FView)
         .BuildScreen
-        .OnDateChangeListener(FOnDateChange)
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnDateChangeListener(OnDateChangeHandler)
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscScrollView) then begin
       IPscScrollView(FView)
         .BuildScreen
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick)
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler)
     end else if Supports(FView, IPscTimePicker) then begin
       IPscTimePicker(FView)
         .BuildScreen
-        .OnTimeChangeListener(FOnTimeChange)
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnTimeChangeListener(OnTimeChangeHandler)
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscFrameLayout) then begin
       IPscFrameLayout(FView)
         .BuildScreen
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick)
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler)
     end else if Supports(FView, IPscLinearLayout) then begin
       IPscLinearLayout(FView)
         .BuildScreen
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscRelativeLayout) then begin
       IPscRelativeLayout(FView)
         .BuildScreen
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscAbsoluteLayout) then begin
       IPscAbsoluteLayout(FView)
         .BuildScreen
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscToolBar) then begin
       IPscToolBar(FView)
         .BuildScreen
-        .OnNavigationClick(FOnBackPressed)
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnNavigationClick(OnBackPressedHandler)
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscViewGroup) then begin
       IPscViewGroup(FView)
         .BuildScreen
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscView) then begin
       IPscView(FView)
         .BuildScreen
-        .OnClick(FOnClick)
-        .OnLongClick(FOnLongClick);
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler);
     end;
 
-    // Swipe handler special case
-    IPscView(FView).OnSwipe(FOnSwipe);
+    // Touch handler special case
+    IPscView(FView).OnTouch(OnTouchHandler);
 
     // When the native view is fully built, we register it
     RttiContext := TRttiContext.Create;
@@ -772,6 +797,116 @@ begin
   end;
 end;
 
+procedure TPisces.OnClickHandler(AView: JView);
+begin
+  // Override in descendants to handle click events
+end;
+
+procedure TPisces.OnLongClickHandler(AView: JView);
+begin
+  // Override in descendants to handle long click events
+end;
+
+procedure TPisces.OnBackPressedHandler(AView: JView);
+begin
+  // Override in descendants to handle back pressed events
+end;
+
+procedure TPisces.OnTimeChangeHandler(ATimePicker: JTimePicker; AHour, AMinute: Integer);
+begin
+  // Override in descendants to handle time change events
+end;
+
+procedure TPisces.OnDateChangeHandler(ADatePicker: JDatePicker; AYear, AMonth, ADay: Integer);
+begin
+  // Override in descendants to handle date change events
+end;
+
+procedure TPisces.OnCalendarDateChangeHandler(ACalendarView: JCalendarView; AYear, AMonth, ADay: Integer);
+begin
+  // Override in descendants to handle calendar date change events
+end;
+
+procedure TPisces.OnItemClickHandler(AParent: JAdapterView; AView: JView; APosition: Integer; AId: Int64);
+begin
+  // Override in descendants to handle item click events
+end;
+
+procedure TPisces.OnItemLongClickHandler(AParent: JAdapterView; AView: JView; APosition: Integer; AId: Int64);
+begin
+  // Override in descendants to handle item long click events
+end;
+
+procedure TPisces.OnItemSelectedHandler(AParent: JAdapterView; AView: JView; APosition: Integer; AId: Int64);
+begin
+  // Override in descendants to handle item selected events
+end;
+
+procedure TPisces.OnNothingSelectedHandler(AParent: JAdapterView);
+begin
+  // Override in descendants to handle nothing selected events
+end;
+
+procedure TPisces.OnTouchHandler(AView: JView; ADirection: TSwipeDirection; AVelocityX, AVelocityY: Single);
+begin
+  // Override in descendants to handle swipe events
+end;
+
+procedure TPisces.OnViewAttachedToWindowHandler(AView: JView);
+begin
+  // Override in descendants to handle view attached to window events
+end;
+
+procedure TPisces.OnViewDetachedFromWindowHandler(AView: JView);
+begin
+  // Override in descendants to handle view detached from window events
+end;
+
+procedure TPisces.OnWindowFocusChangedHandler(AHasFocus: Boolean);
+begin
+  // Override in descendants to handle window focus changed events
+end;
+
+procedure TPisces.OnActivityCreateHandler(AActivity: JActivity; ASavedInstanceState: JBundle);
+begin
+  // Override in descendants to handle activity create events
+end;
+
+procedure TPisces.OnActivityStartHandler(AActivity: JActivity);
+begin
+  // Override in descendants to handle activity start events
+end;
+
+procedure TPisces.OnActivityResumeHandler(AActivity: JActivity);
+begin
+  // Override in descendants to handle activity resume events
+end;
+
+procedure TPisces.OnActivityPauseHandler(AActivity: JActivity);
+begin
+  // Override in descendants to handle activity pause events
+end;
+
+procedure TPisces.OnActivityStopHandler(AActivity: JActivity);
+begin
+  // Override in descendants to handle activity stop events
+end;
+
+procedure TPisces.OnActivityDestroyHandler(AActivity: JActivity);
+begin
+  // Override in descendants to handle activity destroy events
+end;
+
+procedure TPisces.OnActivitySaveInstanceStateHandler(AActivity: JActivity; AOutState: JBundle);
+begin
+  // Override in descendants to handle activity save instance state events
+end;
+
+procedure TPisces.OnActivityConfigurationChangedHandler(AActivity: JActivity);
+begin
+  // Override in descendants to handle configuration changed events
+end;
+
 procedure TPisces.ReadAttributes;
 var
   RttiContext: TRttiContext;
@@ -854,23 +989,16 @@ begin
   end;
 end;
 
-procedure TPisces.SetLifecycles;
+procedure TPisces.SetLifecycles(ParentClass: TObject);
 begin
 
-  SetupActivityLifecycle;
+  // Setup view lifecycle - always setup since we can't detect if virtual methods are overridden
+  TPscUtils.Log('Setting up view lifecycle in Show method', 'Show', TLogger.Info, Self);
+  SetViewLifecycleHandlers(Self);
 
-  // Setup view lifecycle after the view is built and before showing
-  if Assigned(FOnViewAttachedToWindow) or Assigned(FOnViewDetachedFromWindow) then begin
-    TPscUtils.Log('Setting up view lifecycle in Show method', 'Show', TLogger.Info, Self);
-    SetupViewLifecycle;
-  end;
+  TPscUtils.Log('Setting up window focus listener in Show method', 'Show', TLogger.Info, Self);
+  SetWindowFocusListenerHandlers(Self);
 
-  if Assigned(FOnWindowFocusChanged) then begin
-    TPscUtils.Log('Setting up window focus listener in Show method', 'Show', TLogger.Info, Self);
-    SetupWindowFocusListener;
-  end;
-
-  CheckAndAssignActivityLifecycleHandlers;
 end;
 
 procedure TPisces.SetParent(const AParent: TPisces);
@@ -880,29 +1008,34 @@ begin
     TPscUtils.Log(Format('Parent set for %s to %s', [Self.ClassName, AParent.ClassName]), 'SetParent', TLogger.Info, Self)
 end;
 
-procedure TPisces.SetupActivityLifecycle;
+procedure TPisces.InitializeActivityLifecycle;
 begin
   try
-    TPscUtils.Log('Setting up activity lifecycle callbacks', 'SetupActivityLifecycle', TLogger.Info, nil);
+    TPscUtils.Log('Initializing up activity lifecycle callbacks', 'InitializeActivityLifecycle', TLogger.Info, nil);
     TPiscesApplication.GetLifecycleManager;
-    TPscUtils.Log('Activity lifecycle setup completed', 'SetupActivityLifecycle', TLogger.Info, nil);
+    TPscUtils.Log('Activity lifecycle initialization completed', 'InitializeActivityLifecycle', TLogger.Info, nil);
   except
     on E: Exception do
-      TPscUtils.Log('Failed to setup activity lifecycle: ' + E.Message, 'SetupActivityLifecycle', TLogger.Error, nil);
+      TPscUtils.Log('Failed to setup activity lifecycle: ' + E.Message, 'InitializeActivityLifecycle', TLogger.Error, nil);
   end;
 end;
 
-procedure TPisces.SetupViewLifecycle;
+procedure TPisces.SetViewLifecycleHandlers(ParentClass: TObject);
+var
+  Instance: TPisces;
+  H: THandlers;
 begin
-  if not Assigned(FViewLifecycleListener) then
-  begin
+  if not Assigned(FViewLifecycleListener) then begin
     try
+      H := THandlers.From(TPisces(ParentClass));
+      Instance := TPisces(ParentClass);  // Capture Self for anonymous methods
       FViewLifecycleListener := TPscViewLifecycleListener.Create;
-      FViewLifecycleListener.OnAttachedToWindow := FOnViewAttachedToWindow;
-      FViewLifecycleListener.OnDetachedFromWindow := FOnViewDetachedFromWindow;
-      
-      if Assigned(FView) and Supports(FView, IPscView) then
-      begin
+
+      // Wrap virtual methods and properties
+      FViewLifecycleListener.OnAttachedToWindow := H.OnViewAttachedToWindow;
+      FViewLifecycleListener.OnDetachedFromWindow := H.OnViewDetachedFromWindow;
+
+      if Assigned(FView) and Supports(FView, IPscView) then begin
         var AndroidView := IPscView(FView).GetView;
         if Assigned(AndroidView) then begin
           AndroidView.addOnAttachStateChangeListener(FViewLifecycleListener);
@@ -922,19 +1055,22 @@ begin
   end;
 end;
 
-procedure TPisces.SetupWindowFocusListener;
+procedure TPisces.SetWindowFocusListenerHandlers(ParentClass: TObject);
 var
   ViewTreeObserver: JViewTreeObserver;
+  Instance: TPisces;
+  H: THandlers;
 begin
-  if not Assigned(FWindowFocusListener) then
-  begin
+  if not Assigned(FWindowFocusListener) then begin
+    H := THandlers.From(TPisces(ParentClass));
     FWindowFocusListener := TPscWindowFocusChangeListener.Create;
-    FWindowFocusListener._OnWindowFocusChanged := FOnWindowFocusChanged;
-    if Assigned(FView) and Supports(FView, IPscView) then
-    begin
+
+    // Wrap virtual method and property
+    FWindowFocusListener._OnWindowFocusChanged := H.OnWindowFocusChanged;
+
+    if Assigned(FView) and Supports(FView, IPscView) then begin
       ViewTreeObserver := IPscView(FView).GetView.getViewTreeObserver;
-      if Assigned(ViewTreeObserver) then
-      begin
+      if Assigned(ViewTreeObserver) then begin
         ViewTreeObserver.addOnWindowFocusChangeListener(FWindowFocusListener);
         TPscUtils.Log('Window focus listener attached', 'SetupWindowFocusListener', TLogger.Info, Self);
       end;
@@ -947,10 +1083,12 @@ begin
   TPscUtils.Log('', 'Show', TLogger.Info, Self);
   try
     BuildScreen;
-    SetLifecycles;
+    SetLifecycles(Self);
+    InitializeActivityLifecycle;
+    SetActivityLifecycleHandlers(Self);
     ProcessFields(Self);
     ShowView;
-    AfterCreate;
+    AfterShow;
   except
     on E: Exception do
       TPscUtils.Log(E.Message, 'Show', TLogger.Error, Self);
@@ -975,65 +1113,34 @@ begin
   end;
 end;
 
-procedure TPisces.CheckAndAssignActivityLifecycleHandlers;
+procedure TPisces.SetActivityLifecycleHandlers(ParentClass: TObject);
 var
   Manager: TPscLifecycleManager;
+  Instance: TPisces;
 begin
+  Instance := TPisces(ParentClass);
 
-  // Assign activity lifecycle handlers here ***
+  // Assign activity lifecycle handlers on
   try
     Manager := TPiscesApplication.GetLifecycleManager;
-    if Assigned(Manager) and Assigned(Manager.ActivityLifecycleListener) then
-    begin
-      TPscUtils.Log('Checking for pending activity lifecycle handlers in BuildScreen', 'BuildScreen', TLogger.Info, Self);
 
-      // Check if this instance has lifecycle handlers that need to be assigned
-      if Assigned(FOnActivityCreate) then begin
-        Manager.ActivityLifecycleListener.OnCreate := FOnActivityCreate;
-        TPscUtils.Log('Assigned OnCreate handler from property', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
-      end;
+    if Assigned(Manager) and Assigned(Manager.ActivityLifecycleListener) then begin
+      TPscUtils.Log('Assigning activity lifecycle handlers', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
 
-      if Assigned(FOnActivityStart) then begin
-        Manager.ActivityLifecycleListener.OnStart := FOnActivityStart;
-        TPscUtils.Log('Assigned OnStart handler from property', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
-      end;
+      Manager.ActivityLifecycleListener.OnCreate := OnActivityCreateHandler;
+      Manager.ActivityLifecycleListener.OnStart := OnActivityStartHandler;
+      Manager.ActivityLifecycleListener.OnResume := OnActivityResumeHandler;
+      Manager.ActivityLifecycleListener.OnPause := OnActivityPauseHandler;
+      Manager.ActivityLifecycleListener.OnStop := OnActivityStopHandler;
+      Manager.ActivityLifecycleListener.OnDestroy := OnActivityDestroyHandler;
+      Manager.ActivityLifecycleListener.OnConfigurationChanged := OnActivityConfigurationChangedHandler;
+      Manager.ActivityLifecycleListener.OnSaveInstanceState := OnActivitySaveInstanceStateHandler;
 
-      if Assigned(FOnActivityResume) then begin
-        Manager.ActivityLifecycleListener.OnResume := FOnActivityResume;
-        TPscUtils.Log('Assigned OnResume handler from property', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
-      end;
-
-      if Assigned(FOnActivityPause) then begin
-        Manager.ActivityLifecycleListener.OnPause := FOnActivityPause;
-        TPscUtils.Log('Assigned OnPause handler from property', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
-      end;
-
-      if Assigned(FOnActivityStop) then begin
-        Manager.ActivityLifecycleListener.OnStop := FOnActivityStop;
-        TPscUtils.Log('Assigned OnStop handler from property', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
-      end;
-
-      if Assigned(FOnActivityDestroy) then begin
-        Manager.ActivityLifecycleListener.OnDestroy := FOnActivityDestroy;
-        TPscUtils.Log('Assigned OnDestroy handler from property', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
-      end;
-
-      if Assigned(FOnConfigurationChanged) then begin
-        Manager.ActivityLifecycleListener.OnConfigurationChanged := OnConfigurationChanged;
-        TPscUtils.Log('Assgined OnConfiguration handler from property', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
-      end;
-
-      if Assigned(FOnActivitySaveInstanceState) then begin
-        Manager.ActivityLifecycleListener.OnSaveInstanceState := FOnActivitySaveInstanceState;
-        TPscUtils.Log('Assigned OnSaveInstanceState handler from property', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
-      end;
+      TPscUtils.Log('Activity lifecycle handlers assigned', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
     end;
   except on E: Exception do
-      TPscUtils.Log('Error checking activity lifecycle handlers: ' + E.Message, 'BuildScreen', TLogger.Warning, Self);
+      TPscUtils.Log('Error assigning activity lifecycle handlers: ' + E.Message, 'CheckAndAssignActivityLifecycleHandlers', TLogger.Warning, Self);
   end;
-
-  TPscUtils.Log('Checking and assigning activity lifecycle handlers', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
-
 end;
 
 end.

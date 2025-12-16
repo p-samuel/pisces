@@ -22,7 +22,7 @@ type
     ['{08342209-042B-42CC-A6C3-9D6B5DA03D00}']
     function OnClick(Proc: TProc<JView>): IPscView;
     function OnLongClick(Proc: TProc<JView>): IPscView;
-    function OnSwipe(Proc: TProc<JView, TSwipeDirection, Single, Single>): IPscView;
+    function OnTouch(Proc: TProc<JView, TSwipeDirection, Single, Single>): IPscView;
     function BuildScreen: IPscView;
     function Show: IPscView;
     function GetView: JView;
@@ -363,7 +363,7 @@ type
     function Show: IPscView;
     function OnClick(Proc: TProc<JView>): IPscView;
     function OnLongClick(Proc: TProc<JView>): IPscView;
-    function OnSwipe(Proc: TProc<JView, TSwipeDirection, Single, Single>): IPscView;
+    function OnTouch(Proc: TProc<JView, TSwipeDirection, Single, Single>): IPscView;
     function OnTimeChange(Proc: TProc<JTimePicker, Integer, Integer>): IPscView; virtual; abstract;
   end;
 
@@ -2443,7 +2443,7 @@ begin
   FView.setOnLongClickListener(EventListener);
 end;
 
-function TPscView.OnSwipe(Proc: TProc<JView, TSwipeDirection, Single, Single>): IPscView;
+function TPscView.OnTouch(Proc: TProc<JView, TSwipeDirection, Single, Single>): IPscView;
 var
   TouchListener: TPscViewTouchListener;
 begin
