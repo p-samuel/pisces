@@ -12,8 +12,6 @@ type
   [ LinearLayout('menu'),
     Orientation(TOrientation.Vertical),
     BackgroundColor(255, 124, 23),
-    Width(TLayout.MATCH),
-    Height(TLayout.MATCH),
     Padding(16, 16, 16, 16)
   ] TViewPopup = class(TPisces)
     constructor Create; override;
