@@ -94,6 +94,7 @@ type
     function Title(const ATitle: String): IPscAlertDialog;
     function Message(const AMessage: String): IPscAlertDialog;
     function Icon(AResourceId: Integer): IPscAlertDialog;
+    function CustomView(AView: JView): IPscAlertDialog;
     function PositiveButton(const AText: String; AProc: TProc): IPscAlertDialog;
     function NegativeButton(const AText: String; AProc: TProc): IPscAlertDialog;
     function NeutralButton(const AText: String; AProc: TProc): IPscAlertDialog;
@@ -619,6 +620,7 @@ type
     FMultiChoiceItems: TArray<String>;
     FMultiChoiceChecked: TArray<Boolean>;
     FMultiChoiceProc: TAlertDialogMultiChoiceProc;
+    FCustomView: JView;
     FSelectedIndex: Integer;
     procedure EnsureBuilder;
     procedure BuildDialog;
@@ -630,6 +632,7 @@ type
     function Title(const ATitle: String): IPscAlertDialog;
     function Message(const AMessage: String): IPscAlertDialog;
     function Icon(AResourceId: Integer): IPscAlertDialog;
+    function CustomView(AView: JView): IPscAlertDialog;
     // Buttons
     function PositiveButton(const AText: String; AProc: TProc): IPscAlertDialog;
     function NegativeButton(const AText: String; AProc: TProc): IPscAlertDialog;
@@ -3999,6 +4002,7 @@ destructor TPscAlertDialog.Destroy;
 begin
   FBuilder := nil;
   FDialog := nil;
+  FCustomView := nil;
   inherited Destroy;
 end;
 
@@ -4085,6 +4089,14 @@ begin
     FBuilder.setMultiChoiceItems(JItems, JCheckedItems, MultiClickListener);
   end;
 
+  // Set custom view if provided
+  if Assigned(FCustomView) then begin
+    // Detach from parent if already attached
+    if FCustomView.getParent <> nil then
+      TJViewGroup.Wrap(FCustomView.getParent).removeView(FCustomView);
+    FBuilder.setView(FCustomView);
+  end;
+
   FDialog := FBuilder.create;
 end;
 
@@ -4104,6 +4116,12 @@ function TPscAlertDialog.Icon(AResourceId: Integer): IPscAlertDialog;
 begin
   Result := Self;
   FIconResId := AResourceId;
+end;
+
+function TPscAlertDialog.CustomView(AView: JView): IPscAlertDialog;
+begin
+  Result := Self;
+  FCustomView := AView;
 end;
 
 function TPscAlertDialog.PositiveButton(const AText: String; AProc: TProc): IPscAlertDialog;
