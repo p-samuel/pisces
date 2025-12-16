@@ -226,6 +226,10 @@ end;
 //  4. Views attached to Activity: Child views are added to the Android view hierarchy.
 //  5. AfterShow: Called AFTER all children are fully created, built, and attached. At this point, FCustomDialogContent exists and is ready to use.
 
+//  | AfterShow | Once, after initial show and children are built        | Initial setup, hiding views                                                        |
+//  | DoShow    | Every navigation event (push target, pop back)         | Configure screen for current navigation context (toolbar title, back button, etc.) |
+//  | DoHide    | Every time screen becomes hidden (push away, pop away) | Cleanup, pause animations, etc.                                                    |
+
 procedure THomeView.AfterShow;
 begin
   inherited;
