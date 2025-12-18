@@ -790,6 +790,27 @@ type
   TDescendantFocusability = (FocusAfterDescendants, FocusBeforeDescendants, FocusBlockDescendants);
   TImageScaleType = (FitCenter, CenterCrop, CenterInside);
 
+  TInputType = (
+    Text,
+    Number,
+    Phone,
+    DateTime,
+    TextEmailAddress,
+    TextPassword,
+    TextVisiblePassword,
+    TextWebEmailAddress,
+    TextWebPassword,
+    TextUri,
+    TextPersonName,
+    TextPostalAddress,
+    TextMultiLine,
+    NumberDecimal,
+    NumberSigned,
+    NumberPassword,
+    Date,
+    Time
+  );
+
   TFocusableMode = (Focusable, FocusablesAll, FocusablesTouchMode, FocusableAuto,
     FocusBackward, FocusDown, FocusForward, FocusLeft, FocusRight, FocusUp, NotFocusable);
 

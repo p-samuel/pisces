@@ -55,6 +55,9 @@ type
     ['{1AB1895B-9AA8-43DC-8994-0B30BADBC6C6}']
     function BuildScreen: IPscEdit;
     function Show: IPscEdit;
+    function OnTextChanged(Proc: TProc<String>): IPscEdit;
+    function OnTextChanging(Proc: TProc<String, Integer, Integer, Integer>): IPscEdit;
+    function OnBeforeTextChanged(Proc: TProc<String, Integer, Integer, Integer>): IPscEdit;
   end;
 
   IPscImage = interface(IPscView)
@@ -533,6 +536,9 @@ type
     function Selection: IPscEdit; overload;
     function Text(Value: String; TxtBufferType: TTextBuffer): IPscEdit; overload;
     function Text: IPscEdit; overload;
+    function OnTextChanged(Proc: TProc<String>): IPscEdit;
+    function OnTextChanging(Proc: TProc<String, Integer, Integer, Integer>): IPscEdit;
+    function OnBeforeTextChanged(Proc: TProc<String, Integer, Integer, Integer>): IPscEdit;
   end;
 
   TPscImage = class(TPscView, IPscImage)
@@ -3542,6 +3548,33 @@ begin
     TTextBuffer.Normal: JEditText(FView).setText(StrToJCharSequence(Value), TJTextView_BufferType.JavaClass.NORMAL);  
     TTextBuffer.Spannable: JEditText(FView).setText(StrToJCharSequence(Value), TJTextView_BufferType.JavaClass.SPANNABLE);  
   end;
+end;
+
+function TPscEdit.OnTextChanged(Proc: TProc<String>): IPscEdit;
+var
+  Listener: TPscTextWatcherListener;
+begin
+  Result := Self;
+  Listener := TPscTextWatcherListener.Create(Proc, nil, nil);
+  JEditText(FView).addTextChangedListener(Listener);
+end;
+
+function TPscEdit.OnTextChanging(Proc: TProc<String, Integer, Integer, Integer>): IPscEdit;
+var
+  Listener: TPscTextWatcherListener;
+begin
+  Result := Self;
+  Listener := TPscTextWatcherListener.Create(nil, Proc, nil);
+  JEditText(FView).addTextChangedListener(Listener);
+end;
+
+function TPscEdit.OnBeforeTextChanged(Proc: TProc<String, Integer, Integer, Integer>): IPscEdit;
+var
+  Listener: TPscTextWatcherListener;
+begin
+  Result := Self;
+  Listener := TPscTextWatcherListener.Create(nil, nil, Proc);
+  JEditText(FView).addTextChangedListener(Listener);
 end;
 
 { TPscCompoundButton }

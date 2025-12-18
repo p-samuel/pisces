@@ -176,6 +176,22 @@ type
     procedure onClick(dialog: JDialogInterface; which: Integer; isChecked: Boolean); cdecl;
   end;
 
+  TPscTextWatcherListener = class(TJavaLocal, JTextWatcher)
+  private
+    FProcAfter: TProc<String>;
+    FProcChanging: TProc<String, Integer, Integer, Integer>;
+    FProcBefore: TProc<String, Integer, Integer, Integer>;
+  public
+    constructor Create(AAfterProc: TProc<String>; AChangingProc: TProc<String, Integer, Integer, Integer>; ABeforeProc: TProc<String, Integer, Integer, Integer>);
+    procedure beforeTextChanged(s: JCharSequence; start, count, after: Integer); cdecl;
+    procedure onTextChanged(s: JCharSequence; start, before, count: Integer); cdecl;
+    procedure afterTextChanged(s: JEditable); cdecl;
+  published
+    property ProcAfter: TProc<String> read FProcAfter write FProcAfter;
+    property ProcChanging: TProc<String, Integer, Integer, Integer> read FProcChanging write FProcChanging;
+    property ProcBefore: TProc<String, Integer, Integer, Integer> read FProcBefore write FProcBefore;
+  end;
+
 implementation
 
 uses
@@ -508,6 +524,34 @@ procedure TPscDialogMultiChoiceClickListener.onClick(dialog: JDialogInterface; w
 begin
   if Assigned(FProc) then
     FProc(which, isChecked);
+end;
+
+{ TPscTextWatcherListener }
+
+constructor TPscTextWatcherListener.Create(AAfterProc: TProc<String>; AChangingProc: TProc<String, Integer, Integer, Integer>; ABeforeProc: TProc<String, Integer, Integer, Integer>);
+begin
+  inherited Create;
+  FProcAfter := AAfterProc;
+  FProcChanging := AChangingProc;
+  FProcBefore := ABeforeProc;
+end;
+
+procedure TPscTextWatcherListener.beforeTextChanged(s: JCharSequence; start, count, after: Integer);
+begin
+  if Assigned(FProcBefore) then
+    FProcBefore(JStringToString(s.toString), start, count, after);
+end;
+
+procedure TPscTextWatcherListener.onTextChanged(s: JCharSequence; start, before, count: Integer);
+begin
+  if Assigned(FProcChanging) then
+    FProcChanging(JStringToString(s.toString), start, before, count);
+end;
+
+procedure TPscTextWatcherListener.afterTextChanged(s: JEditable);
+begin
+  if Assigned(FProcAfter) then
+    FProcAfter(JStringToString(s.toString));
 end;
 
 end.

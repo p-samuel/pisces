@@ -325,6 +325,14 @@ type
     property Value: Integer read FValue;
   end;
 
+  TInputTypeAttribute = class(TCustomAttribute)
+  private
+    FValue: Integer;
+  public
+    constructor Create(InputType: TInputType);
+    property Value: Integer read FValue;
+  end;
+
   TCalendarDateAttribute = class(TCustomAttribute)
   private
     FYear: Integer;
@@ -680,7 +688,7 @@ type
   HorizontallyScrollingAttribute = class(TPiscesBooleanAttribute);
   IncludeFontPaddingAttribute = class(TPiscesBooleanAttribute);
   InputExtrasAttribute = class(TPiscesIntegerAttribute);
-  InputTypeAttribute = class(TPiscesIntegerAttribute);
+  InputTypeAttribute = class(TInputTypeAttribute);
   LastBaselineToBottomHeightAttribute = class(TPiscesIntegerAttribute);
   LetterSpacingAttribute = class(TPiscesSingleAttribute);
   LineBreakStyleAttribute = class(TPiscesIntegerAttribute);
@@ -1162,6 +1170,32 @@ begin
   case Orientation of
     TOrientation.Horizontal: FValue := TJLayoutMode.JavaClass.HORIZONTAL;
     TOrientation.Vertical: FValue := TJLayoutMode.JavaClass.VERTICAL;
+  end;
+end;
+
+{ TInputTypeAttribute }
+
+constructor TInputTypeAttribute.Create(InputType: TInputType);
+begin
+  case InputType of
+    TInputType.Text: FValue := TJInputType.JavaClass.TYPE_CLASS_TEXT;
+    TInputType.Number: FValue := TJInputType.JavaClass.TYPE_CLASS_NUMBER;
+    TInputType.Phone: FValue := TJInputType.JavaClass.TYPE_CLASS_PHONE;
+    TInputType.DateTime: FValue := TJInputType.JavaClass.TYPE_CLASS_DATETIME;
+    TInputType.TextEmailAddress: FValue := TJInputType.JavaClass.TYPE_CLASS_TEXT or TJInputType.JavaClass.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+    TInputType.TextPassword: FValue := TJInputType.JavaClass.TYPE_CLASS_TEXT or TJInputType.JavaClass.TYPE_TEXT_VARIATION_PASSWORD;
+    TInputType.TextVisiblePassword: FValue := TJInputType.JavaClass.TYPE_CLASS_TEXT or TJInputType.JavaClass.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+    TInputType.TextWebEmailAddress: FValue := TJInputType.JavaClass.TYPE_CLASS_TEXT or TJInputType.JavaClass.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS;
+    TInputType.TextWebPassword: FValue := TJInputType.JavaClass.TYPE_CLASS_TEXT or TJInputType.JavaClass.TYPE_TEXT_VARIATION_WEB_PASSWORD;
+    TInputType.TextUri: FValue := TJInputType.JavaClass.TYPE_CLASS_TEXT or TJInputType.JavaClass.TYPE_TEXT_VARIATION_URI;
+    TInputType.TextPersonName: FValue := TJInputType.JavaClass.TYPE_CLASS_TEXT or TJInputType.JavaClass.TYPE_TEXT_VARIATION_PERSON_NAME;
+    TInputType.TextPostalAddress: FValue := TJInputType.JavaClass.TYPE_CLASS_TEXT or TJInputType.JavaClass.TYPE_TEXT_VARIATION_POSTAL_ADDRESS;
+    TInputType.TextMultiLine: FValue := TJInputType.JavaClass.TYPE_CLASS_TEXT or TJInputType.JavaClass.TYPE_TEXT_FLAG_MULTI_LINE;
+    TInputType.NumberDecimal: FValue := TJInputType.JavaClass.TYPE_CLASS_NUMBER or TJInputType.JavaClass.TYPE_NUMBER_FLAG_DECIMAL;
+    TInputType.NumberSigned: FValue := TJInputType.JavaClass.TYPE_CLASS_NUMBER or TJInputType.JavaClass.TYPE_NUMBER_FLAG_SIGNED;
+    TInputType.NumberPassword: FValue := TJInputType.JavaClass.TYPE_CLASS_NUMBER or TJInputType.JavaClass.TYPE_NUMBER_VARIATION_PASSWORD;
+    TInputType.Date: FValue := TJInputType.JavaClass.TYPE_CLASS_DATETIME or TJInputType.JavaClass.TYPE_DATETIME_VARIATION_DATE;
+    TInputType.Time: FValue := TJInputType.JavaClass.TYPE_CLASS_DATETIME or TJInputType.JavaClass.TYPE_DATETIME_VARIATION_TIME;
   end;
 end;
 

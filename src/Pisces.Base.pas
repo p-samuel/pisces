@@ -84,6 +84,9 @@ type
     procedure OnItemSelectedHandler(AParent: JAdapterView; AView: JView; APosition: Integer; AId: Int64); virtual;
     procedure OnNothingSelectedHandler(AParent: JAdapterView); virtual;
     procedure OnTouchHandler(AView: JView; ADirection: TSwipeDirection; AVelocityX, AVelocityY: Single); virtual;
+    procedure OnTextChangedHandler(AText: String); virtual;
+    procedure OnTextChangingHandler(AText: String; AStart, ABefore, ACount: Integer); virtual;
+    procedure OnBeforeTextChangedHandler(AText: String; AStart, ACount, AAfter: Integer); virtual;
 
     // Lifecycle handler methods (virtual - override in descendants)
     procedure OnViewAttachedToWindowHandler(AView: JView); virtual;
@@ -131,6 +134,9 @@ type
     OnItemSelected: TProc<JAdapterView, JView, Integer, Int64>;
     OnNothingSelected: TProc<JAdapterView>;
     OnTouch: TProc<JView, TSwipeDirection, Single, Single>;
+    OnTextChanged: TProc<String>;
+    OnTextChanging: TProc<String, Integer, Integer, Integer>;
+    OnBeforeTextChanged: TProc<String, Integer, Integer, Integer>;
     // Lifecycle handlers
     OnViewAttachedToWindow: TProc<JView>;
     OnViewDetachedFromWindow: TProc<JView>;
@@ -160,6 +166,9 @@ begin
   Result.OnItemSelected := Inst.OnItemSelectedHandler;
   Result.OnNothingSelected := Inst.OnNothingSelectedHandler;
   Result.OnTouch := Inst.OnTouchHandler;
+  Result.OnTextChanged := Inst.OnTextChangedHandler;
+  Result.OnTextChanging := Inst.OnTextChangingHandler;
+  Result.OnBeforeTextChanged := Inst.OnBeforeTextChangedHandler;
   // Lifecycle handlers
   Result.OnViewAttachedToWindow := Inst.OnViewAttachedToWindowHandler;
   Result.OnViewDetachedFromWindow := Inst.OnViewDetachedFromWindowHandler;
@@ -288,6 +297,9 @@ begin
               TPscUtils.Log('Creating sub child as IPscEdit of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscEdit(FieldInstance.FView)
                 .BuildScreen
+                .OnTextChanged(H.OnTextChanged)
+                .OnBeforeTextChanged(H.OnBeforeTextChanged)
+                .OnTextChanging(H.OnTextChanging)
                 .OnClick(H.OnClick)
                 .OnLongClick(H.OnLongClick)
                 .GetView;
@@ -563,6 +575,9 @@ begin
     end else if Supports(FView, IPscEdit) then begin
       IPscEdit(FView)
         .BuildScreen
+        .OnTextChanged(OnTextChangedHandler)
+        .OnTextChanging(OnTextChangingHandler)
+        .OnBeforeTextChanged(OnBeforeTextChangedHandler)
         .OnClick(OnClickHandler)
         .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscText) then begin
@@ -850,6 +865,21 @@ end;
 procedure TPisces.OnTouchHandler(AView: JView; ADirection: TSwipeDirection; AVelocityX, AVelocityY: Single);
 begin
   // Override in descendants to handle swipe events
+end;
+
+procedure TPisces.OnTextChangedHandler(AText: String);
+begin
+  // Override in descendants to handle text change events (after text changed)
+end;
+
+procedure TPisces.OnTextChangingHandler(AText: String; AStart, ABefore, ACount: Integer);
+begin
+  // Override in descendants to handle text changing events (while text is changing)
+end;
+
+procedure TPisces.OnBeforeTextChangedHandler(AText: String; AStart, ACount, AAfter: Integer);
+begin
+  // Override in descendants to handle before text change events
 end;
 
 procedure TPisces.OnViewAttachedToWindowHandler(AView: JView);

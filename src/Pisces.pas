@@ -1087,6 +1087,7 @@ type
   TScrollIndicatorSet = Pisces.Types.TScrollIndicatorSet;
   TTextBuffer = Pisces.Types.TTextBuffer;
   TOrientation = Pisces.Types.TOrientation;
+  TInputType = Pisces.Types.TInputType;
   TDescendantFocusability = Pisces.Types.TDescendantFocusability;
   TImageScaleType = Pisces.Types.TImageScaleType;
   TSwipeDirection = Pisces.Types.TSwipeDirection;
