@@ -1,4 +1,4 @@
-unit Pisces.EventListeners;
+﻿unit Pisces.EventListeners;
 
 {$M+}
 
@@ -192,10 +192,24 @@ type
     property ProcBefore: TProc<String, Integer, Integer, Integer> read FProcBefore write FProcBefore;
   end;
 
+  TPscGlobalLayoutListener = class(TJavaLocal, JViewTreeObserver_OnGlobalLayoutListener)
+  private
+    FRootView: JView;
+    FKeyboardThreshold: Integer;
+    FIsKeyboardVisible: Boolean;
+    FProc: TProc<Boolean, Integer>;
+  public
+    constructor Create(ARootView: JView; AThreshold: Integer = 150);
+    procedure onGlobalLayout; cdecl;
+  published
+    property Proc: TProc<Boolean, Integer> read FProc write FProc;
+    property KeyboardThreshold: Integer read FKeyboardThreshold write FKeyboardThreshold;
+  end;
+
 implementation
 
 uses
-  Pisces.Utils;
+  Pisces.Utils, Androidapi.JNI.Util;
 
 { TPscViewClickListener }
 
@@ -552,6 +566,46 @@ procedure TPscTextWatcherListener.afterTextChanged(s: JEditable);
 begin
   if Assigned(FProcAfter) then
     FProcAfter(JStringToString(s.toString));
+end;
+
+{ TPscGlobalLayoutListener }
+
+constructor TPscGlobalLayoutListener.Create(ARootView: JView; AThreshold: Integer);
+begin
+  inherited Create;
+  FRootView := ARootView;
+  FKeyboardThreshold := AThreshold;
+  FIsKeyboardVisible := False;
+end;
+
+procedure TPscGlobalLayoutListener.onGlobalLayout;
+var
+  Rect: JRect;
+  RootView: JView;
+  RootHeight: Integer;
+  VisibleHeight: Integer;
+  KeyboardHeight: Integer;
+  WasKeyboardVisible: Boolean;
+begin
+  RootView := FRootView;
+  if RootView = nil then Exit;
+
+  Rect := TJRect.JavaClass.init;
+  RootView.getWindowVisibleDisplayFrame(Rect);
+  RootHeight := RootView.getHeight;
+  VisibleHeight := Rect.bottom - Rect.top;
+  KeyboardHeight := RootHeight - VisibleHeight;
+  WasKeyboardVisible := FIsKeyboardVisible;
+  FIsKeyboardVisible := KeyboardHeight > FKeyboardThreshold;
+
+  TPscUtils.Log(
+    Format('RootHeight=%d VisibleHeight=%d KeyboardHeight=%d',
+    [RootHeight, VisibleHeight, KeyboardHeight]
+    ), 'onGlobalLayout', TLogger.Info, Self );
+
+  if (WasKeyboardVisible <> FIsKeyboardVisible) and Assigned(FProc) then
+    FProc(FIsKeyboardVisible, KeyboardHeight + 560);
+
 end;
 
 end.

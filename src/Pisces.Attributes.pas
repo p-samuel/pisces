@@ -816,6 +816,7 @@ type
   //Other
   CornerRadiusAttribute = class(TPiscesDoubleAttribute);
   RippleColorAttribute = class(TPiscesColorAttribute);
+  EnableKeyboardPadding = class(TPiscesBooleanAttribute);
 
 implementation
 

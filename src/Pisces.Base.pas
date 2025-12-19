@@ -13,7 +13,8 @@ uses
   Androidapi.JNI.App,
   Androidapi.JNI.Os,
   Pisces.Types,
-  Pisces.Registry;
+  Pisces.Registry,
+  Pisces.Keyboard;
 
 type
 
@@ -27,6 +28,7 @@ type
     FChildren: TObjectDictionary<Integer, TPisces>;               // Dictionary to store children instances
     FViewLifecycleListener: TPscViewLifecycleListener;            // View's Lifecycle events
     FWindowFocusListener: TPscWindowFocusChangeListener;
+    FKeyboardHelper: TPscKeyboardHelper;
 
     procedure ReadAttributes;
     procedure ProcessFields(ParentClass: TObject);
@@ -42,6 +44,7 @@ type
     function GetParentView: JView;
     function GetVisible: Boolean;
     procedure SetVisible(const Value: Boolean);
+    procedure SetKeyboardPadding;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -756,6 +759,9 @@ begin
     end;
   end;
 
+  if Assigned(FKeyboardHelper) then
+    FKeyboardHelper.Free;
+
   FParent := nil;
   FChildren.Clear;
   FChildren.Free;
@@ -1119,6 +1125,7 @@ begin
     ProcessFields(Self);
     ShowView;
     AfterShow;
+    SetKeyboardPadding;
   except
     on E: Exception do
       TPscUtils.Log(E.Message, 'Show', TLogger.Error, Self);
@@ -1149,14 +1156,10 @@ var
   Instance: TPisces;
 begin
   Instance := TPisces(ParentClass);
-
-  // Assign activity lifecycle handlers on
   try
     Manager := TPiscesApplication.GetLifecycleManager;
-
     if Assigned(Manager) and Assigned(Manager.ActivityLifecycleListener) then begin
       TPscUtils.Log('Assigning activity lifecycle handlers', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
-
       Manager.ActivityLifecycleListener.OnCreate := OnActivityCreateHandler;
       Manager.ActivityLifecycleListener.OnStart := OnActivityStartHandler;
       Manager.ActivityLifecycleListener.OnResume := OnActivityResumeHandler;
@@ -1165,11 +1168,46 @@ begin
       Manager.ActivityLifecycleListener.OnDestroy := OnActivityDestroyHandler;
       Manager.ActivityLifecycleListener.OnConfigurationChanged := OnActivityConfigurationChangedHandler;
       Manager.ActivityLifecycleListener.OnSaveInstanceState := OnActivitySaveInstanceStateHandler;
-
       TPscUtils.Log('Activity lifecycle handlers assigned', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
     end;
   except on E: Exception do
       TPscUtils.Log('Error assigning activity lifecycle handlers: ' + E.Message, 'CheckAndAssignActivityLifecycleHandlers', TLogger.Warning, Self);
+  end;
+end;
+
+procedure TPisces.SetKeyboardPadding;
+var
+  RttiContext: TRttiContext;
+  RttiType: TRttiType;
+  Attribute: TCustomAttribute;
+  AttributesList: TArray<TCustomAttribute>;
+begin
+  TPscUtils.Log('', 'SetKeyboardPadding', TLogger.Info, Self);
+  try
+    RttiContext := TRttiContext.Create;
+    try
+      try
+        RttiType := RttiContext.GetType(Self.ClassType);
+        AttributesList := RttiType.GetAttributes;
+        for Attribute in AttributesList do begin
+          if (Attribute is EnableKeyboardPadding)then begin
+            if TPiscesBooleanAttribute(Attribute).Value then begin
+              FKeyboardHelper := TPscKeyboardHelper.Create(AndroidView.getRootView, 150);
+              FKeyboardHelper.Enable;
+              TPscUtils.Log('Keyboard helper created and enabled', 'SetKeyboardPadding', TLogger.Info, Self);
+            end;
+          end;
+        end;
+      except
+        on E: Exception do
+          TPscUtils.Log(E.Message, 'SetKeyboardPadding', TLogger.Fatal, Self);
+      end;
+    finally
+      RttiContext.Free;
+    end;
+  except
+    on E: Exception do
+      TPscUtils.Log(E.Message, 'SetKeyboardPadding', TLogger.Fatal, Self);
   end;
 end;
 
