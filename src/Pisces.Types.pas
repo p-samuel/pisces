@@ -43,9 +43,11 @@ type
   TJTextView = Androidapi.JNI.Widget.TJTextView;
   TJSwitch = Androidapi.JNI.Widget.TJSwitch;
   TJScroller = Androidapi.JNI.Widget.TJScroller;
+  TJImageView =  Androidapi.JNI.Widget.TJImageView;
   TJImageView_ScaleType = Androidapi.JNI.Widget.TJImageView_ScaleType;
   TJView_OnLayoutChangeListener = Androidapi.JNI.GraphicsContentViewText.TJView_OnLayoutChangeListener;
   TJBitmapFactory = Androidapi.JNI.GraphicsContentViewText.TJBitmapFactory;
+  TJKeyEvent = Androidapi.JNI.GraphicsContentViewText.TJKeyEvent;
 
   JView_AccessibilityDelegate = Androidapi.JNI.GraphicsContentViewText.JView_AccessibilityDelegate;
   JAnimation = Androidapi.JNI.GraphicsContentViewText.JAnimation;
@@ -83,6 +85,7 @@ type
   JImageView = Androidapi.JNI.Widget.JImageView;
   JBitmapFactory = Androidapi.JNI.GraphicsContentViewText.JBitmapFactory;
   JBitmapFactoryClass = Androidapi.JNI.GraphicsContentViewText.JBitmapFactoryClass;
+  JKeyEvent = Androidapi.JNI.GraphicsContentViewText.JKeyEvent;
 
   //java types
   JObject = Androidapi.JNI.JavaTypes.JObject;
@@ -789,6 +792,15 @@ type
   TOrientation = (Horizontal, Vertical);
   TDescendantFocusability = (FocusAfterDescendants, FocusBeforeDescendants, FocusBlockDescendants);
   TImageScaleType = (FitCenter, CenterCrop, CenterInside);
+
+  TReturnKeyType = (
+    Done,
+    Go,
+    Next,
+    Search,
+    Send,
+    Unspecified
+  );
 
   TInputType = (
     Text,

@@ -154,6 +154,7 @@ type
     class function Runnable(AView: JView; AProc: TProc<JView>): TPscRunnable;
     class procedure SmoothScrollTo(View: JView; TargetX, TargetY: Integer; Duration: Integer = 1000);
     class procedure ConvertAttributesToDictionary(const Attributes: TArray<TCustomAttribute>; var Dict: TDictionary<String, TCustomAttribute>);
+    class procedure HideKeyboard(View: JView);
   end;
 
 implementation
@@ -219,6 +220,20 @@ begin
     on E: Exception do
       raise Exception.Create('TPscUtils.ConvertAttributesToDictionary: ' + E.Message);
   end;
+end;
+
+class procedure TPscUtils.HideKeyboard(View: JView);
+var
+  InputMethodManager: JInputMethodManager;
+begin
+  if View = nil then Exit;
+
+  InputMethodManager := TJInputMethodManager.Wrap(
+    TAndroidHelper.Context.getSystemService(TJContext.JavaClass.INPUT_METHOD_SERVICE)
+  );
+
+  if InputMethodManager <> nil then
+    InputMethodManager.hideSoftInputFromWindow(View.getWindowToken, 0);
 end;
 
 class function TPscUtils.DateToMillis(Year, Month, Day: Integer): Int64;

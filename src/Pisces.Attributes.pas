@@ -361,6 +361,14 @@ type
     property Value: TImageScaleType read FValue;
   end;
 
+  TReturnKeyTypeAttribute = class(TCustomAttribute)
+  private
+    FValue: TReturnKeyType;
+  public
+    constructor Create(AValue: TReturnKeyType);
+    property Value: TReturnKeyType read FValue;
+  end;
+
   TScreenOrientationAttribute = class(TCustomAttribute)
   private
     FOrientation: TScreenOrientation;
@@ -719,6 +727,7 @@ type
   //JEditText
   TextAttribute = class(TTextAttribute);
   SelectionAttribute = class(TSelectionAttribute);
+  ReturnKeyTypeAttribute = class(TReturnKeyTypeAttribute);
 
   //JCompoundButton
   CheckedAttribute = class(TPiscesBooleanAttribute);
@@ -1379,6 +1388,13 @@ end;
 constructor TScreenOrientationAttribute.Create(Orientation: TScreenOrientation);
 begin
   FOrientation := Orientation;
+end;
+
+{ TReturnKeyTypeAttribute }
+
+constructor TReturnKeyTypeAttribute.Create(AValue: TReturnKeyType);
+begin
+  FValue := AValue;
 end;
 
 end.

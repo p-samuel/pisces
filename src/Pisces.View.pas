@@ -58,6 +58,8 @@ type
     function OnTextChanged(Proc: TProc<String>): IPscEdit;
     function OnTextChanging(Proc: TProc<String, Integer, Integer, Integer>): IPscEdit;
     function OnBeforeTextChanged(Proc: TProc<String, Integer, Integer, Integer>): IPscEdit;
+    function ReturnKeyType(Value: TReturnKeyType): IPscEdit; overload;
+    function OnEditorAction(Proc: TProc<JTextView, Integer, JKeyEvent>): IPscEdit;
   end;
 
   IPscImage = interface(IPscView)
@@ -539,6 +541,9 @@ type
     function OnTextChanged(Proc: TProc<String>): IPscEdit;
     function OnTextChanging(Proc: TProc<String, Integer, Integer, Integer>): IPscEdit;
     function OnBeforeTextChanged(Proc: TProc<String, Integer, Integer, Integer>): IPscEdit;
+    function ReturnKeyType(Value: TReturnKeyType): IPscEdit; overload;
+    function ReturnKeyType: IPscEdit; overload;
+    function OnEditorAction(Proc: TProc<JTextView, Integer, JKeyEvent>): IPscEdit;
   end;
 
   TPscImage = class(TPscView, IPscImage)
@@ -3481,6 +3486,7 @@ begin
   try
     Text;
     Selection;
+    ReturnKeyType;
   except
     on E: Exception do
       TPscUtils.Log(E.Message, 'ApplyAttributes', TLogger.Error, Self);
@@ -3575,6 +3581,35 @@ begin
   Result := Self;
   Listener := TPscTextWatcherListener.Create(nil, nil, Proc);
   JEditText(FView).addTextChangedListener(Listener);
+end;
+
+function TPscEdit.ReturnKeyType(Value: TReturnKeyType): IPscEdit;
+begin
+  Result := Self;
+  case Value of
+    TReturnKeyType.Done: JEditText(FView).setImeOptions(TJEditorInfo.JavaClass.IME_ACTION_DONE);
+    TReturnKeyType.Go: JEditText(FView).setImeOptions(TJEditorInfo.JavaClass.IME_ACTION_GO);
+    TReturnKeyType.Next: JEditText(FView).setImeOptions(TJEditorInfo.JavaClass.IME_ACTION_NEXT);
+    TReturnKeyType.Search: JEditText(FView).setImeOptions(TJEditorInfo.JavaClass.IME_ACTION_SEARCH);
+    TReturnKeyType.Send: JEditText(FView).setImeOptions(TJEditorInfo.JavaClass.IME_ACTION_SEND);
+    TReturnKeyType.Unspecified: JEditText(FView).setImeOptions(TJEditorInfo.JavaClass.IME_ACTION_UNSPECIFIED);
+  end;
+end;
+
+function TPscEdit.ReturnKeyType: IPscEdit;
+begin
+  Result := Self;
+  if FAttributes.ContainsKey('ReturnKeyTypeAttribute') then
+    ReturnKeyType(ReturnKeyTypeAttribute(FAttributes['ReturnKeyTypeAttribute']).Value);
+end;
+
+function TPscEdit.OnEditorAction(Proc: TProc<JTextView, Integer, JKeyEvent>): IPscEdit;
+var
+  Listener: TPscEditorActionListener;
+begin
+  Result := Self;
+  Listener := TPscEditorActionListener.Create(Proc);
+  JEditText(FView).setOnEditorActionListener(Listener);
 end;
 
 { TPscCompoundButton }

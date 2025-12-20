@@ -228,6 +228,7 @@ type
   //JEditText
   TextAttribute = Pisces.Attributes.TextAttribute;
   SelectionAttribute = Pisces.Attributes.SelectionAttribute;
+  ReturnKeyTypeAttribute = Pisces.Attributes.ReturnKeyTypeAttribute;
 
   //JCompoundButton
   CheckedAttribute = Pisces.Attributes.CheckedAttribute;
@@ -352,9 +353,10 @@ type
   TJTextView = Pisces.Types.TJTextView;
   TJScroller = Pisces.Types.TJScroller;
   TJSwitch = Pisces.Types.TJSwitch;
+  TJImageView = Pisces.Types.TJImageView;
   TJImageView_ScaleType = Pisces.Types.TJImageView_ScaleType;
   TJView_OnLayoutChangeListenerClass = Pisces.Types.TJView_OnLayoutChangeListener;
-  JImageView = Pisces.Types.JImageView;
+  TJKeyEvent = Pisces.Types.TJKeyEvent;
 
   JView = Pisces.Types.JView;
   JView_AccessibilityDelegate = Pisces.Types.JView_AccessibilityDelegate;
@@ -385,7 +387,9 @@ type
   JSwitch = Pisces.Types.JSwitch;
   JScroller = Pisces.Types.JScroller;
   JImageView_ScaleType = Pisces.Types.JImageView_ScaleType;
+  JImageView = Pisces.Types.JImageView;
   JView_OnLayoutChangeListenerClass = Pisces.Types.JView_OnLayoutChangeListener;
+  JKeyEvent = Pisces.Types.JKeyEvent;
 
   // Java types
   JObject = Pisces.Types.JObject;
@@ -1089,6 +1093,7 @@ type
   TTextBuffer = Pisces.Types.TTextBuffer;
   TOrientation = Pisces.Types.TOrientation;
   TInputType = Pisces.Types.TInputType;
+  TReturnKeyType = Pisces.Types.TReturnKeyType;
   TDescendantFocusability = Pisces.Types.TDescendantFocusability;
   TImageScaleType = Pisces.Types.TImageScaleType;
   TSwipeDirection = Pisces.Types.TSwipeDirection;
@@ -1097,6 +1102,7 @@ type
   TGradientShape = Pisces.Types.TGradientShape;
   TColorStopArray = Pisces.Types.TColorStopArray;
   TScreenOrientation = Pisces.Types.TScreenOrientation;
+
 
   // Activity lifecycle
   TPscLifecycleManager = Pisces.Types.TPscLifecycleManager;

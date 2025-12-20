@@ -206,6 +206,16 @@ type
     property KeyboardThreshold: Integer read FKeyboardThreshold write FKeyboardThreshold;
   end;
 
+  TPscEditorActionListener = class(TJavaLocal, JTextView_OnEditorActionListener)
+  private
+    FProc: TProc<JTextView, Integer, JKeyEvent>;
+  public
+    constructor Create(AProc: TProc<JTextView, Integer, JKeyEvent>);
+    function onEditorAction(v: JTextView; actionId: Integer; event: JKeyEvent): Boolean; cdecl;
+  published
+    property Proc: TProc<JTextView, Integer, JKeyEvent> read FProc write FProc;
+  end;
+
 implementation
 
 uses
@@ -606,6 +616,24 @@ begin
   if (WasKeyboardVisible <> FIsKeyboardVisible) and Assigned(FProc) then
     FProc(FIsKeyboardVisible, KeyboardHeight + 560);
 
+end;
+
+{ TPscEditorActionListener }
+
+constructor TPscEditorActionListener.Create(AProc: TProc<JTextView, Integer, JKeyEvent>);
+begin
+  inherited Create;
+  FProc := AProc;
+end;
+
+function TPscEditorActionListener.onEditorAction(v: JTextView; actionId: Integer; event: JKeyEvent): Boolean;
+begin
+  Result := False;
+  if Assigned(FProc) then
+  begin
+    FProc(v, actionId, event);
+    Result := True;
+  end;
 end;
 
 end.
