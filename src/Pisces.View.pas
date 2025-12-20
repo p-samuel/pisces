@@ -60,6 +60,7 @@ type
     function OnBeforeTextChanged(Proc: TProc<String, Integer, Integer, Integer>): IPscEdit;
     function ReturnKeyType(Value: TReturnKeyType): IPscEdit; overload;
     function OnEditorAction(Proc: TProc<JTextView, Integer, JKeyEvent>): IPscEdit;
+    function OnKey(Proc: TFunc<JView, Integer, JKeyEvent, Boolean>): IPscEdit;
   end;
 
   IPscImage = interface(IPscView)
@@ -544,6 +545,7 @@ type
     function ReturnKeyType(Value: TReturnKeyType): IPscEdit; overload;
     function ReturnKeyType: IPscEdit; overload;
     function OnEditorAction(Proc: TProc<JTextView, Integer, JKeyEvent>): IPscEdit;
+    function OnKey(Proc: TFunc<JView, Integer, JKeyEvent, Boolean>): IPscEdit;
   end;
 
   TPscImage = class(TPscView, IPscImage)
@@ -3610,6 +3612,15 @@ begin
   Result := Self;
   Listener := TPscEditorActionListener.Create(Proc);
   JEditText(FView).setOnEditorActionListener(Listener);
+end;
+
+function TPscEdit.OnKey(Proc: TFunc<JView, Integer, JKeyEvent, Boolean>): IPscEdit;
+var
+  Listener: TPscViewKeyListener;
+begin
+  Result := Self;
+  Listener := TPscViewKeyListener.Create(Proc);
+  JEditText(FView).setOnKeyListener(Listener);
 end;
 
 { TPscCompoundButton }

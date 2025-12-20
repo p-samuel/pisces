@@ -141,6 +141,16 @@ type
     property Proc: TProc<JView, TSwipeDirection, Single, Single> read FProc write FProc;
   end;
 
+  TPscViewKeyListener = class(TJavaLocal, JView_OnKeyListener)
+  private
+    FProc: TFunc<JView, Integer, JKeyEvent, Boolean>;
+  public
+    constructor Create(AProc: TFunc<JView, Integer, JKeyEvent, Boolean>);
+    function onKey(v: JView; keyCode: Integer; event: JKeyEvent): Boolean; cdecl;
+  published
+    property Proc: TFunc<JView, Integer, JKeyEvent, Boolean> read FProc write FProc;
+  end;
+
   // AlertDialog listeners
   TPscDialogClickListener = class(TJavaLocal, JDialogInterface_OnClickListener)
   private
@@ -576,6 +586,21 @@ procedure TPscTextWatcherListener.afterTextChanged(s: JEditable);
 begin
   if Assigned(FProcAfter) then
     FProcAfter(JStringToString(s.toString));
+end;
+
+{ TPscViewKeyListener }
+
+constructor TPscViewKeyListener.Create(AProc: TFunc<JView, Integer, JKeyEvent, Boolean>);
+begin
+  inherited Create;
+  FProc := AProc;
+end;
+
+function TPscViewKeyListener.onKey(v: JView; keyCode: Integer; event: JKeyEvent): Boolean;
+begin
+  Result := False;
+  if Assigned(FProc) then
+    Result := FProc(v, keyCode, event);
 end;
 
 { TPscGlobalLayoutListener }

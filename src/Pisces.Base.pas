@@ -91,6 +91,7 @@ type
     procedure OnTextChangingHandler(AText: String; AStart, ABefore, ACount: Integer); virtual;
     procedure OnBeforeTextChangedHandler(AText: String; AStart, ACount, AAfter: Integer); virtual;
     procedure OnEditorActionHandler(v: JTextView; actionId: Integer; event: JKeyEvent); virtual;
+    function OnKeyHandler(AView: JView; AKeyCode: Integer; AEvent: JKeyEvent): Boolean; virtual;
 
     // Lifecycle handler methods (virtual - override in descendants)
     procedure OnViewAttachedToWindowHandler(AView: JView); virtual;
@@ -142,6 +143,7 @@ type
     OnTextChanging: TProc<String, Integer, Integer, Integer>;
     OnBeforeTextChanged: TProc<String, Integer, Integer, Integer>;
     OnEditorAction: TProc<JTextView, Integer, JKeyEvent>;
+    OnKey: TFunc<JView, Integer, JKeyEvent, Boolean>;
     // Lifecycle handlers
     OnViewAttachedToWindow: TProc<JView>;
     OnViewDetachedFromWindow: TProc<JView>;
@@ -175,6 +177,7 @@ begin
   Result.OnTextChanging := Inst.OnTextChangingHandler;
   Result.OnBeforeTextChanged := Inst.OnBeforeTextChangedHandler;
   Result.OnEditorAction := Inst.OnEditorActionHandler;
+  Result.OnKey := Inst.OnKeyHandler;
   // Lifecycle handlers
   Result.OnViewAttachedToWindow := Inst.OnViewAttachedToWindowHandler;
   Result.OnViewDetachedFromWindow := Inst.OnViewDetachedFromWindowHandler;
@@ -307,6 +310,7 @@ begin
                 .OnBeforeTextChanged(H.OnBeforeTextChanged)
                 .OnTextChanging(H.OnTextChanging)
                 .OnEditorAction(H.OnEditorAction)
+                .OnKey(H.OnKey)
                 .OnClick(H.OnClick)
                 .OnLongClick(H.OnLongClick)
                 .GetView;
@@ -586,6 +590,7 @@ begin
         .OnTextChanging(OnTextChangingHandler)
         .OnBeforeTextChanged(OnBeforeTextChangedHandler)
         .OnEditorAction(OnEditorActionHandler)
+        .OnKey(OnKeyHandler)
         .OnClick(OnClickHandler)
         .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscText) then begin
@@ -896,6 +901,12 @@ end;
 procedure TPisces.OnEditorActionHandler(v: JTextView; actionId: Integer; event: JKeyEvent);
 begin
   // Override in descendants to handle editor action events
+end;
+
+function TPisces.OnKeyHandler(AView: JView; AKeyCode: Integer; AEvent: JKeyEvent): Boolean;
+begin
+  // Override in descendants to handle key events (return True to consume)
+  Result := False;
 end;
 
 procedure TPisces.OnViewAttachedToWindowHandler(AView: JView);
