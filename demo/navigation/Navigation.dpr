@@ -17,7 +17,8 @@ uses
   View.Home in 'src\View.Home.pas',
   View.Detail in 'src\View.Detail.pas',
   View.User in 'src\View.User.pas',
-  Pisces.Audio in '..\..\src\Pisces.Audio.pas';
+  Pisces.Audio in '..\..\src\Pisces.Audio.pas',
+  Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas';
 
 {$R *.res}
 

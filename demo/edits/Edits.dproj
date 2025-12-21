@@ -241,6 +241,7 @@
         <DCCReference Include="..\..\src\Pisces.App.pas"/>
         <DCCReference Include="..\..\src\Pisces.ScreenManager.pas"/>
         <DCCReference Include="..\..\src\Pisces.Audio.pas"/>
+        <DCCReference Include="..\..\src\Pisces.Keyboard.pas"/>
         <DCCReference Include="src\View.Home.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
@@ -1471,12 +1472,6 @@
             <Platforms>
                 <Platform value="Android">True</Platform>
                 <Platform value="Android64">True</Platform>
-                <Platform value="iOSDevice32">False</Platform>
-                <Platform value="iOSDevice64">False</Platform>
-                <Platform value="iOSSimARM64">False</Platform>
-                <Platform value="OSX32">False</Platform>
-                <Platform value="OSX64">False</Platform>
-                <Platform value="OSXARM64">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>

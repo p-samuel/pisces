@@ -25,11 +25,14 @@ type
     Height(110),
     Padding(16, 12, 16, 12),
     Gravity([TGravity.CenterVertical]),
-    InputType(TInputType.Text)
+    InputType(TInputType.Text),
+    ReturnKeyTypeAttribute(TReturnKeyType.Done)
   ] TTextEdit = class(TPisces)
     procedure OnTextChangedHandler(AText: String); override;
     procedure OnTextChangingHandler(AText: String; AStart, ABefore, ACount: Integer); override;
     procedure OnBeforeTextChangedHandler(AText: String; AStart, ACount, AAfter: Integer); override;
+    procedure OnEditorActionHandler(v: JTextView; actionId: Integer; event: JKeyEvent); override;
+    function OnKeyHandler(AView: JView; AKeyCode: Integer; AEvent: JKeyEvent): Boolean; override;
   end;
 
   [ Edit('edtNumber'),
@@ -287,9 +290,10 @@ type
   end;
 
   [ FrameLayout('home'),
-    BackgroundColor(0, 0, 0),
+    BackgroundColor(0, 0, 0, 0),
     DarkStatusBarIcons(False),
-    FullScreen(True)
+    FullScreen(True),
+    EnableKeyboardPadding(True)
   ] THomeView = class(TPisces)
     FScrollContainer: TScrollContainer;
   end;
@@ -299,7 +303,18 @@ var
 
 implementation
 
+uses
+  System.SysUtils;
 { TTextEdit }
+
+procedure TTextEdit.OnEditorActionHandler(v: JTextView; actionId: Integer; event: JKeyEvent);
+begin
+  inherited;
+  if (actionId = TJEditorInfo.JavaClass.IME_ACTION_DONE) then begin
+    TPscUtils.HideKeyboard(v);
+    TPscUtils.Toast('Keyboard hidden', 0);
+  end;
+end;
 
 procedure TTextEdit.OnTextChangedHandler(AText: String);
 begin
@@ -309,6 +324,28 @@ end;
 procedure TTextEdit.OnTextChangingHandler(AText: String; AStart, ABefore, ACount: Integer);
 begin
   TPscUtils.Log('Text: ' + AText, 'OnTextChanging', TLogger.Info, Self);
+end;
+
+function TTextEdit.OnKeyHandler(AView: JView; AKeyCode: Integer; AEvent: JKeyEvent): Boolean;
+var
+  ActionStr: String;
+begin
+  if AEvent = nil then
+    ActionStr := 'nil'
+  else
+    ActionStr := IntToStr(AEvent.getAction);
+
+  TPscUtils.Log(Format('KeyCode=%d Action=%s', [AKeyCode, ActionStr]), 'OnKeyHandler', TLogger.Info, Self);
+
+  Result := False;
+  if AKeyCode = TJKeyEvent.JavaClass.KEYCODE_BACK then
+  begin
+    if (AEvent = nil) or (AEvent.getAction = TJKeyEvent.JavaClass.ACTION_UP) then
+    begin
+      TPscUtils.HideKeyboard(AView);
+      Result := True;
+    end;
+  end;
 end;
 
 procedure TTextEdit.OnBeforeTextChangedHandler(AText: String; AStart, ACount, AAfter: Integer);

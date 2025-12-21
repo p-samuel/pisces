@@ -15,7 +15,8 @@ uses
   View.Main in 'src\View.Main.pas',
   Pisces.App in '..\..\src\Pisces.App.pas',
   Pisces.ScreenManager in '..\..\src\Pisces.ScreenManager.pas',
-  Pisces.Audio in '..\..\src\Pisces.Audio.pas';
+  Pisces.Audio in '..\..\src\Pisces.Audio.pas',
+  Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas';
 
 {$R *.res}
 
