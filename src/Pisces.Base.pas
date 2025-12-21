@@ -1190,9 +1190,7 @@ begin
       Manager.ActivityLifecycleListener.OnStart := OnActivityStartHandler;
       Manager.ActivityLifecycleListener.OnResume := OnActivityResumeHandler;
       Manager.ActivityLifecycleListener.OnPause := OnActivityPauseHandler;
-      Manager.ActivityLifecycleListener.OnPrePaused := OnActivityPauseHandler;
       Manager.ActivityLifecycleListener.OnStop := OnActivityStopHandler;
-      Manager.ActivityLifecycleListener.OnPreStopped := OnActivityStopHandler;
       Manager.ActivityLifecycleListener.OnDestroy := OnActivityDestroyHandler;
       Manager.ActivityLifecycleListener.OnConfigurationChanged := OnActivityConfigurationChangedHandler;
       Manager.ActivityLifecycleListener.OnSaveInstanceState := OnActivitySaveInstanceStateHandler;
