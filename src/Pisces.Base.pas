@@ -923,7 +923,8 @@ end;
 
 procedure TPisces.OnWindowFocusChangedHandler(AHasFocus: Boolean);
 begin
-  // Override in descendants to handle window focus changed events
+  if (not AHasFocus) and Assigned(FKeyboardHelper) then
+    FKeyboardHelper.ResetPadding;
 end;
 
 procedure TPisces.OnActivityCreateHandler(AActivity: JActivity; ASavedInstanceState: JBundle);
@@ -943,12 +944,14 @@ end;
 
 procedure TPisces.OnActivityPauseHandler(AActivity: JActivity);
 begin
-  // Override in descendants to handle activity pause events
+  if Assigned(FKeyboardHelper) then
+    FKeyboardHelper.ResetPadding;
 end;
 
 procedure TPisces.OnActivityStopHandler(AActivity: JActivity);
 begin
-  // Override in descendants to handle activity stop events
+  if Assigned(FKeyboardHelper) then
+    FKeyboardHelper.ResetPadding;
 end;
 
 procedure TPisces.OnActivityDestroyHandler(AActivity: JActivity);
@@ -1187,7 +1190,9 @@ begin
       Manager.ActivityLifecycleListener.OnStart := OnActivityStartHandler;
       Manager.ActivityLifecycleListener.OnResume := OnActivityResumeHandler;
       Manager.ActivityLifecycleListener.OnPause := OnActivityPauseHandler;
+      Manager.ActivityLifecycleListener.OnPrePaused := OnActivityPauseHandler;
       Manager.ActivityLifecycleListener.OnStop := OnActivityStopHandler;
+      Manager.ActivityLifecycleListener.OnPreStopped := OnActivityStopHandler;
       Manager.ActivityLifecycleListener.OnDestroy := OnActivityDestroyHandler;
       Manager.ActivityLifecycleListener.OnConfigurationChanged := OnActivityConfigurationChangedHandler;
       Manager.ActivityLifecycleListener.OnSaveInstanceState := OnActivitySaveInstanceStateHandler;

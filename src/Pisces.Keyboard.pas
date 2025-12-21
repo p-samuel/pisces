@@ -32,6 +32,7 @@ type
     destructor Destroy; override;
     procedure Enable;
     procedure Disable;
+    procedure ResetPadding;
   end;
 
 implementation
@@ -108,6 +109,22 @@ begin
   TPscUtils.Log('Keyboard helper disabled', 'Disable', TLogger.Info, Self);
 end;
 
+procedure TPscKeyboardHelper.ResetPadding;
+begin
+  if FRootView = nil then
+    Exit;
+
+  FRootView.setPadding(
+    FBasePaddingLeft,
+    FBasePaddingTop,
+    FBasePaddingRight,
+    FBasePaddingBottom
+  );
+
+  FIsKeyboardVisible := False;
+  FLastKeyboardHeight := 0;
+end;
+
 function TPscKeyboardHelper.GetImeInsetBottom(ARootView: JView): Integer;
 var
   Insets: JWindowInsets;
@@ -156,6 +173,13 @@ var
 begin
   if ARootHeight <= 0 then
     Exit;
+
+  if (ARootView <> nil) and (not ARootView.hasWindowFocus) then
+  begin
+    if FIsKeyboardVisible or (FLastKeyboardHeight <> 0) then
+      ResetPadding;
+    Exit;
+  end;
 
   // Track baseline visible height (best guess of no-keyboard state)
   if FBaseVisibleHeight = 0 then
