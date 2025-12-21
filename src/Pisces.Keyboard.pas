@@ -117,8 +117,8 @@ begin
   begin
     // Ensure padding at least ~30% of screen height to keep focused edits above IME on devices that don't resize
     TargetBottom := Max(AKeyboardHeight, Round(ScreenHeight * 0.30));
-    // Add a small extra buffer (~32p) to fully clear the keyboard
-    BottomBuffer := Round(32 * TAndroidHelper.DisplayMetrics.density);
+    // Add a small extra buffer (~16dp) to fully clear the keyboard
+    BottomBuffer := Round(0 * TAndroidHelper.DisplayMetrics.density);
     TargetBottom := TargetBottom + BottomBuffer;
     FRootView.setPadding(
       FBasePaddingLeft,

@@ -630,6 +630,42 @@ var
   PercentThreshold: Integer;
   EffectiveKeyboardHeight: Integer;
   CurrentDelta: Integer;
+  ImeInsetBottom: Integer;
+
+  function GetImeInsetBottom(AView: JView): Integer;
+  var
+    Insets: JWindowInsets;
+    SystemBottom: Integer;
+    StableBottom: Integer;
+    ImeInsets: Jgraphics_Insets;
+    ImeType: Integer;
+  begin
+    Result := 0;
+    if AView = nil then
+      Exit;
+    if TJBuild_VERSION.JavaClass.SDK_INT < 20 then
+      Exit;
+    Insets := AView.getRootWindowInsets;
+    if Insets = nil then
+      Exit;
+    // Android 11+ provides IME insets directly
+    if TJBuild_VERSION.JavaClass.SDK_INT >= 30 then
+    begin
+      ImeType := TJWindowInsets_Type.JavaClass.ime;
+      ImeInsets := Insets.getInsets(ImeType);
+      if ImeInsets <> nil then
+        Result := ImeInsets.bottom;
+      Exit;
+    end;
+
+    // Fallback for older APIs: derive IME delta from system vs stable insets
+    SystemBottom := Insets.getSystemWindowInsetBottom;
+    StableBottom := Insets.getStableInsetBottom;
+    Result := SystemBottom - StableBottom;
+    if Result < 0 then
+      Result := 0;
+  end;
+
 begin
   RootView := FRootView;
   if RootView = nil then Exit;
@@ -658,6 +694,9 @@ begin
     FBaseSystemDelta := CurrentDelta;
 
   EffectiveKeyboardHeight := Max(0, CurrentDelta - FBaseSystemDelta);
+  ImeInsetBottom := GetImeInsetBottom(ScreenRoot);
+  if ImeInsetBottom > 0 then
+    EffectiveKeyboardHeight := Max(EffectiveKeyboardHeight, ImeInsetBottom);
 
   // Use device threshold, or ~12dp, or ~1.5% of baseline visible height to avoid false positives but still catch short deltas
   MinKeyboardHeightPx := Round(12 * TAndroidHelper.DisplayMetrics.density);
@@ -666,8 +705,8 @@ begin
   FIsKeyboardVisible := EffectiveKeyboardHeight >= DynamicThreshold;
 
   TPscUtils.Log(
-    Format('RootHeight=%d VisibleHeight=%d BaseVisibleHeight=%d BaseSystemDelta=%d CurrentDelta=%d Effective=%d Threshold=%d',
-    [RootHeight, VisibleHeight, FBaseVisibleHeight, FBaseSystemDelta, CurrentDelta, EffectiveKeyboardHeight, DynamicThreshold]
+    Format('RootHeight=%d VisibleHeight=%d BaseVisibleHeight=%d BaseSystemDelta=%d CurrentDelta=%d ImeInset=%d Effective=%d Threshold=%d',
+    [RootHeight, VisibleHeight, FBaseVisibleHeight, FBaseSystemDelta, CurrentDelta, ImeInsetBottom, EffectiveKeyboardHeight, DynamicThreshold]
     ), 'onGlobalLayout', TLogger.Info, Self );
 
   if (WasKeyboardVisible <> FIsKeyboardVisible) and Assigned(FProc) then begin
