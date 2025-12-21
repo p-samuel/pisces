@@ -900,6 +900,8 @@ end;
 
 procedure TPisces.OnEditorActionHandler(v: JTextView; actionId: Integer; event: JKeyEvent);
 begin
+  // Hides keyboard by default.
+  TPscUtils.HideKeyboard(v);
   // Override in descendants to handle editor action events
 end;
 
@@ -1213,7 +1215,7 @@ begin
         for Attribute in AttributesList do begin
           if (Attribute is EnableKeyboardPadding)then begin
             if TPiscesBooleanAttribute(Attribute).Value then begin
-              FKeyboardHelper := TPscKeyboardHelper.Create(AndroidView.getRootView, 150);
+              FKeyboardHelper := TPscKeyboardHelper.Create(AndroidView.getRootView, 0);
               FKeyboardHelper.Enable;
               TPscUtils.Log('Keyboard helper created and enabled', 'SetKeyboardPadding', TLogger.Info, Self);
             end;

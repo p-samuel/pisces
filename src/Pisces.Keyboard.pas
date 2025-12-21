@@ -16,6 +16,10 @@ type
     FListener: TPscGlobalLayoutListener;
     FEnabled: Boolean;
     FThreshold: Integer;
+    FBasePaddingLeft: Integer;
+    FBasePaddingTop: Integer;
+    FBasePaddingRight: Integer;
+    FBasePaddingBottom: Integer;
     procedure HandleKeyboardChange(AIsVisible: Boolean; AKeyboardHeight: Integer);
   public
     constructor Create(ARootView: JView; AThreshold: Integer = 150);
@@ -27,7 +31,7 @@ type
 implementation
 
 uses
-  Pisces.Utils, System.SysUtils;
+  Pisces.Utils, System.SysUtils, System.Math;
 
 constructor TPscKeyboardHelper.Create(ARootView: JView; AThreshold: Integer);
 begin
@@ -35,6 +39,20 @@ begin
   FRootView := ARootView;
   FThreshold := AThreshold;
   FEnabled := False;
+  if FRootView <> nil then
+  begin
+    FBasePaddingLeft := FRootView.getPaddingLeft;
+    FBasePaddingTop := FRootView.getPaddingTop;
+    FBasePaddingRight := FRootView.getPaddingRight;
+    FBasePaddingBottom := FRootView.getPaddingBottom;
+  end
+  else
+  begin
+    FBasePaddingLeft := 0;
+    FBasePaddingTop := 0;
+    FBasePaddingRight := 0;
+    FBasePaddingBottom := 0;
+  end;
 end;
 
 destructor TPscKeyboardHelper.Destroy;
@@ -77,26 +95,48 @@ begin
 end;
 
 procedure TPscKeyboardHelper.HandleKeyboardChange(AIsVisible: Boolean; AKeyboardHeight: Integer);
+var
+  ScreenRoot: JView;
+  ScreenHeight: Integer;
+  TargetBottom: Integer;
+  BottomBuffer: Integer;
 begin
   TPscUtils.Log(Format('Keyboard %s, Height: %d',
     [BoolToStr(AIsVisible, True), AKeyboardHeight]),
     'HandleKeyboardChange', TLogger.Info, Self);
 
-  // Simple approach: just add/remove bottom padding
+  ScreenRoot := nil;
+  if FRootView <> nil then
+    ScreenRoot := FRootView.getRootView;
+
+  ScreenHeight := 0;
+  if ScreenRoot <> nil then
+    ScreenHeight := ScreenRoot.getHeight;
+
   if AIsVisible then
+  begin
+    // Ensure padding at least ~30% of screen height to keep focused edits above IME on devices that don't resize
+    TargetBottom := Max(AKeyboardHeight, Round(ScreenHeight * 0.30));
+    // Add a small extra buffer (~32p) to fully clear the keyboard
+    BottomBuffer := Round(32 * TAndroidHelper.DisplayMetrics.density);
+    TargetBottom := TargetBottom + BottomBuffer;
     FRootView.setPadding(
-      FRootView.getPaddingLeft,
-      FRootView.getPaddingTop,
-      FRootView.getPaddingRight,
-      AKeyboardHeight
-    )
-  else
-    FRootView.setPadding(
-      FRootView.getPaddingLeft,
-      FRootView.getPaddingTop,
-      FRootView.getPaddingRight,
-      0
+      FBasePaddingLeft,
+      FBasePaddingTop,
+      FBasePaddingRight,
+      FBasePaddingBottom + TargetBottom
     );
+  end
+  else
+  begin
+    // Restore original padding when keyboard hides
+    FRootView.setPadding(
+      FBasePaddingLeft,
+      FBasePaddingTop,
+      FBasePaddingRight,
+      FBasePaddingBottom
+    );
+  end;
 end;
 
 end.
