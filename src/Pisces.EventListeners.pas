@@ -202,20 +202,17 @@ type
     property ProcBefore: TProc<String, Integer, Integer, Integer> read FProcBefore write FProcBefore;
   end;
 
+  TKeyboardLayoutProc = reference to procedure (ARootView: JView; ARootHeight, AVisibleHeight: Integer);
+
   TPscGlobalLayoutListener = class(TJavaLocal, JViewTreeObserver_OnGlobalLayoutListener)
   private
     FRootView: JView;
-    FKeyboardThreshold: Integer;
-    FIsKeyboardVisible: Boolean;
-    FBaseVisibleHeight: Integer;
-    FBaseSystemDelta: Integer;
-    FProc: TProc<Boolean, Integer>;
+    FProc: TKeyboardLayoutProc;
   public
-    constructor Create(ARootView: JView; AThreshold: Integer = 150);
+    constructor Create(ARootView: JView);
     procedure onGlobalLayout; cdecl;
   published
-    property Proc: TProc<Boolean, Integer> read FProc write FProc;
-    property KeyboardThreshold: Integer read FKeyboardThreshold write FKeyboardThreshold;
+    property Proc: TKeyboardLayoutProc read FProc write FProc;
   end;
 
   TPscEditorActionListener = class(TJavaLocal, JTextView_OnEditorActionListener)
@@ -231,7 +228,7 @@ type
 implementation
 
 uses
-  Pisces.Utils, Androidapi.JNI.Util, System.Math;
+  Pisces.Utils, Androidapi.JNI.Util;
 
 { TPscViewClickListener }
 
@@ -607,14 +604,10 @@ end;
 
 { TPscGlobalLayoutListener }
 
-constructor TPscGlobalLayoutListener.Create(ARootView: JView; AThreshold: Integer);
+constructor TPscGlobalLayoutListener.Create(ARootView: JView);
 begin
   inherited Create;
   FRootView := ARootView;
-  FKeyboardThreshold := AThreshold;
-  FIsKeyboardVisible := False;
-  FBaseVisibleHeight := 0;
-  FBaseSystemDelta := -1;
 end;
 
 procedure TPscGlobalLayoutListener.onGlobalLayout;
@@ -624,48 +617,6 @@ var
   ScreenRoot: JView;
   RootHeight: Integer;
   VisibleHeight: Integer;
-  WasKeyboardVisible: Boolean;
-  MinKeyboardHeightPx: Integer;
-  DynamicThreshold: Integer;
-  PercentThreshold: Integer;
-  EffectiveKeyboardHeight: Integer;
-  CurrentDelta: Integer;
-  ImeInsetBottom: Integer;
-
-  function GetImeInsetBottom(AView: JView): Integer;
-  var
-    Insets: JWindowInsets;
-    SystemBottom: Integer;
-    StableBottom: Integer;
-    ImeInsets: Jgraphics_Insets;
-    ImeType: Integer;
-  begin
-    Result := 0;
-    if AView = nil then
-      Exit;
-    if TJBuild_VERSION.JavaClass.SDK_INT < 20 then
-      Exit;
-    Insets := AView.getRootWindowInsets;
-    if Insets = nil then
-      Exit;
-    // Android 11+ provides IME insets directly
-    if TJBuild_VERSION.JavaClass.SDK_INT >= 30 then
-    begin
-      ImeType := TJWindowInsets_Type.JavaClass.ime;
-      ImeInsets := Insets.getInsets(ImeType);
-      if ImeInsets <> nil then
-        Result := ImeInsets.bottom;
-      Exit;
-    end;
-
-    // Fallback for older APIs: derive IME delta from system vs stable insets
-    SystemBottom := Insets.getSystemWindowInsetBottom;
-    StableBottom := Insets.getStableInsetBottom;
-    Result := SystemBottom - StableBottom;
-    if Result < 0 then
-      Result := 0;
-  end;
-
 begin
   RootView := FRootView;
   if RootView = nil then Exit;
@@ -677,45 +628,8 @@ begin
   RootView.getWindowVisibleDisplayFrame(Rect);
   RootHeight := ScreenRoot.getHeight;
   VisibleHeight := Rect.bottom - Rect.top;
-  WasKeyboardVisible := FIsKeyboardVisible;
-
-  // Track baseline visible height (best guess of no-keyboard state)
-  if FBaseVisibleHeight = 0 then
-    FBaseVisibleHeight := VisibleHeight
-  else if VisibleHeight > FBaseVisibleHeight then
-    FBaseVisibleHeight := VisibleHeight;
-
-  CurrentDelta := RootHeight - VisibleHeight; // includes system bars + keyboard
-
-  // Track minimal delta (system bars only) to isolate keyboard height even if first event occurs with keyboard open
-  if FBaseSystemDelta = -1 then
-    FBaseSystemDelta := CurrentDelta
-  else if CurrentDelta < FBaseSystemDelta then
-    FBaseSystemDelta := CurrentDelta;
-
-  EffectiveKeyboardHeight := Max(0, CurrentDelta - FBaseSystemDelta);
-  ImeInsetBottom := GetImeInsetBottom(ScreenRoot);
-  if ImeInsetBottom > 0 then
-    EffectiveKeyboardHeight := Max(EffectiveKeyboardHeight, ImeInsetBottom);
-
-  // Use device threshold, or ~12dp, or ~1.5% of baseline visible height to avoid false positives but still catch short deltas
-  MinKeyboardHeightPx := Round(12 * TAndroidHelper.DisplayMetrics.density);
-  PercentThreshold := Round(FBaseVisibleHeight * 0.015); // ~1.5% of baseline
-  DynamicThreshold := Max(FKeyboardThreshold, Max(MinKeyboardHeightPx, PercentThreshold));
-  FIsKeyboardVisible := EffectiveKeyboardHeight >= DynamicThreshold;
-
-  TPscUtils.Log(
-    Format('RootHeight=%d VisibleHeight=%d BaseVisibleHeight=%d BaseSystemDelta=%d CurrentDelta=%d ImeInset=%d Effective=%d Threshold=%d',
-    [RootHeight, VisibleHeight, FBaseVisibleHeight, FBaseSystemDelta, CurrentDelta, ImeInsetBottom, EffectiveKeyboardHeight, DynamicThreshold]
-    ), 'onGlobalLayout', TLogger.Info, Self );
-
-  if (WasKeyboardVisible <> FIsKeyboardVisible) and Assigned(FProc) then begin
-    if FIsKeyboardVisible then
-      FProc(FIsKeyboardVisible, EffectiveKeyboardHeight)
-    else
-      FProc(FIsKeyboardVisible, 0);
-  end;
-
+  if Assigned(FProc) then
+    FProc(ScreenRoot, RootHeight, VisibleHeight);
 end;
 
 { TPscEditorActionListener }

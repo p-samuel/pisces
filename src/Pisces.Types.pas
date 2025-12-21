@@ -57,18 +57,6 @@ type
   JColorStateList = Androidapi.JNI.GraphicsContentViewText.JColorStateList;
   JPorterDuff_Mode = Androidapi.JNI.GraphicsContentViewText.JPorterDuff_Mode;
   JRect = Androidapi.JNI.GraphicsContentViewText.JRect;
-  [JavaSignature('android/view/WindowInsets$Type')]
-  JWindowInsets_Type = interface(JObject)
-    ['{F8A10F2F-28D6-4B1B-9F10-AB0AF42E6E31}']
-  end;
-
-  [JavaSignature('android/view/WindowInsets$Type')]
-  JWindowInsets_TypeClass = interface(JObjectClass)
-    ['{E8E9C7C6-6CC6-4B3C-9B4C-CEAA0C3A9E9D}']
-    function ime: Integer; cdecl;
-  end;
-
-  TJWindowInsets_Type = class(TJavaGenericImport<JWindowInsets_TypeClass, JWindowInsets_Type>) end;
   JContentCaptureSession = Androidapi.JNI.GraphicsContentViewText.JContentCaptureSession;
   JColorFilter = Androidapi.JNI.GraphicsContentViewText.JColorFilter;
   JBitmap = Androidapi.JNI.GraphicsContentViewText.JBitmap;

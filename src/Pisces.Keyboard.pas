@@ -20,6 +20,12 @@ type
     FBasePaddingTop: Integer;
     FBasePaddingRight: Integer;
     FBasePaddingBottom: Integer;
+    FBaseVisibleHeight: Integer;
+    FBaseSystemDelta: Integer;
+    FIsKeyboardVisible: Boolean;
+    FLastKeyboardHeight: Integer;
+    procedure HandleLayout(ARootView: JView; ARootHeight, AVisibleHeight: Integer);
+    function GetImeInsetBottom(ARootView: JView): Integer;
     procedure HandleKeyboardChange(AIsVisible: Boolean; AKeyboardHeight: Integer);
   public
     constructor Create(ARootView: JView; AThreshold: Integer = 150);
@@ -31,7 +37,11 @@ type
 implementation
 
 uses
-  Pisces.Utils, System.SysUtils, System.Math;
+  Pisces.Utils,
+  System.SysUtils,
+  System.Math,
+  Androidapi.JNI.Os,
+  Pisces.JNI.Extensions;
 
 constructor TPscKeyboardHelper.Create(ARootView: JView; AThreshold: Integer);
 begin
@@ -39,6 +49,10 @@ begin
   FRootView := ARootView;
   FThreshold := AThreshold;
   FEnabled := False;
+  FBaseVisibleHeight := 0;
+  FBaseSystemDelta := -1;
+  FIsKeyboardVisible := False;
+  FLastKeyboardHeight := 0;
   if FRootView <> nil then
   begin
     FBasePaddingLeft := FRootView.getPaddingLeft;
@@ -67,8 +81,8 @@ var
 begin
   if FEnabled then Exit;
 
-  FListener := TPscGlobalLayoutListener.Create(FRootView, FThreshold);
-  FListener.Proc := HandleKeyboardChange;
+  FListener := TPscGlobalLayoutListener.Create(FRootView);
+  FListener.Proc := HandleLayout;
 
   ViewTreeObserver := FRootView.getViewTreeObserver;
   if Assigned(ViewTreeObserver) then begin
@@ -92,6 +106,101 @@ begin
   FListener := nil;
   FEnabled := False;
   TPscUtils.Log('Keyboard helper disabled', 'Disable', TLogger.Info, Self);
+end;
+
+function TPscKeyboardHelper.GetImeInsetBottom(ARootView: JView): Integer;
+var
+  Insets: JWindowInsets;
+  SystemBottom: Integer;
+  StableBottom: Integer;
+  ImeInsets: Jgraphics_Insets;
+  ImeType: Integer;
+begin
+  Result := 0;
+  if ARootView = nil then
+    Exit;
+  if TJBuild_VERSION.JavaClass.SDK_INT < 20 then
+    Exit;
+
+  Insets := ARootView.getRootWindowInsets;
+  if Insets = nil then
+    Exit;
+
+  // Android 11+ provides IME insets directly
+  if TJBuild_VERSION.JavaClass.SDK_INT >= 30 then
+  begin
+    ImeType := TJWindowInsets_Type.JavaClass.ime;
+    ImeInsets := Insets.getInsets(ImeType);
+    if ImeInsets <> nil then
+      Result := ImeInsets.bottom;
+    Exit;
+  end;
+
+  // Fallback for older APIs: derive IME delta from system vs stable insets
+  SystemBottom := Insets.getSystemWindowInsetBottom;
+  StableBottom := Insets.getStableInsetBottom;
+  Result := SystemBottom - StableBottom;
+  if Result < 0 then
+    Result := 0;
+end;
+
+procedure TPscKeyboardHelper.HandleLayout(ARootView: JView; ARootHeight, AVisibleHeight: Integer);
+var
+  CurrentDelta: Integer;
+  EffectiveKeyboardHeight: Integer;
+  ImeInsetBottom: Integer;
+  MinKeyboardHeightPx: Integer;
+  PercentThreshold: Integer;
+  DynamicThreshold: Integer;
+  IsVisible: Boolean;
+begin
+  if ARootHeight <= 0 then
+    Exit;
+
+  // Track baseline visible height (best guess of no-keyboard state)
+  if FBaseVisibleHeight = 0 then
+    FBaseVisibleHeight := AVisibleHeight
+  else if AVisibleHeight > FBaseVisibleHeight then
+    FBaseVisibleHeight := AVisibleHeight;
+
+  CurrentDelta := ARootHeight - AVisibleHeight; // includes system bars + keyboard
+
+  // Track minimal delta (system bars only) to isolate keyboard height
+  if FBaseSystemDelta = -1 then
+    FBaseSystemDelta := CurrentDelta
+  else if CurrentDelta < FBaseSystemDelta then
+    FBaseSystemDelta := CurrentDelta;
+
+  EffectiveKeyboardHeight := Max(0, CurrentDelta - FBaseSystemDelta);
+  ImeInsetBottom := GetImeInsetBottom(ARootView);
+  if ImeInsetBottom > 0 then
+    EffectiveKeyboardHeight := Max(EffectiveKeyboardHeight, ImeInsetBottom);
+
+  // Use device threshold, or ~12dp, or ~1.5% of baseline visible height
+  MinKeyboardHeightPx := Round(12 * TAndroidHelper.DisplayMetrics.density);
+  PercentThreshold := Round(FBaseVisibleHeight * 0.015);
+  DynamicThreshold := Max(FThreshold, Max(MinKeyboardHeightPx, PercentThreshold));
+
+  IsVisible := EffectiveKeyboardHeight >= DynamicThreshold;
+
+  TPscUtils.Log(
+    Format('RootHeight=%d VisibleHeight=%d BaseVisibleHeight=%d BaseSystemDelta=%d CurrentDelta=%d ImeInset=%d Effective=%d Threshold=%d',
+    [ARootHeight, AVisibleHeight, FBaseVisibleHeight, FBaseSystemDelta, CurrentDelta, ImeInsetBottom, EffectiveKeyboardHeight, DynamicThreshold]
+    ), 'HandleLayout', TLogger.Info, Self );
+
+  if (IsVisible <> FIsKeyboardVisible) or (IsVisible and (EffectiveKeyboardHeight <> FLastKeyboardHeight)) then
+  begin
+    if IsVisible then
+      HandleKeyboardChange(True, EffectiveKeyboardHeight)
+    else
+      HandleKeyboardChange(False, 0);
+  end;
+
+  FIsKeyboardVisible := IsVisible;
+  if IsVisible then
+    FLastKeyboardHeight := EffectiveKeyboardHeight
+  else
+    FLastKeyboardHeight := 0;
 end;
 
 procedure TPscKeyboardHelper.HandleKeyboardChange(AIsVisible: Boolean; AKeyboardHeight: Integer);
