@@ -14,6 +14,7 @@ uses
   Pisces.Lifecycle in '..\..\src\Pisces.Lifecycle.pas',
   Pisces.App in '..\..\src\Pisces.App.pas',
   Pisces.ScreenManager in '..\..\src\Pisces.ScreenManager.pas',
+  Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas',
   View.Home in 'src\View.Home.pas',
   View.Detail in 'src\View.Detail.pas',
   View.User in 'src\View.User.pas',

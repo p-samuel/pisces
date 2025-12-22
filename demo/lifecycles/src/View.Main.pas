@@ -89,56 +89,66 @@ end;
 
 procedure TScreen.OnActivityConfigurationChangedHandler(Activity: JActivity);
 begin
+  inherited;
   TPscUtils.Log('*** ACTIVITY CONFIGURATION CHANGED! ***', 'ActivityLifecycle', TLogger.Warning, Self);
   TPscUtils.Toast('App Configuration Changed!', TJToast.JavaClass.LENGTH_SHORT);
 end;
 
 procedure TScreen.OnActivityCreateHandler(Activity: JActivity; SavedState: JBundle);
 begin
+  inherited;
   TPscUtils.Log('*** ACTIVITY CREATED! ***', 'ActivityLifecycle', TLogger.Warning, Self);
   TPscUtils.Toast('App Created!', TJToast.JavaClass.LENGTH_SHORT);
 end;
 
 procedure TScreen.OnActivityStartHandler(Activity: JActivity);
 begin
+  inherited;
   TPscUtils.Log('*** ACTIVITY STARTED! ***', 'ActivityLifecycle', TLogger.Warning, Self);
   TPscUtils.Toast('App Started!', TJToast.JavaClass.LENGTH_SHORT);
 end;
 
 procedure TScreen.OnActivityResumeHandler(Activity: JActivity);
 begin
+  inherited;
   TPscUtils.Log('*** ACTIVITY RESUMED! ***', 'ActivityLifecycle', TLogger.Warning, Self);
   TPscUtils.Toast('App Resumed!', TJToast.JavaClass.LENGTH_SHORT);
 end;
 
 procedure TScreen.OnActivityPauseHandler(Activity: JActivity);
 begin
+  inherited;
   TPscUtils.Log('*** ACTIVITY PAUSED! ***', 'ActivityLifecycle', TLogger.Warning, Self);
   TPscUtils.Toast('App Paused!', TJToast.JavaClass.LENGTH_SHORT);
 end;
 
 procedure TScreen.OnActivityStopHandler(Activity: JActivity);
 begin
+  inherited;
   TPscUtils.Log('*** ACTIVITY STOPPED! ***', 'ActivityLifecycle', TLogger.Warning, Self);
 end;
 
 procedure TScreen.OnActivityDestroyHandler(Activity: JActivity);
 begin
+  inherited;
   TPscUtils.Log('*** ACTIVITY DESTROYED! ***', 'ActivityLifecycle', TLogger.Error, Self);
 end;
 
 procedure TScreen.OnViewAttached(View: JView);
 begin
+  inherited;
   TPscUtils.Log('*** SCREEN VIEW IS ATTACHED TO WINDOW! ***', 'ViewLifecycle', TLogger.Warning, Self);
 end;
 
 procedure TScreen.OnViewDetached(View: JView);
 begin
+  inherited;
   TPscUtils.Log('*** SCREEN VIEW IS DETACHED FROM WINDOW ***', 'ViewLifecycle', TLogger.Warning, Self);
 end;
 
 procedure TScreen.OnWindowFocusChange(HasFocus: Boolean);
 begin
+  inherited;
   if HasFocus then
     TPscUtils.Log('*** WINDOW GAINED FOCUS ***', 'WindowFocus', TLogger.Warning, Self)
   else

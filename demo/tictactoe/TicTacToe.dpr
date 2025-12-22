@@ -16,6 +16,7 @@ uses
   Pisces.ScreenManager in '..\..\src\Pisces.ScreenManager.pas',
   Pisces.Audio in '..\..\src\Pisces.Audio.pas',
   Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas',
+  Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas',
   View.Home in 'src\View.Home.pas',
   View.Header in 'src\View.Header.pas',
   View.GameBoard in 'src\View.GameBoard.pas',

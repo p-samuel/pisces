@@ -240,6 +240,7 @@
         <DCCReference Include="..\..\src\Pisces.Lifecycle.pas"/>
         <DCCReference Include="..\..\src\Pisces.App.pas"/>
         <DCCReference Include="..\..\src\Pisces.ScreenManager.pas"/>
+        <DCCReference Include="..\..\src\Pisces.JNI.Extensions.pas"/>
         <DCCReference Include="src\View.Home.pas"/>
         <DCCReference Include="src\View.Detail.pas"/>
         <DCCReference Include="src\View.User.pas"/>

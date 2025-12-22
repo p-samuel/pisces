@@ -434,14 +434,14 @@ begin
         FProc(v, TSwipeDirection.Touch, CurrentX, CurrentY);
         
       // Log initial touch position
-      TPscUtils.Log(Format('X: %.2f Y: %.2f', [CurrentX, CurrentY]), 'Down', TLogger.Warning, Self);
+      TPscUtils.Log(Format('X: %.2f Y: %.2f', [CurrentX, CurrentY]), 'Down', TLogger.Info, Self);
     end;
 
     // ACTION_MOVE = 2
     2:
     begin
       // Log every move event
-      TPscUtils.Log(Format('X: %.2f Y: %.2f', [CurrentX, CurrentY]), 'Movement', TLogger.Warning, Self);
+      TPscUtils.Log(Format('X: %.2f Y: %.2f', [CurrentX, CurrentY]), 'Movement', TLogger.Info, Self);
       
       // Calculate distance moved from last position
       DiffX := CurrentX - FStartX;

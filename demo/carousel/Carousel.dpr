@@ -19,6 +19,7 @@ uses
   Pisces.App in '..\..\src\Pisces.App.pas',
   Pisces.ScreenManager in '..\..\src\Pisces.ScreenManager.pas',
   Pisces.Audio in '..\..\src\Pisces.Audio.pas',
+  Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas',
   Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas';
 
 {$R *.res}
