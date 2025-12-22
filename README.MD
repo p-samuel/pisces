@@ -3,18 +3,14 @@
 </div>
 
 ## Pisces - 双鱼座
-Pisces is a set of classes to provide rapid implementation for Android Widgets JNIs (<code>Android.JNI.Widget</code>). It serves a few list of attributes to build native Android views (JView) using only simple pascal classes. Introductory notes can be found [here](https://github.com/p-samuel/pisces/wiki/%E2%99%93-Introduction).
-
-
-## Setup
-Add the <code>src</code> folder to your project's search path or library path. After that, include ```Pisces``` in the uses clause.
+Pisces is a set of classes to provide rapid access for Android Widgets JNIs (<code>Android.JNI.Widget</code>). It serves a few list of attributes to build native Android views (JView) using simple pascal classes only. Read introduction notes [here](https://github.com/p-samuel/pisces/wiki/%E2%99%93-Introduction).
 
 ```pascal
 uses
   Pisces;
 
 type
-  [ LinearLayout('mylayoutname'),
+  [ LinearLayout('screen'),
     BackgroundColor(107, 174, 200),
     FullScreen(True),
     DarkStatusBarIcons(False),

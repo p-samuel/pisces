@@ -487,7 +487,7 @@ begin
         FProc(v, TSwipeDirection.Leave, CurrentX, CurrentY);
 
       // Log final position
-      TPscUtils.Log(Format('X: %.2f Y: %.2f', [CurrentX, CurrentY]), 'Up', TLogger.Warning, Self);
+      TPscUtils.Log(Format('X: %.2f Y: %.2f', [CurrentX, CurrentY]), 'Up', TLogger.Info, Self);
     end;
   end;
 

@@ -398,6 +398,7 @@ type
     function AllCaps(Value: Boolean): IPscText; overload;
     function AllCaps: IPscText; overload;
     function AutoLinkMask(Mask: Integer): IPscText; overload;
+    function AutoLinkMask(const Mask: TAutoLinkSet): IPscText; overload;
     function AutoLinkMask: IPscText; overload;
     function CursorVisible(Visible: Boolean): IPscText; overload;
     function CursorVisible: IPscText; overload;
@@ -431,8 +432,10 @@ type
     function LetterSpacing(Spacing: Single): IPscText; overload;
     function LetterSpacing: IPscText; overload;
     function LineBreakStyle(Style: Integer): IPscText; overload;
+    function LineBreakStyle(Style: TLineBreakStyle): IPscText; overload;
     function LineBreakStyle: IPscText; overload;
     function LineBreakWordStyle(WordStyle: Integer): IPscText; overload;
+    function LineBreakWordStyle(WordStyle: TLineBreakWordStyle): IPscText; overload;
     function LineBreakWordStyle: IPscText; overload;
     function LineHeight(Height: Integer): IPscText; overload;
     function LineHeight: IPscText; overload;
@@ -463,6 +466,7 @@ type
     function MinWidth(MinPixels: Integer): IPscText; overload;
     function MinWidth: IPscText; overload;
     function PaintFlags(Flags: Integer): IPscText; overload;
+    function PaintFlags(const Flags: TPaintFlagSet): IPscText; overload;
     function PaintFlags: IPscText; overload;
     function SelectAllOnFocus(SelectAll: Boolean): IPscText; overload;
     function SelectAllOnFocus: IPscText; overload;
@@ -481,6 +485,13 @@ type
     function TextIsSelectable: IPscText; overload;
     function TextScaleX(Size: Single): IPscText; overload;
     function TextScaleX: IPscText; overload;
+    function FontStyle(Style: Integer): IPscText; overload;
+    function FontStyle(Style: TFontStyle): IPscText; overload;
+    function FontStyle: IPscText; overload;
+    function FontFamily(const Family: String): IPscText; overload;
+    function FontFamily: IPscText; overload;
+    function FontWeight(Weight: Integer): IPscText; overload;
+    function FontWeight: IPscText; overload;
     function Width(Pixels: Integer): IPscText; overload;
     function Width: IPscText; overload;
   end;
@@ -2551,7 +2562,11 @@ begin
     TextAppearance;
     TextIsSelectable;
     TextScaleX;
+    FontStyle;
+    FontFamily;
+    FontWeight;
     Width;
+    AllCaps;
   except
     on E: Exception do
       TPscUtils.Log(E.Message, 'ApplyAttributes', TLogger.Error, Self);
@@ -2708,11 +2723,27 @@ begin
   JTextView(FView).setAutoLinkMask(Mask);
 end;
 
+function TPscText.AutoLinkMask(const Mask: TAutoLinkSet): IPscText;
+var
+  Value: Integer;
+begin
+  Value := 0;
+  if AutoLinkWeb in Mask then
+    Value := Value or $01;
+  if AutoLinkEmail in Mask then
+    Value := Value or $02;
+  if AutoLinkPhone in Mask then
+    Value := Value or $04;
+  if AutoLinkMap in Mask then
+    Value := Value or $08;
+  Result := AutoLinkMask(Value);
+end;
+
 function TPscText.AutoLinkMask: IPscText;
 begin
   Result := Self;
   if FAttributes.ContainsKey('AutoLinkMaskAttribute') then
-    AutoLinkMask(AutoLinkMaskAttribute(FAttributes['AutoLinkMaskAttribute']).Value);
+    AutoLinkMask(TAutoLinkMaskAttribute(FAttributes['AutoLinkMaskAttribute']).Value);
 end;
 
 function TPscText.CursorVisible(Visible: Boolean): IPscText;
@@ -2922,11 +2953,22 @@ begin
   JTextView(FView).setLineBreakStyle(Style);
 end;
 
+function TPscText.LineBreakStyle(Style: TLineBreakStyle): IPscText;
+begin
+  case Style of
+    TLineBreakStyle.LineBreakNone: LineBreakStyle(TJLineBreakConfig.JavaClass.LINE_BREAK_STYLE_NONE);
+    TLineBreakStyle.LineBreakLoose: LineBreakStyle(TJLineBreakConfig.JavaClass.LINE_BREAK_STYLE_LOOSE);
+    TLineBreakStyle.LineBreakNormal: LineBreakStyle(TJLineBreakConfig.JavaClass.LINE_BREAK_STYLE_NORMAL);
+    TLineBreakStyle.LineBreakStrict: LineBreakStyle(TJLineBreakConfig.JavaClass.LINE_BREAK_STYLE_STRICT);
+  end;
+  Result := Self;
+end;
+
 function TPscText.LineBreakStyle: IPscText;
 begin
   Result := Self;
   if FAttributes.ContainsKey('LineBreakStyleAttribute') then
-    LineBreakStyle(LineBreakStyleAttribute(FAttributes['LineBreakStyleAttribute']).Value);
+    LineBreakStyle(TLineBreakStyleAttribute(FAttributes['LineBreakStyleAttribute']).Value);
 end;
 
 function TPscText.LineBreakWordStyle(WordStyle: Integer): IPscText;
@@ -2935,11 +2977,20 @@ begin
   JTextView(FView).setLineBreakWordStyle(WordStyle);
 end;
 
+function TPscText.LineBreakWordStyle(WordStyle: TLineBreakWordStyle): IPscText;
+begin
+  case WordStyle of
+    TLineBreakWordStyle.LineBreakWordNone: LineBreakWordStyle(TJLineBreakConfig.JavaClass.LINE_BREAK_WORD_STYLE_NONE);
+    TLineBreakWordStyle.LineBreakWordPhrase: LineBreakWordStyle(TJLineBreakConfig.JavaClass.LINE_BREAK_WORD_STYLE_PHRASE);
+  end;
+  Result := Self;
+end;
+
 function TPscText.LineBreakWordStyle: IPscText;
 begin
   Result := Self;
   if FAttributes.ContainsKey('LineBreakWordStyleAttribute') then
-    LineBreakWordStyle(LineBreakWordStyleAttribute(FAttributes['LineBreakWordStyleAttribute']).Value);
+    LineBreakWordStyle(TLineBreakWordStyleAttribute(FAttributes['LineBreakWordStyleAttribute']).Value);
 end;
 
 function TPscText.LineHeight(Height: Integer): IPscText;
@@ -3131,11 +3182,23 @@ begin
   JTextView(FView).setPaintFlags(Flags);
 end;
 
+function TPscText.PaintFlags(const Flags: TPaintFlagSet): IPscText;
+var
+  Value: Integer;
+begin
+  Value := 0;
+  if PaintUnderline in Flags then
+    Value := Value or 8;
+  if PaintStrikeThrough in Flags then
+    Value := Value or 16;
+  Result := PaintFlags(Value);
+end;
+
 function TPscText.PaintFlags: IPscText;
 begin
   Result := Self;
   if FAttributes.ContainsKey('PaintFlagsAttribute') then
-    PaintFlags(PaintFlagsAttribute(FAttributes['PaintFlagsAttribute']).Value);
+    PaintFlags(TPaintFlagsAttribute(FAttributes['PaintFlagsAttribute']).Value);
 end;
 
 function TPscText.SelectAllOnFocus(SelectAll: Boolean): IPscText;
@@ -3250,6 +3313,71 @@ begin
   Result := Self;
   if FAttributes.ContainsKey('TextScaleXAttribute') then
     TextScaleX(TextScaleXAttribute(FAttributes['TextScaleXAttribute']).Value);
+end;
+
+function TPscText.FontStyle(Style: Integer): IPscText;
+begin
+  Result := Self;
+  JTextView(FView).setTypeface(TJTypeface.JavaClass.defaultFromStyle(Style));
+end;
+
+function TPscText.FontStyle(Style: TFontStyle): IPscText;
+begin
+  Result := Self;
+  case Style of
+    TFontStyle.Normal: FontStyle(TJTypeface.JavaClass.NORMAL);
+    TFontStyle.Bold: FontStyle(TJTypeface.JavaClass.BOLD);
+    TFontStyle.Italic: FontStyle(TJTypeface.JavaClass.ITALIC);
+    TFontStyle.BoldItalic: FontStyle(TJTypeface.JavaClass.BOLD_ITALIC);
+  end;
+end;
+
+function TPscText.FontStyle: IPscText;
+begin
+  Result := Self;
+  if FAttributes.ContainsKey('FontStyleAttribute') then
+    FontStyle(FontStyleAttribute(FAttributes['FontStyleAttribute']).Value);
+end;
+
+function TPscText.FontFamily(const Family: String): IPscText;
+var
+  Current: JTypeface;
+  CurrentStyle: Integer;
+begin
+  Result := Self;
+  Current := JTextView(FView).getTypeface;
+  if Current <> nil then
+    CurrentStyle := Current.getStyle
+  else
+    CurrentStyle := TJTypeface.JavaClass.NORMAL;
+  JTextView(FView).setTypeface(TJTypeface.JavaClass.create(StringToJString(Family), CurrentStyle));
+end;
+
+function TPscText.FontFamily: IPscText;
+begin
+  Result := Self;
+  if FAttributes.ContainsKey('FontFamilyAttribute') then
+    FontFamily(FontFamilyAttribute(FAttributes['FontFamilyAttribute']).Value);
+end;
+
+function TPscText.FontWeight(Weight: Integer): IPscText;
+var
+  Base: JTypeface;
+  ItalicFlag: Boolean;
+begin
+  Result := Self;
+  Base := JTextView(FView).getTypeface;
+  if Base = nil then
+    Base := TJTypeface.JavaClass.DEFAULT;
+  ItalicFlag := (Base.getStyle and TJTypeface.JavaClass.ITALIC) <> 0;
+  JTextView(FView).setTypeface(TJTypeface.JavaClass.create(Base, Weight, ItalicFlag));
+end;
+
+function TPscText.FontWeight: IPscText;
+begin
+  Result := Self;
+  if FAttributes.ContainsKey('FontWeightAttribute') then
+    FontWeight(FontWeightAttribute(FAttributes['FontWeightAttribute']).Value);
 end;
 
 function TPscText.Width(Pixels: Integer): IPscText;

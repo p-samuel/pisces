@@ -4,7 +4,9 @@ interface
 
 uses
   Pisces.Types,
-  System.SysUtils, Androidapi.JNIBridge;
+  System.SysUtils,
+  Androidapi.JNIBridge,
+  Androidapi.JNI.GraphicsContentViewText;
 
 type
   // Visual Components
@@ -52,6 +54,12 @@ type
   public
     constructor Create(Value: Integer);
     property Value: Integer read FValue;
+  end;
+
+  TFontStyleAttribute = class(TPiscesIntegerAttribute)
+  public
+    constructor Create(Value: Integer); overload;
+    constructor Create(AStyle: TFontStyle); overload;
   end;
 
   TPiscesBooleanAttribute = class(TCustomAttribute)
@@ -286,7 +294,8 @@ type
     FDY: Single;
     FColor: Integer;
   public
-    constructor Create(Radius, DX, DY: Single; Color: Integer);
+    constructor Create(Radius, DX, DY: Single; Color: Integer); overload;
+    constructor Create(Radius, DX, DY: Single; Red, Green, Blue: Integer; Alpha: Double = 1.0); overload;
     property Radius: Single read FRadius;
     property DX: Single read FDX;
     property DY: Single read FDY;
@@ -377,6 +386,31 @@ type
     property Orientation: TScreenOrientation read FOrientation;
   end;
 
+  TAutoLinkMaskAttribute = class(TPiscesIntegerAttribute)
+  public
+    constructor Create(const Mask: TAutoLinkSet); overload;
+  end;
+
+  TLineBreakStyleAttribute = class(TCustomAttribute)
+  private
+    FValue: Integer;
+  public
+    constructor Create(AStyle: TLineBreakStyle);
+    property Value: Integer read FValue;
+  end;
+
+  TLineBreakWordStyleAttribute = class(TCustomAttribute)
+  private
+    FValue: Integer;
+  public
+    constructor Create(AStyle: TLineBreakWordStyle);
+    property Value: Integer read FValue;
+  end;
+
+  TPaintFlagsAttribute = class(TPiscesIntegerAttribute)
+  public
+    constructor Create(const Flags: TPaintFlagSet); overload;
+  end;
   {TAutofillIdAttribute = class(TCustomAttribute)
   private
     FId: JAutofillId;
@@ -684,7 +718,7 @@ type
 
   //JText
   AllCapsAttribute = class(TPiscesBooleanAttribute);
-  AutoLinkMaskAttribute = class(TPiscesIntegerAttribute);
+  AutoLinkMaskAttribute = class(TAutoLinkMaskAttribute);
   CursorVisibleAttribute = class(TPiscesBooleanAttribute);
   ElegantTextHeightAttribute = class(TPiscesBooleanAttribute);
   EmsAttribute = class(TPiscesIntegerAttribute);
@@ -692,6 +726,9 @@ type
   FreezesTextAttribute = class(TPiscesBooleanAttribute);
   HighlightColorAttribute = class(TPiscesColorAttribute);
   HintTextColorAttribute = class(TPiscesColorAttribute);
+  FontStyleAttribute = class(TFontStyleAttribute);
+  FontFamilyAttribute = class(TPiscesStringAttribute);
+  FontWeightAttribute = class(TPiscesIntegerAttribute);
   HintAttribute  = class(THintAttribute);
   HorizontallyScrollingAttribute = class(TPiscesBooleanAttribute);
   IncludeFontPaddingAttribute = class(TPiscesBooleanAttribute);
@@ -699,8 +736,8 @@ type
   InputTypeAttribute = class(TInputTypeAttribute);
   LastBaselineToBottomHeightAttribute = class(TPiscesIntegerAttribute);
   LetterSpacingAttribute = class(TPiscesSingleAttribute);
-  LineBreakStyleAttribute = class(TPiscesIntegerAttribute);
-  LineBreakWordStyleAttribute = class(TPiscesIntegerAttribute);
+  LineBreakStyleAttribute = class(TLineBreakStyleAttribute);
+  LineBreakWordStyleAttribute = class(TLineBreakWordStyleAttribute);
   LineHeightAttribute = class(TPiscesIntegerAttribute);
   LinesAttribute = class(TPiscesIntegerAttribute);
   LineSpacingAttribute = class(TLineSpacingAttribute);
@@ -715,7 +752,7 @@ type
   MinHeightAttribute = class(TPiscesIntegerAttribute);
   MinLinesAttribute = class(TPiscesIntegerAttribute);
   MinWidthAttribute = class(TPiscesIntegerAttribute);
-  PaintFlagsAttribute = class(TPiscesIntegerAttribute);
+  PaintFlagsAttribute = class(TPaintFlagsAttribute);
   SelectAllOnFocusAttribute = class(TPiscesBooleanAttribute);
   ShadowLayerAttribute = class(TShadowLayerAttribute);
   ShowSoftInputOnFocusAttribute = class(TPiscesBooleanAttribute);
@@ -830,7 +867,7 @@ type
 implementation
 
 uses
-  System.Hash, Androidapi.JNI.GraphicsContentViewText;
+  System.Hash;
 
 { TPiscesViewAttribute }
 
@@ -1129,6 +1166,60 @@ begin
   FMult := Mult;
 end;
 
+{ AutoLinkMaskAttribute }
+
+constructor TAutoLinkMaskAttribute.Create(const Mask: TAutoLinkSet);
+var
+  Value: Integer;
+begin
+  Value := 0;
+  if AutoLinkWeb in Mask then
+    Value := Value or $01;
+  if AutoLinkEmail in Mask then
+    Value := Value or $02;
+  if AutoLinkPhone in Mask then
+    Value := Value or $04;
+  if AutoLinkMap in Mask then
+    Value := Value or $08;
+  inherited Create(Value);
+end;
+
+{ TLineBreakStyleAttribute }
+
+constructor TLineBreakStyleAttribute.Create(AStyle: TLineBreakStyle);
+begin
+  case AStyle of
+    TLineBreakStyle.LineBreakNone: FValue := TJLineBreakConfig.JavaClass.LINE_BREAK_STYLE_NONE;
+    TLineBreakStyle.LineBreakLoose: FValue := TJLineBreakConfig.JavaClass.LINE_BREAK_STYLE_LOOSE;
+    TLineBreakStyle.LineBreakNormal: FValue := TJLineBreakConfig.JavaClass.LINE_BREAK_STYLE_NORMAL;
+    TLineBreakStyle.LineBreakStrict: FValue := TJLineBreakConfig.JavaClass.LINE_BREAK_STYLE_STRICT;
+  end;
+end;
+
+{ TLineBreakWordStyleAttribute }
+
+constructor TLineBreakWordStyleAttribute.Create(AStyle: TLineBreakWordStyle);
+begin
+  case AStyle of
+    TLineBreakWordStyle.LineBreakWordNone: FValue := TJLineBreakConfig.JavaClass.LINE_BREAK_WORD_STYLE_NONE;
+    TLineBreakWordStyle.LineBreakWordPhrase: FValue := TJLineBreakConfig.JavaClass.LINE_BREAK_WORD_STYLE_PHRASE;
+  end;
+end;
+
+{ PaintFlagsAttribute }
+
+constructor TPaintFlagsAttribute.Create(const Flags: TPaintFlagSet);
+var
+  Value: Integer;
+begin
+  Value := 0;
+  if PaintUnderline in Flags then
+    Value := Value or 8;
+  if PaintStrikeThrough in Flags then
+    Value := Value or 16;
+  inherited Create(Value);
+end;
+
 { TShadowLayerAttribute }
 
 constructor TShadowLayerAttribute.Create(Radius, DX, DY: Single; Color: Integer);
@@ -1137,6 +1228,34 @@ begin
   FDX := DX;
   FDY := DY;
   FColor := Color;
+end;
+
+constructor TShadowLayerAttribute.Create(Radius, DX, DY: Single; Red, Green, Blue: Integer; Alpha: Double);
+begin
+  FRadius := Radius;
+  FDX := DX;
+  FDY := DY;
+  if Alpha = 0 then
+    FColor := TJColor.JavaClass.TRANSPARENT
+  else
+    FColor := TJColor.JavaClass.argb(Trunc(Alpha * 255), Red, Green, Blue);
+end;
+
+{ TFontStyleAttribute }
+
+constructor TFontStyleAttribute.Create(Value: Integer);
+begin
+  inherited Create(Value);
+end;
+
+constructor TFontStyleAttribute.Create(AStyle: TFontStyle);
+begin
+  case AStyle of
+    TFontStyle.Normal: inherited Create(TJTypeface.JavaClass.NORMAL);
+    TFontStyle.Bold: inherited Create(TJTypeface.JavaClass.BOLD);
+    TFontStyle.Italic: inherited Create(TJTypeface.JavaClass.ITALIC);
+    TFontStyle.BoldItalic: inherited Create(TJTypeface.JavaClass.BOLD_ITALIC);
+  end;
 end;
 
 { TPiscesStringAttribute }

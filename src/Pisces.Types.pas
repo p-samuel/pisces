@@ -784,6 +784,8 @@ type
   TLogger = (Info, Error, Warning, Fatal);
   TBreakStrg = (Balanced, HighQuality, Simple);
   THyphenStrg = (Full, None, Normal);
+  TLineBreakStyle = (LineBreakNone, LineBreakLoose, LineBreakNormal, LineBreakStrict);
+  TLineBreakWordStyle = (LineBreakWordNone, LineBreakWordPhrase);
   TAccessibilityLiveRegion = (None, Polite, Assertive);
   TDrawingCacheQuality = (Low, High, Auto);
   TOverScrollMode = (Always, IfContentScrolls, Never);
@@ -841,6 +843,8 @@ type
     TopToBottom, LeftToRight, BottomToTop, RightToLeft, TopLeftToBottomRight,
     TopRightToBottomLeft, BottomLeftToTopRight, BottomRightToTopLeft);
 
+  TFontStyle = (Normal, Bold, Italic, BoldItalic);
+
   TScreenOrientation = (
     Unspecified, Portrait, Landscape, SensorPortrait, SensorLandscape,
     ReverseLandscape, ReversePortrait, Sensor, NoSensor, Locked);
@@ -849,6 +853,10 @@ type
 
   TGravitySet = set of TGravity;
   TScrollIndicatorSet = set of TScrollIndicator;
+  TAutoLink = (AutoLinkWeb, AutoLinkEmail, AutoLinkPhone, AutoLinkMap);
+  TAutoLinkSet = set of TAutoLink;
+  TPaintFlag = (PaintUnderline, PaintStrikeThrough);
+  TPaintFlagSet = set of TPaintFlag;
 
   TProc<T1, T2, T3, T4, T5, T6, T7, T8, T9> = reference to procedure (
     Arg1: T1; Arg2: T2; Arg3: T3; Arg4: T4;

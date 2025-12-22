@@ -195,6 +195,7 @@ type
   HintAttribute = Pisces.Attributes.HintAttribute;
   HintTextColorAttribute = Pisces.Attributes.HintTextColorAttribute;
   HorizontallyScrollingAttribute = Pisces.Attributes.HorizontallyScrollingAttribute;
+  FontStyleAttribute = Pisces.Attributes.FontStyleAttribute;
   IncludeFontPaddingAttribute = Pisces.Attributes.IncludeFontPaddingAttribute;
   InputExtrasAttribute = Pisces.Attributes.InputExtrasAttribute;
   InputTypeAttribute = Pisces.Attributes.InputTypeAttribute;
@@ -224,6 +225,8 @@ type
   TextAppearanceAttribute = Pisces.Attributes.TextAppearanceAttribute;
   TextIsSelectableAttribute = Pisces.Attributes.TextIsSelectableAttribute;
   TextScaleXAttribute = Pisces.Attributes.TextScaleXAttribute;
+  FontFamilyAttribute = Pisces.Attributes.FontFamilyAttribute;
+  FontWeightAttribute = Pisces.Attributes.FontWeightAttribute;
 
   //JEditText
   TextAttribute = Pisces.Attributes.TextAttribute;
@@ -1084,6 +1087,8 @@ type
   TGravity = Pisces.Types.TGravity;
   TBreakStrg = Pisces.Types.TBreakStrg;
   THyphenStrg = Pisces.Types.THyphenStrg;
+  TLineBreakStyle = Pisces.Types.TLineBreakStyle;
+  TLineBreakWordStyle = Pisces.Types.TLineBreakWordStyle;
   TPscUtils = Pisces.Utils.TPscUtils;
   TDrawingCacheQuality = Pisces.Types.TDrawingCacheQuality;
   TFocusableMode = Pisces.Types.TFocusableMode;
@@ -1102,6 +1107,11 @@ type
   TGradientShape = Pisces.Types.TGradientShape;
   TColorStopArray = Pisces.Types.TColorStopArray;
   TScreenOrientation = Pisces.Types.TScreenOrientation;
+  TAutoLink = Pisces.Types.TAutoLink;
+  TAutoLinkSet = Pisces.Types.TAutoLinkSet;
+  TPaintFlag = Pisces.Types.TPaintFlag;
+  TPaintFlagSet = Pisces.Types.TPaintFlagSet;
+  TFontStyle = Pisces.Types.TFontStyle;
 
 
   // Activity lifecycle
