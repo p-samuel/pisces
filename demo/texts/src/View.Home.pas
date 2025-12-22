@@ -103,6 +103,35 @@ type
     procedure AfterShow; override;
   end;
 
+  // 6b) Vertical marquee (infinite) rotating through updated text (API-like feed)
+  [ TextView('weathermarquee'),
+    Text('Loading forecast...'),
+    TextColor(230, 240, 255),
+    TextSize(17),
+    Gravity([TGravity.Center]),
+    Padding(8, 8, 8, 8),
+    Width(TLayout.MATCH)
+  ] TWeatherMarquee = class(TPisces)
+  private
+    FMessages: TArray<String>;
+    FIndex: Integer;
+    procedure AnimateNext;
+    function NextMessage: String;
+  public
+    procedure AfterShow; override;
+  end;
+
+  [ FrameLayout('weather-marquee-wrapper'),
+    BackgroundColor(24, 36, 52),
+    RippleColor(255, 255, 255, 0.25),
+    ClipToPadding(True),
+    Padding(12, 12, 12, 12),
+    Width(TLayout.MATCH),
+    Height(220)
+  ] TWeatherMarqueeContainer = class(TPisces)
+    WeatherMarquee: TWeatherMarquee;
+  end;
+
   // 7) Shadows, highlights, all-caps
   [ TextView('shadow'),
     Text('Shadow layer + highlight color + ALL CAPS'),
@@ -371,6 +400,7 @@ type
     Metrics: TMetrics;
     Bounds: TBounds;
     Marquee: TMarquee;
+    WeatherMarqueeContainer: TWeatherMarqueeContainer;
     Shadow: TShadow;
     PaintFlags: TPaintFlags;
     InputMode: TInputMode;
@@ -401,6 +431,7 @@ var
 implementation
 
 uses
+  System.SysUtils,
   Androidapi.JNI.GraphicsContentViewText,
   Androidapi.Helpers,
   Pisces.Utils;
@@ -420,6 +451,61 @@ begin
     JTextView(V).setHorizontallyScrolling(True);
     JTextView(V).setMarqueeRepeatLimit(3);
   end;
+end;
+
+{ TWeatherMarquee }
+
+procedure TWeatherMarquee.AfterShow;
+begin
+  inherited;
+  SetLength(FMessages, 4);
+  FMessages[0] := 'Now: 72F, clear skies';
+  FMessages[1] := 'Today: High 78F / Low 65F - light breeze';
+  FMessages[2] := 'Tonight: 64F, partly cloudy';
+  FMessages[3] := 'Tomorrow: 75F with afternoon showers';
+  FIndex := 0;
+
+  // Start after layout so heights are valid
+  if TPscUtils.FindViewByName('weathermarquee') <> nil then
+    TPscUtils.FindViewByName('weathermarquee').post(TPscRunnable.Create(nil,
+      procedure(AView: JView)
+      begin
+        AnimateNext;
+      end));
+end;
+
+procedure TWeatherMarquee.AnimateNext;
+var
+  TextView: JView;
+  Container: JView;
+  NextText: String;
+begin
+  TextView := TPscUtils.FindViewByName('weathermarquee');
+  Container := TPscUtils.FindViewByName('weather-marquee-wrapper');
+  NextText := NextMessage;
+  JTextView(TextView).setText(StrToJCharSequence(NextText));
+  TextView.setTranslationY(Container.getHeight);
+  TextView.setAlpha(1);
+
+  TPscUtils.Animate
+    .FromView(TextView)
+    .TranslateY(Container.getHeight, -TextView.getHeight)
+    .Alpha(1, 0)
+    .Duration(10500)
+    .WithEndAction(
+      procedure
+      begin
+        AnimateNext;
+      end)
+    .Run;
+end;
+
+function TWeatherMarquee.NextMessage: String;
+begin
+  if Length(FMessages) = 0 then
+    Exit('Loading forecast...');
+  Result := Format('%s - updated %s', [FMessages[FIndex], FormatDateTime('hh:nn:ss', Now)]);
+  FIndex := (FIndex + 1) mod Length(FMessages);
 end;
 
 initialization
