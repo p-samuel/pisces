@@ -11,6 +11,7 @@ uses
   Androidapi.JNI.App,
   Androidapi.Helpers,
   System.SysUtils,
+  Pisces.JNI.Extensions,
   Pisces.Lifecycle,
   Pisces.App;
 
@@ -32,6 +33,7 @@ type
   TJLinearLayout = Androidapi.JNI.Widget.TJLinearLayout;
   TJTimePicker = Androidapi.JNI.Widget.TJTimePicker;
   TJScrowView = Androidapi.JNI.Widget.TJScrollView;
+  TJHorizontalScrollView = Pisces.JNI.Extensions.TJHorizontalScrollView;
   TJFrameLayout = Androidapi.JNI.Widget.TJFrameLayout;
   TJDatePicker = Androidapi.JNI.Widget.TJDatePicker;
   TJCalendarView = Androidapi.JNI.Widget.TJCalendarView;
@@ -67,6 +69,7 @@ type
   JAbsoluteLayout = Androidapi.JNI.Widget.JAbsoluteLayout;
   JRelativeLayout = Androidapi.JNI.Widget.JRelativeLayout;
   JScrollView = Androidapi.JNI.Widget.JScrollView;
+  JHorizontalScrollView = Pisces.JNI.Extensions.JHorizontalScrollView;
   JFrameLayout = Androidapi.JNI.Widget.JFrameLayout;
   JDatePicker = Androidapi.JNI.Widget.JDatePicker;
   JCalendarView = Androidapi.JNI.Widget.JCalendarView;

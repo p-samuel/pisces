@@ -76,6 +76,12 @@ type
     function Show: IPscScrollView;
   end;
 
+  IPscHorizontalScrollView = interface(IPscFrameLayout)
+    ['{8B6E1F2B-8F1E-4AC8-8B7D-0E7F0C2F5D2B}']
+    function BuildScreen: IPscHorizontalScrollView;
+    function Show: IPscHorizontalScrollView;
+  end;
+
   IPscTimePicker = interface(IPscFrameLayout)
     ['{3AD5D0D1-BE66-4A60-A140-99E5295CE8AD}']
     function BuildScreen: IPscTimePicker;
@@ -298,6 +304,21 @@ type
     function SmoothScrollingEnabled(Value: Boolean): IPscViewGroup; overload;
     function TopEdgeEffectColor: IPscScrollView; overload;
     function TopEdgeEffectColor(Color: Integer): IPscScrollView; overload;
+  end;
+
+  TPscHorizontalScrollView = class(TPscFrameLayout, IPscHorizontalScrollView)
+  public
+    procedure ApplyAttributes; override;
+    constructor Create(Attributes: TArray<TCustomAttribute>);
+    class function New(Attributes: TArray<TCustomAttribute>): IPscHorizontalScrollView;
+    function BuildScreen: IPscHorizontalScrollView;
+    function Show: IPscHorizontalScrollView;
+    function EdgeEffectColor: IPscHorizontalScrollView; overload;
+    function EdgeEffectColor(Color: Integer): IPscHorizontalScrollView; overload;
+    function FillViewport: IPscHorizontalScrollView; overload;
+    function FillViewport(Value: Boolean): IPscHorizontalScrollView; overload;
+    function SmoothScrollingEnabled: IPscHorizontalScrollView; overload;
+    function SmoothScrollingEnabled(Value: Boolean): IPscViewGroup; overload;
   end;
 
   TPscTimePicker = class(TPscFrameLayout, IPscTimePicker)
@@ -1513,6 +1534,91 @@ begin
 end;
 
 function TPscScrollView.SmoothScrollingEnabled: IPscScrollView;
+begin
+  Result := Self;
+  if Attributes.ContainsKey('SmoothScrollingEnabledAttribute') then
+    SmoothScrollingEnabled(SmoothScrollingEnabledAttribute(Attributes['SmoothScrollingEnabledAttribute']).Value);
+end;
+
+{ TPscHorizontalScrollView }
+
+procedure TPscHorizontalScrollView.ApplyAttributes;
+begin
+  TPscUtils.Log('for TPscHorizontalScrollView', 'ApplyAttributes', TLogger.Info, Self);
+  inherited;
+  try
+    EdgeEffectColor;
+    FillViewport;
+    SmoothScrollingEnabled;
+  except
+    on E: Exception do
+      TPscUtils.Log(E.Message, 'ApplyAttributes', TLogger.Error, Self);
+  end;
+end;
+
+constructor TPscHorizontalScrollView.Create(Attributes: TArray<TCustomAttribute>);
+begin
+  TPscUtils.Log('of TPscHorizontalScrollView', 'Create', TLogger.Info, Self);
+  inherited Create(Attributes);
+end;
+
+function TPscHorizontalScrollView.BuildScreen: IPscHorizontalScrollView;
+begin
+  Result := Self;
+  TPscUtils.Log('', 'BuildScreen', TLogger.Info, Self);
+  View := TJHorizontalScrollView.JavaClass.init(Context);
+  ApplyAttributes;
+end;
+
+function TPscHorizontalScrollView.EdgeEffectColor(Color: Integer): IPscHorizontalScrollView;
+begin
+  Result := Self;
+  JHorizontalScrollView(View).setEdgeEffectColor(Color);
+end;
+
+function TPscHorizontalScrollView.EdgeEffectColor: IPscHorizontalScrollView;
+begin
+  Result := Self;
+  if Attributes.ContainsKey('EdgeEffectColorAttribute') then
+    EdgeEffectColor(EdgeEffectColorAttribute(Attributes['EdgeEffectColorAttribute']).Value);
+end;
+
+function TPscHorizontalScrollView.FillViewport(Value: Boolean): IPscHorizontalScrollView;
+begin
+  Result := Self;
+  JHorizontalScrollView(View).setFillViewport(Value);
+end;
+
+function TPscHorizontalScrollView.FillViewport: IPscHorizontalScrollView;
+begin
+  Result := Self;
+  if Attributes.ContainsKey('FillViewportAttribute') then
+    FillViewport(FillViewportAttribute(Attributes['FillViewportAttribute']).Value);
+end;
+
+class function TPscHorizontalScrollView.New(Attributes: TArray<TCustomAttribute>): IPscHorizontalScrollView;
+begin
+  Result := Self.Create(Attributes);
+end;
+
+function TPscHorizontalScrollView.Show: IPscHorizontalScrollView;
+begin
+  TPscUtils.Log('', 'Show', TLogger.Info, Self);
+  try
+    TAndroidHelper.Activity.addContentView(View, LayoutParams);
+  except
+    on E: Exception do
+      TPscUtils.Log(E.Message, 'Show', TLogger.Error, Self);
+  end;
+end;
+
+function TPscHorizontalScrollView.SmoothScrollingEnabled(Value: Boolean): IPscViewGroup;
+begin
+  Result := Self;
+  JHorizontalScrollView(View).setSmoothScrollingEnabled(Value);
+end;
+
+function TPscHorizontalScrollView.SmoothScrollingEnabled: IPscHorizontalScrollView;
 begin
   Result := Self;
   if Attributes.ContainsKey('SmoothScrollingEnabledAttribute') then

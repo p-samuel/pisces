@@ -359,6 +359,13 @@ begin
                 .OnClick(H.OnClick)
                 .OnLongClick(H.OnLongClick)
                 .GetView;
+            end else if Attribute is HorizontalScrollViewAttribute then begin
+              TPscUtils.Log('Creating sub child as IPscHorizontalScrollView of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
+              SubView := IPscHorizontalScrollView(FieldInstance.FView)
+                .BuildScreen
+                .OnClick(H.OnClick)
+                .OnLongClick(H.OnLongClick)
+                .GetView;
             end else if Attribute is TimePickerAttribute then begin
               TPscUtils.Log('Creating sub child as IPscTimePicker of type '+ FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
               SubView := IPscTimePicker(FieldInstance.FView)
@@ -493,6 +500,8 @@ begin
       TPscUtils.Log(ClassInstance.ClassName + ' view is of type IPscDatePicker ', 'AddChildView', TLogger.Info, Self)
     else if Supports(ParentView, IPscScrollView) then
       TPscUtils.Log(ClassInstance.ClassName + ' view is of type IPscScrollView ', 'AddChildView', TLogger.Info, Self)
+    else if Supports(ParentView, IPscHorizontalScrollView) then
+      TPscUtils.Log(ClassInstance.ClassName + ' view is of type IPscHorizontalScrollView ', 'AddChildView', TLogger.Info, Self)
     else if Supports(ParentView, IPscTimePicker) then
       TPscUtils.Log(ClassInstance.ClassName + ' view is of type IPscTimePicker ', 'AddChildView', TLogger.Info, Self)
     else if Supports(ParentView, IPscFrameLayout) then
@@ -623,6 +632,11 @@ begin
         .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscScrollView) then begin
       IPscScrollView(FView)
+        .BuildScreen
+        .OnClick(OnClickHandler)
+        .OnLongClick(OnLongClickHandler)
+    end else if Supports(FView, IPscHorizontalScrollView) then begin
+      IPscHorizontalScrollView(FView)
         .BuildScreen
         .OnClick(OnClickHandler)
         .OnLongClick(OnLongClickHandler)
@@ -1021,6 +1035,9 @@ begin
 
           if Attribute is ScrollViewAttribute then
             FView := TPscScrollView.New(AttributesList);
+
+          if Attribute is HorizontalScrollViewAttribute then
+            FView := TPscHorizontalScrollView.New(AttributesList);
 
           if Attribute is AbsoluteLayoutAttribute then
             FView := TPscAbsoluteLayout.New(AttributesList);

@@ -33,6 +33,7 @@ type
   IPscToolBar = Pisces.ViewGroup.IPscToolBar;
   IPscFrameLayout = Pisces.ViewGroup.IPscFrameLayout;
   IPscScrollView = Pisces.ViewGroup.IPscScrollView;
+  IPscHorizontalScrollView = Pisces.ViewGroup.IPscHorizontalScrollView;
   IPscTimePicker = Pisces.ViewGroup.IPscTimePicker;
   IPscDatePicker = Pisces.ViewGroup.IPscDatePicker;
   IPscCalender = Pisces.ViewGroup.IPscCalendar;
@@ -54,6 +55,7 @@ type
   ToolBarAttribute = Pisces.Attributes.ToolBarAttribute;
   FrameLayoutAttribute = Pisces.Attributes.FrameLayoutAttribute;
   ScrollViewAttribute = Pisces.Attributes.ScrollViewAttribute;
+  HorizontalScrollViewAttribute = Pisces.Attributes.HorizontalScrollViewAttribute;
   AbsoluteLayoutAttribute = Pisces.Attributes.AbsoluteLayoutAttribute;
   TimePickerAttribute = Pisces.Attributes.TimePickerAttribute;
   DatePickerAttribute = Pisces.Attributes.DatePickerAttribute;
@@ -345,6 +347,7 @@ type
   TJLinearLayout = Pisces.Types.TJLinearLayout;
   TJTimePicker = Pisces.Types.TJTimePicker;
   TJScrowView = Pisces.Types.TJScrowView;
+  TJHorizontalScrollView = Pisces.Types.TJHorizontalScrollView;
   TJFrameLayout = Pisces.Types.TJFrameLayout;
   TJDatePicker = Pisces.Types.TJDatePicker;
   TJCalendarView = Pisces.Types.TJCalendarView;
@@ -376,6 +379,7 @@ type
   JAbsoluteLayout = Pisces.Types.JAbsoluteLayout;
   JRelativeLayout = Pisces.Types.JRelativeLayout;
   JScrollView = Pisces.Types.JScrollView;
+  JHorizontalScrollView = Pisces.Types.JHorizontalScrollView;
   JFrameLayout = Pisces.Types.JFrameLayout;
   JDatePicker = Pisces.Types.JDatePicker;
   JCalendarView = Pisces.Types.JCalendarView;

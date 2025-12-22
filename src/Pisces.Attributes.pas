@@ -33,6 +33,7 @@ type
   ToolBarAttribute = class(TPiscesViewAttribute);
   FrameLayoutAttribute = class(TPiscesViewAttribute);
   ScrollViewAttribute = class(TPiscesViewAttribute);
+  HorizontalScrollViewAttribute = class(TPiscesViewAttribute);
   TimePickerAttribute = class(TPiscesViewAttribute);
   DatePickerAttribute = class(TPiscesViewAttribute);
   CalendarAttribute = class(TPiscesViewAttribute);
