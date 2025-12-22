@@ -316,7 +316,7 @@ type
     Height(400)
   ] TCondensedLight = class(TPisces) end;
 
-  // 21) Mixed weights in a vertical stack (label + detail)
+  // 21) Mixed weights in a horizontal stack (label + detail)
   [ TextView('mixedlabel'),
     Text('Black weight label'),
     FontFamily('sans-serif-black'),
@@ -324,7 +324,7 @@ type
     TextSize(22),
     TextColor(250, 250, 250),
     RippleColor(255, 255, 255, 0.25),
-    WidthPercent(0.5)
+    WidthPercent(0.7)
   ] TLabelView = class(TPisces) end;
 
   [ TextView('mixeddetail'),
@@ -335,17 +335,27 @@ type
     TextColor(220, 220, 220),
     Padding(0, 8, 0, 0),
     RippleColor(255, 255, 255, 0.25),
-    WidthPercent(0.5)
+    WidthPercent(0.7)
   ] TDetailView = class(TPisces) end;
 
   [ LinearLayout('mixedweights'),
     Orientation(TOrientation.Horizontal),
     BackgroundColor(20, 26, 36),
+    Width(TLayout.WRAP),
     Padding(14, 18, 14, 18),
     Height(400)
   ] TMixedWeights = class(TPisces)
     LabelView: TLabelView;
     DetailView: TDetailView;
+  end;
+
+  [ HorizontalScrollView('mixedscroll'),
+    FillViewport(True),
+    SmoothScrollingEnabled(True),
+    RippleColor(255, 255, 255, 0.25),
+    Height(400)
+  ] TMixedScrollView = class(TPisces)
+    Content: TMixedWeights;
   end;
 
   // Content stack
@@ -375,7 +385,7 @@ type
     Thin: TThin;
     Cursive: TCursive;
     CondensedLight: TCondensedLight;
-    MixedWeights: TMixedWeights;
+    MixedScrollView: TMixedScrollView;
   end;
 
   [ ScrollView('home'),

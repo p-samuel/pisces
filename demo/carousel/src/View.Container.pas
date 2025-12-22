@@ -10,7 +10,7 @@ type
     Text('Web Image Example'),
     TextSize(24),
     TextColor(235, 235, 235),
-    Height(100),
+    Height(400),
     Gravity([TGravity.Center])
   ] TTitle = class(TPisces)
   end;

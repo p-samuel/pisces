@@ -8,8 +8,8 @@ uses
 type
 
   [ ImageView('horizontal-image'),
-    Height(1100),
-    Rotation(-90),
+    Height(900),
+    WidthPercent(1),
     ScaleType(TImageScaleType.CenterCrop)
   ] THorizontalWebImage = class(TBaseWebImage)
 
@@ -23,7 +23,7 @@ type
   end;
 
   [ LinearLayout('horizontal-scroller-layout'),
-    Orientation(TOrientation.Vertical)
+    Orientation(TOrientation.Horizontal)
   ] THorizontalScrollerLayout = class(TPisces)
   private
     FImg1: THorizontalWebImage;
@@ -32,11 +32,8 @@ type
     FImg4: THorizontalWebImage;
   end;
 
-  [ ScrollView('horizontal-scroller'),
-    VerticalScrollBarEnabled(True),
+  [ HorizontalScrollView('horizontal-scroller'),
     HorizontalScrollBarEnabled(True),
-    HeightPercent(0.5),
-    Rotation(90),
     FillViewport(True)
   ] THorizontalScroller = class(TPisces)
   private
@@ -56,8 +53,7 @@ type
   [ ScrollView('vertical-scroller'),
     VerticalScrollBarEnabled(True),
     HorizontalScrollBarEnabled(True),
-    HeightPercent(0.33),
-    Width(1100),
+    Height(900),
     FillViewport(False),
     NestedScrollingEnabled(True)
   ] TVerticalScroller = class(TPisces)
