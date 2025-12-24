@@ -1,7 +1,6 @@
-program Gestures;
+program Lists;
 
 uses
-  View.Main in 'src\View.Main.pas' {$R *.res},
   Pisces.Attributes in '..\..\src\Pisces.Attributes.pas',
   Pisces.Base in '..\..\src\Pisces.Base.pas',
   Pisces.EventListeners in '..\..\src\Pisces.EventListeners.pas',
@@ -16,12 +15,13 @@ uses
   Pisces.App in '..\..\src\Pisces.App.pas',
   Pisces.ScreenManager in '..\..\src\Pisces.ScreenManager.pas',
   Pisces.Audio in '..\..\src\Pisces.Audio.pas',
-  Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas',
+  Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas',
+  Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas' {$R *.res},
   Pisces.Adapters in '..\..\src\Pisces.Adapters.pas',
-  Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas';
+  View.Home in 'src\View.Home.pas';
 
 {$R *.res}
 
 begin
-  
+
 end.

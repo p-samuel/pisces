@@ -96,6 +96,7 @@ procedure TScroll.OnActivityConfigurationChangedHandler(Activity: JActivity);
 begin
   TPscUtils.Log('Screen Tilted', 'OnConfigurationChangedHandler', TLogger.Info, Self);
   Screen.Hide;
+  Screen.Initialize;
   Screen.Show;
 end;
 

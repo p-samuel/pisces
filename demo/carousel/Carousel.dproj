@@ -262,6 +262,7 @@
         <DCCReference Include="..\..\src\Pisces.ScreenManager.pas"/>
         <DCCReference Include="..\..\src\Pisces.Audio.pas"/>
         <DCCReference Include="..\..\src\Pisces.JNI.Extensions.pas"/>
+        <DCCReference Include="..\..\src\Pisces.Adapters.pas"/>
         <DCCReference Include="..\..\src\Pisces.Keyboard.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

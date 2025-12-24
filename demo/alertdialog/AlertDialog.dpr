@@ -17,6 +17,7 @@ uses
   Pisces.Audio in '..\..\src\Pisces.Audio.pas',
   Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas',
   Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas',
+  Pisces.Adapters in '..\..\src\Pisces.Adapters.pas',
   View.Home in 'src\View.Home.pas';
 
 begin

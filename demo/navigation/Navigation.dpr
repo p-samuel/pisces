@@ -19,6 +19,7 @@ uses
   View.Detail in 'src\View.Detail.pas',
   View.User in 'src\View.User.pas',
   Pisces.Audio in '..\..\src\Pisces.Audio.pas',
+  Pisces.Adapters in '..\..\src\Pisces.Adapters.pas',
   Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas';
 
 {$R *.res}
