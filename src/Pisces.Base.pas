@@ -40,6 +40,7 @@ type
     procedure CreateViewIdentification;
     procedure SetParent(const AParent: TPisces);
     function IsDescendantOfPisces(AType: TRttiType): Boolean;
+    function HasListViewItemAttribute: Boolean;
     function GetAndroidView: JView;
     function GetParentView: JView;
     function GetVisible: Boolean;
@@ -48,6 +49,8 @@ type
   public
     constructor Create; virtual;
     destructor Destroy; override;
+    procedure Initialize; virtual;
+    procedure AfterInitialize; virtual;
     procedure Show; virtual;
     procedure ShowAndHide; virtual;
     procedure Hide; virtual;
@@ -58,6 +61,10 @@ type
     procedure DoHide; virtual;   // Called when screen becomes hidden (push source or pop source)
     procedure DoCreate; virtual; // Called after screen is created and registered
     procedure DoDestroy; virtual; // Called before screen is destroyed
+
+    // ListView helper methods - delegates to IPscListView if view supports it
+    procedure SetListItems(const Items: TArray<String>);
+    function GetManagedItems: TArray<TObject>;
 
     // Static methods for activity lifecycle
     procedure SetLifecycles(ParentClass: TObject);
@@ -221,6 +228,7 @@ var
   RttiMethod: TRttiMethod;
   InstanceObj: TObject;
   RegInfo: TViewRegistrationInfo;
+  IsChildListViewItem: Boolean;
 begin
   TPscUtils.Log('', 'ProcessFields', TLogger.Info, Self);
   try
@@ -275,6 +283,11 @@ begin
 
           TPscUtils.Log(Format('Processing field: %s, Instance: %p, ClassName: %s',
             [RttiField.Name, Pointer(FieldInstance), FieldInstance.ClassName]),'ProcessFields', TLogger.Info, Self);
+
+          // Check if this child has ListViewItem attribute - skip handlers if so
+          IsChildListViewItem := FieldInstance.HasListViewItemAttribute;
+          if IsChildListViewItem then
+            TPscUtils.Log('Child ' + FieldInstance.ClassName + ' is a ListViewItem - skipping touch handlers', 'ProcessFields', TLogger.Info, Self);
 
           TPscUtils.Log('Retrieving field event handlers for: ' + FieldInstance.ClassName, 'ProcessFields', TLogger.Info, Self);
           // Retrieve event handlers if they exist
@@ -427,8 +440,9 @@ begin
             end;
           end;
 
-          // Touch handler special case
-          IPscView(FieldInstance.FView).OnTouch(H.OnTouch);
+          // Touch handler special case - skip for ListView items
+          if not IsChildListViewItem then
+            IPscView(FieldInstance.FView).OnTouch(H.OnTouch);
 
           // Add the Android view to the Android parent view
           AddAndroidChildView(FView, SubView, FieldInstance);
@@ -578,20 +592,28 @@ var
   RttiContext: TRttiContext;
   RttiType: TRttiType;
   RegInfo: TViewRegistrationInfo;
+  IsListViewItem: Boolean;
 begin
   TPscUtils.Log('', 'BuildScreen', TLogger.Info, Self);
   try
+    // Check if this is a ListView item - if so, skip touch handlers
+    IsListViewItem := HasListViewItemAttribute;
+    if IsListViewItem then
+      TPscUtils.Log('Detected ListViewItem attribute - skipping touch handlers', 'BuildScreen', TLogger.Info, Self);
+
     // Check for the most specific type first, respecting hierarchy to avoid duplicate creates
     if Supports(FView, IPscSwitch) then begin
-      IPscSwitch(FView)
-        .BuildScreen
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+      IPscSwitch(FView).BuildScreen;
+      if not IsListViewItem then
+        IPscSwitch(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscButton) then begin
-      IPscButton(FView)
-        .BuildScreen
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+      IPscButton(FView).BuildScreen;
+      if not IsListViewItem then
+        IPscButton(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscEdit) then begin
       IPscEdit(FView)
         .BuildScreen
@@ -599,19 +621,23 @@ begin
         .OnTextChanging(OnTextChangingHandler)
         .OnBeforeTextChanged(OnBeforeTextChangedHandler)
         .OnEditorAction(OnEditorActionHandler)
-        .OnKey(OnKeyHandler)
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+        .OnKey(OnKeyHandler);
+      if not IsListViewItem then
+        IPscEdit(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscText) then begin
-      IPscText(FView)
-        .BuildScreen
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+      IPscText(FView).BuildScreen;
+      if not IsListViewItem then
+        IPscText(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscImage) then begin
-      IPscImage(FView)
-        .BuildScreen
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+      IPscImage(FView).BuildScreen;
+      if not IsListViewItem then
+        IPscImage(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPsclistView) then begin
       IPsclistView(FView)
         .BuildScreen
@@ -621,71 +647,88 @@ begin
     end else if Supports(FView, IPscCalendar) then begin
       IPscCalendar(FView)
         .BuildScreen
-        .OnDateChangeListener(OnCalendarDateChangeHandler)
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+        .OnDateChangeListener(OnCalendarDateChangeHandler);
+      if not IsListViewItem then
+        IPscCalendar(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscDatePicker) then begin
       IPscDatePicker(FView)
         .BuildScreen
-        .OnDateChangeListener(OnDateChangeHandler)
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+        .OnDateChangeListener(OnDateChangeHandler);
+      if not IsListViewItem then
+        IPscDatePicker(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscScrollView) then begin
-      IPscScrollView(FView)
-        .BuildScreen
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler)
+      IPscScrollView(FView).BuildScreen;
+      if not IsListViewItem then
+        IPscScrollView(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscHorizontalScrollView) then begin
-      IPscHorizontalScrollView(FView)
-        .BuildScreen
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler)
+      IPscHorizontalScrollView(FView).BuildScreen;
+      if not IsListViewItem then
+        IPscHorizontalScrollView(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscTimePicker) then begin
       IPscTimePicker(FView)
         .BuildScreen
-        .OnTimeChangeListener(OnTimeChangeHandler)
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+        .OnTimeChangeListener(OnTimeChangeHandler);
+      if not IsListViewItem then
+        IPscTimePicker(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscFrameLayout) then begin
-      IPscFrameLayout(FView)
-        .BuildScreen
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler)
+      IPscFrameLayout(FView).BuildScreen;
+      if not IsListViewItem then
+        IPscFrameLayout(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscLinearLayout) then begin
-      IPscLinearLayout(FView)
-        .BuildScreen
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+      IPscLinearLayout(FView).BuildScreen;
+      if not IsListViewItem then
+        IPscLinearLayout(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscRelativeLayout) then begin
-      IPscRelativeLayout(FView)
-        .BuildScreen
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+      IPscRelativeLayout(FView).BuildScreen;
+      if not IsListViewItem then
+        IPscRelativeLayout(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscAbsoluteLayout) then begin
-      IPscAbsoluteLayout(FView)
-        .BuildScreen
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+      IPscAbsoluteLayout(FView).BuildScreen;
+      if not IsListViewItem then
+        IPscAbsoluteLayout(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscToolBar) then begin
       IPscToolBar(FView)
         .BuildScreen
-        .OnNavigationClick(OnBackPressedHandler)
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+        .OnNavigationClick(OnBackPressedHandler);
+      if not IsListViewItem then
+        IPscToolBar(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscViewGroup) then begin
-      IPscViewGroup(FView)
-        .BuildScreen
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+      IPscViewGroup(FView).BuildScreen;
+      if not IsListViewItem then
+        IPscViewGroup(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end else if Supports(FView, IPscView) then begin
-      IPscView(FView)
-        .BuildScreen
-        .OnClick(OnClickHandler)
-        .OnLongClick(OnLongClickHandler);
+      IPscView(FView).BuildScreen;
+      if not IsListViewItem then
+        IPscView(FView)
+          .OnClick(OnClickHandler)
+          .OnLongClick(OnLongClickHandler);
     end;
 
-    // Touch handler special case
-    IPscView(FView).OnTouch(OnTouchHandler);
+    // Touch handler special case - skip for ListView items and AdapterViews
+    if not IsListViewItem and not Supports(FView, IPscAdapterView) then
+      IPscView(FView).OnTouch(OnTouchHandler);
 
     // When the native view is fully built, we register it
     RttiContext := TRttiContext.Create;
@@ -840,6 +883,47 @@ begin
       Exit(True);
     AType := AType.BaseType;
   end;
+end;
+
+function TPisces.HasListViewItemAttribute: Boolean;
+var
+  RttiContext: TRttiContext;
+  RttiType: TRttiType;
+  Attribute: TCustomAttribute;
+begin
+  Result := False;
+  RttiContext := TRttiContext.Create;
+  try
+    RttiType := RttiContext.GetType(Self.ClassType);
+    for Attribute in RttiType.GetAttributes do begin
+      if (Attribute is ListViewItemAttribute) and
+         TPiscesBooleanAttribute(Attribute).Value then begin
+        Result := True;
+        Exit;
+      end;
+    end;
+  finally
+    RttiContext.Free;
+  end;
+end;
+
+procedure TPisces.SetListItems(const Items: TArray<String>);
+var
+  ListView: IPscListView;
+begin
+  if Supports(FView, IPscListView, ListView) then
+    ListView.SetListItems(Items)
+  else
+    TPscUtils.Log('SetListItems called on non-ListView view', 'SetListItems', TLogger.Error, Self);
+end;
+
+function TPisces.GetManagedItems: TArray<TObject>;
+var
+  ListView: IPscListView;
+begin
+  Result := nil;
+  if Supports(FView, IPscListView, ListView) then
+    Result := ListView.GetManagedItems;
 end;
 
 procedure TPisces.OnClickHandler(AView: JView);
@@ -1087,6 +1171,22 @@ begin
     TPscUtils.Log(Format('Parent set for %s to %s', [Self.ClassName, AParent.ClassName]), 'SetParent', TLogger.Info, Self)
 end;
 
+procedure TPisces.Initialize;
+begin
+  BuildScreen;
+  SetLifecycles(Self);
+  InitializeActivityLifecycle;
+  SetActivityLifecycleHandlers(Self);
+  ProcessFields(Self);
+  SetKeyboardPadding;
+  AfterInitialize;
+end;
+
+procedure TPisces.AfterInitialize;
+begin
+  // Override in descendants to perform setup after Initialize completes
+end;
+
 procedure TPisces.InitializeActivityLifecycle;
 begin
   try
@@ -1115,7 +1215,6 @@ begin
       FViewLifecycleListener.OnDetachedFromWindow := H.OnViewDetachedFromWindow;
 
       if Assigned(FView) and Supports(FView, IPscView) then begin
-        var AndroidView := IPscView(FView).GetView;
         if Assigned(AndroidView) then begin
           AndroidView.addOnAttachStateChangeListener(FViewLifecycleListener);
           TPscUtils.Log('View lifecycle listener attached successfully', 'SetupViewLifecycle', TLogger.Info, Self);
@@ -1161,14 +1260,9 @@ procedure TPisces.Show;
 begin
   TPscUtils.Log('', 'Show', TLogger.Info, Self);
   try
-    BuildScreen;
-    SetLifecycles(Self);
-    InitializeActivityLifecycle;
-    SetActivityLifecycleHandlers(Self);
-    ProcessFields(Self);
+    Initialize;
     ShowView;
     AfterShow;
-    SetKeyboardPadding;
   except
     on E: Exception do
       TPscUtils.Log(E.Message, 'Show', TLogger.Error, Self);
@@ -1201,8 +1295,15 @@ begin
   Instance := TPisces(ParentClass);
   try
     Manager := TPiscesApplication.GetLifecycleManager;
+
+    if not Assigned(Manager) then
+      TPscUtils.Log('Warning! Activity manager has not been created.', 'SetActivityLifecycleHandlers', TLogger.Warning, Self);
+
+    if not Assigned(Manager.ActivityLifecycleListener) then
+      TPscUtils.Log('Warning! Activity lifecycle listener has not been created.', 'SetActivityLifecycleHandlers', TLogger.Warning, Self);
+
     if Assigned(Manager) and Assigned(Manager.ActivityLifecycleListener) then begin
-      TPscUtils.Log('Assigning activity lifecycle handlers', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
+      TPscUtils.Log('Assigning activity lifecycle handlers', 'SetActivityLifecycleHandlers', TLogger.Info, Self);
       Manager.ActivityLifecycleListener.OnCreate := OnActivityCreateHandler;
       Manager.ActivityLifecycleListener.OnStart := OnActivityStartHandler;
       Manager.ActivityLifecycleListener.OnResume := OnActivityResumeHandler;
@@ -1211,10 +1312,10 @@ begin
       Manager.ActivityLifecycleListener.OnDestroy := OnActivityDestroyHandler;
       Manager.ActivityLifecycleListener.OnConfigurationChanged := OnActivityConfigurationChangedHandler;
       Manager.ActivityLifecycleListener.OnSaveInstanceState := OnActivitySaveInstanceStateHandler;
-      TPscUtils.Log('Activity lifecycle handlers assigned', 'CheckAndAssignActivityLifecycleHandlers', TLogger.Info, Self);
+      TPscUtils.Log('Activity lifecycle handlers assigned', 'SetActivityLifecycleHandlers', TLogger.Info, Self);
     end;
   except on E: Exception do
-      TPscUtils.Log('Error assigning activity lifecycle handlers: ' + E.Message, 'CheckAndAssignActivityLifecycleHandlers', TLogger.Warning, Self);
+      TPscUtils.Log('Error assigning activity lifecycle handlers: ' + E.Message, 'SetActivityLifecycleHandlers', TLogger.Warning, Self);
   end;
 end;
 

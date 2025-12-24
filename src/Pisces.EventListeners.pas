@@ -334,6 +334,7 @@ end;
 
 procedure TPscAdapterItemSelectedListener.onItemSelected(parent: JAdapterView; view: JView; position: Integer; id: Int64);
 begin
+  TPscUtils.Log(Format('AdapterOnItemSelected pos=%d id=%d parent=%p view=%p', [position, id, Pointer(parent), Pointer(view)]), 'onItemClick', TLogger.Info, Self);
   if Assigned(FProc) then
     FProc(parent, view, position, id);
 end;
@@ -354,6 +355,7 @@ end;
 
 procedure TPscAdapterItemClickListener.onItemClick(parent: JAdapterView; view: JView; position: Integer; id: Int64);
 begin
+  TPscUtils.Log(Format('AdapterItemClick pos=%d id=%d parent=%p view=%p', [position, id, Pointer(parent), Pointer(view)]), 'onItemClick', TLogger.Info, Self);
   if Assigned(FProc) then
     FProc(parent, view, position, id);
 end;
@@ -369,6 +371,7 @@ end;
 function TPscAdapterItemLongClickListener.onItemLongClick(parent: JAdapterView; view: JView; position: Integer; id: Int64): Boolean;
 begin
   Result := True;
+  TPscUtils.Log(Format('AdapterOnItemLongClick pos=%d id=%d parent=%p view=%p', [position, id, Pointer(parent), Pointer(view)]), 'onItemClick', TLogger.Info, Self);
   if Assigned(FProc) then
     FProc(parent, view, position, id);
 end;

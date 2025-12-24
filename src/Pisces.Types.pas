@@ -23,6 +23,7 @@ type
   TJGravity = Androidapi.JNI.GraphicsContentViewText.TJGravity;
   TJLayoutMode = Androidapi.JNI.Widget.TJLinearLayout;
   TJColor = Androidapi.JNI.GraphicsContentViewText.TJColor;
+  TJViewGroup = Androidapi.JNI.GraphicsContentViewText.TJViewGroup;
   TJView = Androidapi.JNI.GraphicsContentViewText.TJView;
   TJLineBreaker = Androidapi.JNI.GraphicsContentViewText.TJLineBreaker;
   TJAnimation = Androidapi.JNI.GraphicsContentViewText.TJAnimation;
@@ -38,9 +39,12 @@ type
   TJDatePicker = Androidapi.JNI.Widget.TJDatePicker;
   TJCalendarView = Androidapi.JNI.Widget.TJCalendarView;
   TJAdapter = Androidapi.JNI.Widget.TJAdapter;
+  TJArrayAdapter = Pisces.JNI.Extensions.TJArrayAdapter;
   TJAdapterView = Androidapi.JNI.Widget.TJAdapterView;
   TJBaseAdapter = Androidapi.JNI.Widget.TJBaseAdapter;
+  TJDataSetObserver = Androidapi.JNI.GraphicsContentViewText.TJDataSetObserver;
   TJListView = Androidapi.JNI.Widget.TJListView;
+  TJAbsListView = Androidapi.JNI.Widget.TJAbsListView;
   TJListAdapter = Androidapi.JNI.Widget.TJListAdapter;
   TJTextView = Androidapi.JNI.Widget.TJTextView;
   TJSwitch = Androidapi.JNI.Widget.TJSwitch;
@@ -64,6 +68,7 @@ type
   JBitmap = Androidapi.JNI.GraphicsContentViewText.JBitmap;
   JMenuItem = Androidapi.JNI.GraphicsContentViewText.JMenuItem;
   JTimePicker = Androidapi.JNI.Widget.JTimePicker;
+  JViewGroup = Androidapi.JNI.GraphicsContentViewText.JViewGroup;
   JView = Androidapi.JNI.GraphicsContentViewText.JView;
   JLinearLayout = Androidapi.JNI.Widget.JLinearLayout;
   JAbsoluteLayout = Androidapi.JNI.Widget.JAbsoluteLayout;
@@ -74,9 +79,12 @@ type
   JDatePicker = Androidapi.JNI.Widget.JDatePicker;
   JCalendarView = Androidapi.JNI.Widget.JCalendarView;
   JAdapter = Androidapi.JNI.Widget.JAdapter;
+  JArrayAdapter = Pisces.JNI.Extensions.JArrayAdapter;
   JAdapterView = Androidapi.JNI.Widget.JAdapterView;
   JBaseAdapter = Androidapi.JNI.Widget.JBaseAdapter;
+  JDataSetObserver = Androidapi.JNI.GraphicsContentViewText.JDataSetObserver;
   JListView = Androidapi.JNI.Widget.JListView;
+  JAbsListView = Androidapi.JNI.Widget.JAbsListView;
   JContext = Androidapi.JNI.GraphicsContentViewText.JContext;
   JListAdapter = Androidapi.JNI.Widget.JListAdapter;
   JViewGroup_LayoutParams = Androidapi.JNI.GraphicsContentViewText.JViewGroup_LayoutParams;
@@ -841,6 +849,9 @@ type
   TSwipeDirection = (Left, Right, Up, Down, Touch, Leave);
 
   TGradientShape = (Linear, Radial, Sweep);
+
+  TChoiceMode = (None, Single, Multiple);
+  TAdapterType = (ArrayAdapter, ViewArrayAdapter);
 
   TGradientOrientation = (
     TopToBottom, LeftToRight, BottomToTop, RightToLeft, TopLeftToBottomRight,

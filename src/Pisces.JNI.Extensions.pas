@@ -52,6 +52,21 @@ type
 
   TJHorizontalScrollView = class(TJavaGenericImport<JHorizontalScrollViewClass, JHorizontalScrollView>) end;
 
+  [JavaSignature('android/widget/ArrayAdapter')]
+  JArrayAdapter = interface(JBaseAdapter)
+    ['{F1A6C17C-7A9F-41CB-9C8C-2E6D6A29F7A6}']
+  end;
+
+  [JavaSignature('android/widget/ArrayAdapter')]
+  JArrayAdapterClass = interface(JBaseAdapterClass)
+    ['{C2C2B3E8-7E1B-4F5B-9E2A-5E6E5B1E2B86}']
+    function init(context: JContext; resource: Integer): JArrayAdapter; cdecl; overload;
+    function init(context: JContext; resource: Integer; objects: JList): JArrayAdapter; cdecl; overload;
+    function init(context: JContext; resource: Integer; textViewResourceId: Integer; objects: JList): JArrayAdapter; cdecl; overload;
+  end;
+
+  TJArrayAdapter = class(TJavaGenericImport<JArrayAdapterClass, JArrayAdapter>) end;
+
 implementation
 
 end.

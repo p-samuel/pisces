@@ -37,6 +37,14 @@ type
     ['{5D82E3E5-F66B-4382-BC2F-B0145F1B5A1E}']
     function BuildScreen: IPscListView;
     function Show: IPscListView;
+    function ChoiceMode: IPscListView; overload;
+    function ChoiceMode(Mode: TChoiceMode): IPscListView; overload;
+    function AdapterType: IPscListView; overload;
+    function AdapterType(AType: TAdapterType): IPscListView; overload;
+    function ItemClass: IPscListView; overload;
+    function ItemClass(const AClassName: String): IPscListView; overload;
+    procedure SetListItems(const Items: TArray<String>);
+    function GetManagedItems: TArray<TObject>;
   end;
 
   IPscAbsoluteLayout = interface(IPscViewGroup)
@@ -171,6 +179,13 @@ type
   end;
 
   TPscListView = class(TPscAbsListView, IPscListView)
+  private
+    FChoiceMode: TChoiceMode;
+    FAdapterType: TAdapterType;
+    FItemClassName: String;
+    FManagedItems: TArray<TObject>;
+    FManagedAdapter: JListAdapter;
+    FItemClickListener: TPscAdapterItemClickListener;
   public
     procedure ApplyAttributes; override;
     constructor Create(Attributes: TArray<TCustomAttribute>);
@@ -179,6 +194,18 @@ type
     function Show: IPscListView;
     function ItemsCanFocus: IPscListView; overload;
     function ItemsCanFocus(Value: Boolean): IPscListView; overload;
+    function ChoiceMode: IPscListView; overload;
+    function ChoiceMode(Mode: TChoiceMode): IPscListView; overload;
+    function AdapterType: IPscListView; overload;
+    function AdapterType(AType: TAdapterType): IPscListView; overload;
+    function ItemClass: IPscListView; overload;
+    function ItemClass(const AClassName: String): IPscListView; overload;
+    procedure SetListItems(const Items: TArray<String>);
+    function GetManagedItems: TArray<TObject>;
+    property ManagedChoiceMode: TChoiceMode read FChoiceMode;
+    property ManagedAdapterType: TAdapterType read FAdapterType;
+    property ManagedItemClassName: String read FItemClassName;
+    property ManagedItems: TArray<TObject> read GetManagedItems;
   end;
 
   TPscAbsoluteLayout = class(TPscViewGroup, IPscAbsoluteLayout)
@@ -386,8 +413,11 @@ type
 implementation
 
 uses
+  System.Rtti,
   Pisces.Utils,
   Pisces.Attributes,
+  Pisces.Adapters,
+  Pisces.Base,
   Androidapi.JNI.Widget,
   Androidapi.Helpers,
   Androidapi.JNI.App;
@@ -2062,6 +2092,9 @@ begin
   inherited;
   try
     ItemsCanFocus;
+    ChoiceMode;
+    AdapterType;
+    ItemClass;
   except
     on E: Exception do
       TPscUtils.Log(E.Message, 'ApplyAttributes', TLogger.Error, Self);
@@ -2108,6 +2141,150 @@ begin
   except
     on E: Exception do
       TPscUtils.Log(E.Message, 'Show', TLogger.Error, Self);
+  end;
+end;
+
+function TPscListView.ChoiceMode(Mode: TChoiceMode): IPscListView;
+const
+  CHOICE_MODE_NONE = 0;
+  CHOICE_MODE_SINGLE = 1;
+  CHOICE_MODE_MULTIPLE = 2;
+begin
+  Result := Self;
+  FChoiceMode := Mode;
+  case Mode of
+    TChoiceMode.None:
+      JListView(View).setChoiceMode(CHOICE_MODE_NONE);
+    TChoiceMode.Single:
+      JListView(View).setChoiceMode(CHOICE_MODE_SINGLE);
+    TChoiceMode.Multiple:
+      JListView(View).setChoiceMode(CHOICE_MODE_MULTIPLE);
+  end;
+  TPscUtils.Log('ChoiceMode set to ' + IntToStr(Ord(Mode)), 'ChoiceMode', TLogger.Info, Self);
+end;
+
+function TPscListView.ChoiceMode: IPscListView;
+begin
+  Result := Self;
+  if Attributes.ContainsKey('ChoiceModeAttribute') then
+    ChoiceMode(ChoiceModeAttribute(Attributes['ChoiceModeAttribute']).Mode);
+end;
+
+function TPscListView.AdapterType(AType: TAdapterType): IPscListView;
+begin
+  Result := Self;
+  FAdapterType := AType;
+  TPscUtils.Log('AdapterType set to ' + IntToStr(Ord(AType)), 'AdapterType', TLogger.Info, Self);
+end;
+
+function TPscListView.AdapterType: IPscListView;
+begin
+  Result := Self;
+  if Attributes.ContainsKey('AdapterTypeAttribute') then
+    AdapterType(AdapterTypeAttribute(Attributes['AdapterTypeAttribute']).AdapterType);
+end;
+
+function TPscListView.ItemClass(const AClassName: String): IPscListView;
+begin
+  Result := Self;
+  FItemClassName := AClassName;
+  TPscUtils.Log('ItemClass set to ' + AClassName, 'ItemClass', TLogger.Info, Self);
+end;
+
+function TPscListView.ItemClass: IPscListView;
+begin
+  Result := Self;
+  if Attributes.ContainsKey('ItemClassAttribute') then
+    ItemClass(ItemClassAttribute(Attributes['ItemClassAttribute']).Value);
+end;
+
+function TPscListView.GetManagedItems: TArray<TObject>;
+begin
+  Result := FManagedItems;
+end;
+
+procedure TPscListView.SetListItems(const Items: TArray<String>);
+var
+  RttiContext: TRttiContext;
+  RttiType: TRttiType;
+  RttiMethod: TRttiMethod;
+  ListView: JListView;
+  I: Integer;
+  ItemInstance: TPisces;
+  ItemClass: TClass;
+begin
+  TPscUtils.Log('SetListItems called with ' + IntToStr(Length(Items)) + ' items', 'SetListItems', TLogger.Info, Self);
+
+  ListView := JListView(View);
+  if ListView = nil then begin
+    TPscUtils.Log('ListView is nil', 'SetListItems', TLogger.Error, Self);
+    Exit;
+  end;
+
+  if FItemClassName = '' then begin
+    TPscUtils.Log('ItemClassName not set - use ItemClass attribute', 'SetListItems', TLogger.Error, Self);
+    Exit;
+  end;
+
+  // Find the class via RTTI
+  RttiContext := TRttiContext.Create;
+  try
+    RttiType := RttiContext.FindType(FItemClassName);
+    if RttiType = nil then begin
+      // Try without unit prefix
+      for RttiType in RttiContext.GetTypes do
+        if RttiType.IsInstance and (RttiType.Name = FItemClassName) then
+          Break;
+    end;
+
+    if (RttiType = nil) or not RttiType.IsInstance then begin
+      TPscUtils.Log('Class not found: ' + FItemClassName, 'SetListItems', TLogger.Error, Self);
+      Exit;
+    end;
+
+    ItemClass := TRttiInstanceType(RttiType).MetaclassType;
+    TPscUtils.Log('Found class: ' + ItemClass.ClassName, 'SetListItems', TLogger.Info, Self);
+
+    // Find constructor with string parameter
+    RttiMethod := nil;
+    for var M in RttiType.GetMethods('Create') do begin
+      var Params := M.GetParameters;
+      if (Length(Params) = 1) and (Params[0].ParamType.Handle = TypeInfo(string)) then
+      begin
+        RttiMethod := M;
+        Break;
+      end;
+    end;
+
+    if RttiMethod = nil then begin
+      TPscUtils.Log('Constructor Create(string) not found', 'SetListItems', TLogger.Error, Self);
+      Exit;
+    end;
+
+    // Create items
+    SetLength(FManagedItems, Length(Items));
+    for I := 0 to High(Items) do begin
+      ItemInstance := TPisces(RttiMethod.Invoke(ItemClass, [Items[I]]).AsObject);
+      ItemInstance.Initialize;  // ListViewItem(True) auto-skips handlers
+      ItemInstance.Visible := True;
+      FManagedItems[I] := ItemInstance;
+    end;
+
+    TPscUtils.Log('Created ' + IntToStr(Length(FManagedItems)) + ' item instances', 'SetListItems', TLogger.Info, Self);
+
+    // Create adapter based on type
+    case FAdapterType of
+      TAdapterType.ViewArrayAdapter:
+        FManagedAdapter := TViewArrayAdapter.Create(FManagedItems);
+      TAdapterType.ArrayAdapter:
+        FManagedAdapter := TViewArrayAdapter.Create(FManagedItems);  // Default to ViewArrayAdapter for now
+    end;
+
+    ListView.setAdapter(FManagedAdapter);
+    TPscUtils.Log('Adapter set on ListView', 'SetListItems', TLogger.Info, Self);
+
+  finally
+    RttiContext.Free;
   end;
 end;
 

@@ -326,6 +326,10 @@ type
 
   //JListView
   ItemsCanFocusAttribute = Pisces.Attributes.ItemsCanFocusAttribute;
+  ChoiceModeAttribute = Pisces.Attributes.ChoiceModeAttribute;
+  AdapterTypeAttribute = Pisces.Attributes.AdapterTypeAttribute;
+  ItemClassAttribute = Pisces.Attributes.ItemClassAttribute;
+  ListViewItemAttribute = Pisces.Attributes.ListViewItemAttribute;
 
   //Other
   CornerRadiusAttribute = Pisces.Attributes.CornerRadiusAttribute;
@@ -339,6 +343,7 @@ type
   TJGravity = Pisces.Types.TJGravity;
   TJLayoutMode = Pisces.Types.TJLayoutMode;
   TJColor = Pisces.Types.TJColor;
+  TJViewGroup = Pisces.Types.TJViewGroup;
   TJLineBreaker = Pisces.Types.TJLineBreaker;
   TJAnimation = Pisces.Types.TJAnimation;
   TJToast = Pisces.Types.TJToast;
@@ -352,9 +357,12 @@ type
   TJDatePicker = Pisces.Types.TJDatePicker;
   TJCalendarView = Pisces.Types.TJCalendarView;
   TJAdapter = Pisces.Types.TJAdapter;
+  TJArrayAdapter = Pisces.Types.TJArrayAdapter;
   TJAdapterView = Pisces.Types.TJAdapterView;
   TJBaseAdapter = Pisces.Types.TJBaseAdapter;
+  TJDataSetObserver = Pisces.Types.TJDataSetObserver;
   TJListView = Pisces.Types.TJListView;
+  TJAbsListView = Pisces.Types.TJAbsListView;
   TJListAdapter = Pisces.Types.TJListAdapter;
   TJTextView = Pisces.Types.TJTextView;
   TJScroller = Pisces.Types.TJScroller;
@@ -375,6 +383,7 @@ type
   JBitmap = Pisces.Types.JBitmap;
   JMenuItem = Pisces.Types.JMenuItem;
   JTimePicker = Pisces.Types.JTimePicker;
+  JViewGroup = Pisces.Types.JViewGroup;
   JLinearLayout = Pisces.Types.JLinearLayout;
   JAbsoluteLayout = Pisces.Types.JAbsoluteLayout;
   JRelativeLayout = Pisces.Types.JRelativeLayout;
@@ -384,9 +393,12 @@ type
   JDatePicker = Pisces.Types.JDatePicker;
   JCalendarView = Pisces.Types.JCalendarView;
   JAdapter = Pisces.Types.JAdapter;
+  JArrayAdapter = Pisces.Types.JArrayAdapter;
   JAdapterView = Pisces.Types.JAdapterView;
   JBaseAdapter = Pisces.Types.JBaseAdapter;
+  JDataSetObserver = Pisces.Types.JDataSetObserver;
   JListView = Pisces.Types.JListView;
+  JAbsListView = Pisces.Types.JAbsListView;
   JContext = Pisces.Types.JContext;
   JListAdapter = Pisces.Types.JListAdapter;
   JViewGroup_LayoutParams = Pisces.Types.JViewGroup_LayoutParams;
@@ -1116,6 +1128,8 @@ type
   TPaintFlag = Pisces.Types.TPaintFlag;
   TPaintFlagSet = Pisces.Types.TPaintFlagSet;
   TFontStyle = Pisces.Types.TFontStyle;
+  TChoiceMode = Pisces.Types.TChoiceMode;
+  TAdapterType = Pisces.Types.TAdapterType;
 
 
   // Activity lifecycle

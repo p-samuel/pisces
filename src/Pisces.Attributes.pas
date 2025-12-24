@@ -387,6 +387,22 @@ type
     property Orientation: TScreenOrientation read FOrientation;
   end;
 
+  TChoiceModeAttribute = class(TCustomAttribute)
+  private
+    FMode: TChoiceMode;
+  public
+    constructor Create(Mode: TChoiceMode);
+    property Mode: TChoiceMode read FMode;
+  end;
+
+  TAdapterTypeAttribute = class(TCustomAttribute)
+  private
+    FAdapterType: TAdapterType;
+  public
+    constructor Create(AType: TAdapterType);
+    property AdapterType: TAdapterType read FAdapterType;
+  end;
+
   TAutoLinkMaskAttribute = class(TPiscesIntegerAttribute)
   public
     constructor Create(const Mask: TAutoLinkSet); overload;
@@ -859,6 +875,10 @@ type
 
   //JListView
   ItemsCanFocusAttribute = class(TPiscesBooleanAttribute);
+  ChoiceModeAttribute = class(TChoiceModeAttribute);
+  AdapterTypeAttribute = class(TAdapterTypeAttribute);
+  ItemClassAttribute = class(TPiscesStringAttribute);
+  ListViewItemAttribute = class(TPiscesBooleanAttribute);
 
   //Other
   CornerRadiusAttribute = class(TPiscesDoubleAttribute);
@@ -1508,6 +1528,20 @@ end;
 constructor TScreenOrientationAttribute.Create(Orientation: TScreenOrientation);
 begin
   FOrientation := Orientation;
+end;
+
+{ TChoiceModeAttribute }
+
+constructor TChoiceModeAttribute.Create(Mode: TChoiceMode);
+begin
+  FMode := Mode;
+end;
+
+{ TAdapterTypeAttribute }
+
+constructor TAdapterTypeAttribute.Create(AType: TAdapterType);
+begin
+  FAdapterType := AType;
 end;
 
 { TReturnKeyTypeAttribute }
