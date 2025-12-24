@@ -106,9 +106,10 @@ begin
   FCaption := ACaption;
 end;
 
-// ListView items are created via TPscListView.SetListItems -> ItemInstance.Initialize;
-// Initialize builds the Android view + child fields, but list items are never shown via TPisces.Show.
-// AfterInitialize is the first safe hook where child AndroidView instances exist, so we set text here.
+//Why AfterInitialize exists (ListView)
+//  - List items are created via TPscListView.SetListItems which calls ItemInstance.Initialize directly.
+//  - List items are never shown with TPisces.Show, so AfterShow does not run for them.
+//  - AfterInitialize is the first safe hook where the Android view and child fields exist for list items. That’s why text binding for list items goes there.
 
 procedure TConstelationItem.AfterInitialize;
 begin
