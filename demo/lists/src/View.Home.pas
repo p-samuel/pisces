@@ -16,6 +16,8 @@ type
     Padding(16, 12, 60, 12),
     CornerRadius(50),
     Gravity([TGravity.CenterVertical]),
+    Clickable(False),
+    Focusable(False),
     ListViewItem(True)
   ] TConstelationTitle = class(TPisces)
 
@@ -31,6 +33,8 @@ type
     Padding(16, 8, 16, 0),
     MinLines(2),
     ListViewItem(True),
+    Clickable(False),
+    Focusable(False),
     Height(80)
   ] TConstelationDetail = class(TPisces)
 
@@ -40,7 +44,7 @@ type
     Height(300),
     Padding(20, 18, 20, 18),
     BackgroundColor(46, 53, 61),
-    RippleColor(244, 244, 244, 0.2),
+    ForegroundRippleColor(244, 244, 244, 0.2),
     Orientation(TOrientation.Vertical),
     ListViewItem(True)
   ] TConstelationItem = class(TPisces)
