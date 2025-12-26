@@ -706,11 +706,6 @@ begin
     FullScreen;
     ScreenOrientation;
     DarkStatusBar;
-    RippleColor;
-    ForegroundRippleColor;
-    Clickable;
-    Focusable;
-    Enabled;
     LayoutDirection;
     AccessibilityHeading;
     AccessibilityLiveRegion;
@@ -808,6 +803,11 @@ begin
     Z;
     CornerRadius;
     BackgroundTintList;
+    RippleColor;
+    ForegroundRippleColor;
+    Clickable;
+    Focusable;
+    Enabled;
     Orientation;
     MultiGradient;
   except
@@ -1305,6 +1305,7 @@ begin
   end else begin
     TPscUtils.SetBackgroundWithRipple(FView, BackgroundColor, Color, CornerRadius);
   end;
+
 end;
 
 function TPscViewBase.RippleColor: IPscViewBase;
