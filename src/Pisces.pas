@@ -334,6 +334,7 @@ type
   //Other
   CornerRadiusAttribute = Pisces.Attributes.CornerRadiusAttribute;
   RippleColorAttribute = Pisces.Attributes.RippleColorAttribute;
+  ForegroundRippleColorAttribute = Pisces.Attributes.ForegroundRippleColorAttribute;
   EnableKeyboardPadding = Pisces.Attributes.EnableKeyboardPadding;
 
   // Java Widgets class type helpers

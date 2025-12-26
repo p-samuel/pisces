@@ -355,6 +355,8 @@ type
     function BackgroundTintList(AColor: Integer): IPscViewBase; overload;
     function RippleColor: IPscViewBase; overload;
     function RippleColor(Color: Integer): IPscViewBase; overload;
+    function ForegroundRippleColor: IPscViewBase; overload;
+    function ForegroundRippleColor(Color: Integer): IPscViewBase; overload;
     function Orientation: IPscViewBase; overload;
     function Orientation(Value: Integer): IPscViewBase; overload;
 
@@ -704,6 +706,8 @@ begin
     FullScreen;
     ScreenOrientation;
     DarkStatusBar;
+    RippleColor;
+    ForegroundRippleColor;
     Clickable;
     Focusable;
     Enabled;
@@ -804,7 +808,6 @@ begin
     Z;
     CornerRadius;
     BackgroundTintList;
-    RippleColor;
     Orientation;
     MultiGradient;
   except
@@ -1309,6 +1312,26 @@ begin
   Result := Self;
   if FAttributes.ContainsKey('RippleColorAttribute') then
     RippleColor(RippleColorAttribute(FAttributes['RippleColorAttribute']).Value);
+end;
+
+function TPscViewBase.ForegroundRippleColor(Color: Integer): IPscViewBase;
+var
+  CornerRadius: Double;
+begin
+  Result := Self;
+  CornerRadius := 0;
+
+  if FAttributes.ContainsKey('CornerRadiusAttribute') then
+    CornerRadius := CornerRadiusAttribute(FAttributes['CornerRadiusAttribute']).Value;
+
+  TPscUtils.SetForegroundRipple(FView, Color, CornerRadius);
+end;
+
+function TPscViewBase.ForegroundRippleColor: IPscViewBase;
+begin
+  Result := Self;
+  if FAttributes.ContainsKey('ForegroundRippleColorAttribute') then
+    ForegroundRippleColor(ForegroundRippleColorAttribute(FAttributes['ForegroundRippleColorAttribute']).Value);
 end;
 
 function TPscViewBase.Rotation(Value: Single): IPscViewBase;
@@ -2292,17 +2315,17 @@ begin
   ScreenHeight := DisplayMetrics.heightPixels;
 
   // Handle Width
-  if (FAttributes.ContainsKey('WidthPercentAttribute')) then
+  if FAttributes.ContainsKey('WidthPercentAttribute') then
     Width := Round(ScreenWidth * WidthPercentAttribute(FAttributes['WidthPercentAttribute']).Value)
-  else if (FAttributes.ContainsKey('WidthAttribute')) then
+  else if FAttributes.ContainsKey('WidthAttribute') then
     Width := WidthAttribute(FAttributes['WidthAttribute']).Value
   else
     Width := TJViewGroup_LayoutParams.JavaClass.MATCH_PARENT;
 
   // Handle Height
-  if (FAttributes.ContainsKey('HeightPercentAttribute')) then
+  if FAttributes.ContainsKey('HeightPercentAttribute') then
     Height := Round(ScreenHeight * HeightPercentAttribute(FAttributes['HeightPercentAttribute']).Value)
-  else if (FAttributes.ContainsKey('HeightAttribute')) then
+  else if FAttributes.ContainsKey('HeightAttribute') then
     Height := HeightAttribute(FAttributes['HeightAttribute']).Value
   else
     Height := TJViewGroup_LayoutParams.JavaClass.MATCH_PARENT;
@@ -2455,9 +2478,16 @@ var
   EventListener: TPscViewClickListener;
 begin
   Result := Self;
-  EventListener := TPscViewClickListener.Create(FView);
-  EventListener.Proc := Proc;
-  FView.setOnClickListener(EventListener);
+  // Don't set click listener if Clickable(False) attribute is explicitly set
+  if FAttributes.ContainsKey('ClickableAttribute') and
+     not ClickableAttribute(FAttributes['ClickableAttribute']).Value then
+    Exit;
+
+  if Assigned(Proc) then begin
+    EventListener := TPscViewClickListener.Create(FView);
+    EventListener.Proc := Proc;
+    FView.setOnClickListener(EventListener);
+  end;
 end;
 
 function TPscView.OnLongClick(Proc: TProc<JView>): IPscView;
@@ -2465,9 +2495,16 @@ var
   EventListener: TPscLinearLayoutLongClickListener;
 begin
   Result := Self;
-  EventListener := TPscLinearLayoutLongClickListener.Create(FView);
-  EventListener.Proc := Proc;
-  FView.setOnLongClickListener(EventListener);
+  // Don't set long click listener if Clickable(False) attribute is explicitly set
+  if FAttributes.ContainsKey('ClickableAttribute') and
+     not ClickableAttribute(FAttributes['ClickableAttribute']).Value then
+    Exit;
+
+  if Assigned(Proc) then begin
+    EventListener := TPscLinearLayoutLongClickListener.Create(FView);
+    EventListener.Proc := Proc;
+    FView.setOnLongClickListener(EventListener);
+  end;
 end;
 
 function TPscView.OnTouch(Proc: TProc<JView, TSwipeDirection, Single, Single>): IPscView;
