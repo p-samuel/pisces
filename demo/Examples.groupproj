@@ -45,6 +45,12 @@
         <Projects Include="lists\Lists.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="state\State.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="modelstate\ModelState.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -179,14 +185,32 @@
     <Target Name="Lists:Make">
         <MSBuild Projects="lists\Lists.dproj" Targets="Make"/>
     </Target>
+    <Target Name="State">
+        <MSBuild Projects="state\State.dproj"/>
+    </Target>
+    <Target Name="State:Clean">
+        <MSBuild Projects="state\State.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="State:Make">
+        <MSBuild Projects="state\State.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ModelState">
+        <MSBuild Projects="modelstate\ModelState.dproj"/>
+    </Target>
+    <Target Name="ModelState:Clean">
+        <MSBuild Projects="modelstate\ModelState.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ModelState:Make">
+        <MSBuild Projects="modelstate\ModelState.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Basic;Santorini;Gestures;Gradients;Carousel;Lifecycles;Navigation;TicTacToe;Toolbar;Popup;AlertDialog;Edits;Texts;Lists"/>
+        <CallTarget Targets="Basic;Santorini;Gestures;Gradients;Carousel;Lifecycles;Navigation;TicTacToe;Toolbar;Popup;AlertDialog;Edits;Texts;Lists;State;ModelState"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Basic:Clean;Santorini:Clean;Gestures:Clean;Gradients:Clean;Carousel:Clean;Lifecycles:Clean;Navigation:Clean;TicTacToe:Clean;Toolbar:Clean;Popup:Clean;AlertDialog:Clean;Edits:Clean;Texts:Clean;Lists:Clean"/>
+        <CallTarget Targets="Basic:Clean;Santorini:Clean;Gestures:Clean;Gradients:Clean;Carousel:Clean;Lifecycles:Clean;Navigation:Clean;TicTacToe:Clean;Toolbar:Clean;Popup:Clean;AlertDialog:Clean;Edits:Clean;Texts:Clean;Lists:Clean;State:Clean;ModelState:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Basic:Make;Santorini:Make;Gestures:Make;Gradients:Make;Carousel:Make;Lifecycles:Make;Navigation:Make;TicTacToe:Make;Toolbar:Make;Popup:Make;AlertDialog:Make;Edits:Make;Texts:Make;Lists:Make"/>
+        <CallTarget Targets="Basic:Make;Santorini:Make;Gestures:Make;Gradients:Make;Carousel:Make;Lifecycles:Make;Navigation:Make;TicTacToe:Make;Toolbar:Make;Popup:Make;AlertDialog:Make;Edits:Make;Texts:Make;Lists:Make;State:Make;ModelState:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
