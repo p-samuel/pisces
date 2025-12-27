@@ -12,11 +12,17 @@ uses
   Pisces.ViewGroup,
   Pisces.Base,
   Pisces.Utils,
-  Pisces.Audio;
+  Pisces.Audio,
+  Pisces.State,
+  Pisces.State.Model;
 
 type
   // Where everything lies
   TPisces = Pisces.Base.TPisces;
+  TPscState = Pisces.State.TPscState;
+  TPscStateModel = Pisces.State.Model.TPscStateModel;
+  JsonIgnore = Pisces.State.Model.JsonIgnoreAttribute;
+  JsonName = Pisces.State.Model.JsonNameAttribute;
 
   // Pisces interfaces
   IPscViewBase = Pisces.View.IPscViewBase;
@@ -348,6 +354,8 @@ type
   TJLineBreaker = Pisces.Types.TJLineBreaker;
   TJAnimation = Pisces.Types.TJAnimation;
   TJToast = Pisces.Types.TJToast;
+  TJTextView_BufferType = Pisces.Types.TJTextView_BufferType;
+  TJTextUtils_TruncateAt = Pisces.Types.TJTextUtils_TruncateAt;
   TJRelativeLayout = Pisces.Types.TJRelativeLayout;
   TJAbsoluteLayout = Pisces.Types.TJAbsoluteLayout;
   TJLinearLayout = Pisces.Types.TJLinearLayout;
@@ -366,6 +374,7 @@ type
   TJAbsListView = Pisces.Types.TJAbsListView;
   TJListAdapter = Pisces.Types.TJListAdapter;
   TJTextView = Pisces.Types.TJTextView;
+  TJEditText = Pisces.Types.TJEditText;
   TJScroller = Pisces.Types.TJScroller;
   TJSwitch = Pisces.Types.TJSwitch;
   TJImageView = Pisces.Types.TJImageView;
@@ -404,6 +413,7 @@ type
   JListAdapter = Pisces.Types.JListAdapter;
   JViewGroup_LayoutParams = Pisces.Types.JViewGroup_LayoutParams;
   JTextView = Pisces.Types.JTextView;
+  JEditText = Pisces.Types.JEditText;
   JSwitch = Pisces.Types.JSwitch;
   JScroller = Pisces.Types.JScroller;
   JImageView_ScaleType = Pisces.Types.JImageView_ScaleType;

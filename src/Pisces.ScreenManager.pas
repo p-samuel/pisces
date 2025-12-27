@@ -30,10 +30,10 @@ type
     destructor Destroy; override;
 
     // Simple navigation API - uses ViewsRegistry to find screens
-    procedure SetInitialScreen(const ScreenGUID: String); overload;
-    procedure SetInitialScreenByName(const ScreenName: String); overload;
-    procedure Push(const ScreenGUID: String); overload;
-    procedure PushByName(const ScreenName: String); overload;
+    procedure SetInitialScreen(const ScreenGUID: String);
+    procedure SetInitialScreenByName(const ScreenName: String);
+    procedure Push(const ScreenGUID: String);
+    procedure PushByName(const ScreenName: String);
     procedure Pop;
     procedure PopToRoot;
 
@@ -80,8 +80,7 @@ begin
   TPscUtils.Log(Format('Pushing screen with GUID: %s', [ScreenGUID]), 'Push', TLogger.Info, 'TPscScreenManager');
 
   // Check if screen exists in registry
-  if not ViewsRegistry.TryGetValue(ScreenGUID, NewRegInfo) then
-  begin
+  if not ViewsRegistry.TryGetValue(ScreenGUID, NewRegInfo) then begin
     TPscUtils.Log(Format('Screen GUID not found in registry: %s', [ScreenGUID]), 'Push', TLogger.Error, 'TPscScreenManager');
     Exit;
   end;
@@ -91,11 +90,9 @@ begin
   TPscUtils.Log(Format('Found screen: %s', [NewRegInfo.ViewName]), 'Push', TLogger.Info, 'TPscScreenManager');
 
   // Hide current screen if exists
-  if FCurrentScreenGUID <> '' then
-  begin
+  if FCurrentScreenGUID <> '' then begin
     TPscUtils.Log(Format('Hiding current screen: %s', [FCurrentScreenGUID]), 'Push', TLogger.Info, 'TPscScreenManager');
-    if ViewsRegistry.TryGetValue(FCurrentScreenGUID, RegInfo) then
-    begin
+    if ViewsRegistry.TryGetValue(FCurrentScreenGUID, RegInfo) then begin
       CurrentView := RegInfo.View;
       CurrentInstance := TPisces(RegInfo.Instance);
       TPscUtils.Log(Format('Current screen name: %s', [RegInfo.ViewName]), 'Push', TLogger.Info, 'TPscScreenManager');

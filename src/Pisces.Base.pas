@@ -14,7 +14,8 @@ uses
   Androidapi.JNI.Os,
   Pisces.Types,
   Pisces.Registry,
-  Pisces.Keyboard;
+  Pisces.Keyboard,
+  Pisces.State;
 
 type
 
@@ -77,6 +78,7 @@ type
     property AndroidParentView: JView read GetParentView;
     property AndroidView: JView read GetAndroidView;
     property Parent: TPisces read FParent;
+    class function State: TPscState;
     property Visible: Boolean read GetVisible write SetVisible;
     property ViewId: Integer read FViewId;
     property ViewName: String read FViewName;
@@ -844,6 +846,11 @@ end;
 class function TPisces.GetLifecycleManager: TPscLifecycleManager;
 begin
   Result := TPiscesApplication.GetLifecycleManager;
+end;
+
+class function TPisces.State: TPscState;
+begin
+  Result := TPscState.Instance;
 end;
 
 function TPisces.GetParentView: JView;

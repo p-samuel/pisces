@@ -29,6 +29,7 @@ type
   TJAnimation = Androidapi.JNI.GraphicsContentViewText.TJAnimation;
   TJToast = Androidapi.JNI.Widget.TJToast;
   TJTextView_BufferType = Androidapi.JNI.Widget.TJTextView_BufferType;
+  TJTextUtils_TruncateAt = Androidapi.JNI.GraphicsContentViewText.TJTextUtils_TruncateAt;
   TJRelativeLayout = Androidapi.JNI.Widget.TJRelativeLayout;
   TJAbsoluteLayout = Androidapi.JNI.Widget.TJAbsoluteLayout;
   TJLinearLayout = Androidapi.JNI.Widget.TJLinearLayout;
@@ -47,6 +48,7 @@ type
   TJAbsListView = Androidapi.JNI.Widget.TJAbsListView;
   TJListAdapter = Androidapi.JNI.Widget.TJListAdapter;
   TJTextView = Androidapi.JNI.Widget.TJTextView;
+  TJEditText = Androidapi.JNI.Widget.TJEditText;
   TJSwitch = Androidapi.JNI.Widget.TJSwitch;
   TJScroller = Androidapi.JNI.Widget.TJScroller;
   TJImageView =  Androidapi.JNI.Widget.TJImageView;
@@ -89,6 +91,7 @@ type
   JListAdapter = Androidapi.JNI.Widget.JListAdapter;
   JViewGroup_LayoutParams = Androidapi.JNI.GraphicsContentViewText.JViewGroup_LayoutParams;
   JTextView = Androidapi.JNI.Widget.JTextView;
+  JEditText = Androidapi.JNI.Widget.JEditText;
   JSwitch = Androidapi.JNI.Widget.JSwitch;
   JScroller = Androidapi.JNI.Widget.JScroller;
   JImageView_ScaleType = Androidapi.JNI.Widget.JImageView_ScaleType;
