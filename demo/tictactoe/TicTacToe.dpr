@@ -18,6 +18,8 @@ uses
   Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas',
   Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas',
   Pisces.Adapters in '..\..\src\Pisces.Adapters.pas',
+  Pisces.State in '..\..\src\Pisces.State.pas',
+  Pisces.State.Model in '..\..\src\Pisces.State.Model.pas',
   View.Home in 'src\View.Home.pas',
   View.Header in 'src\View.Header.pas',
   View.GameBoard in 'src\View.GameBoard.pas',

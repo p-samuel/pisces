@@ -48,6 +48,7 @@ type
     Height(80)
   ] TBtnNewGame = class(TPisces)
     procedure OnClickHandler(View: JView); override;
+    procedure OnLongClickHandler(View: JView); override;
   end;
 
   [ TextView('p2-label'),
@@ -120,12 +121,20 @@ begin
     GameBoard.ResetBoard;
 end;
 
+procedure TBtnNewGame.OnLongClickHandler(View: JView);
+begin
+  Game.ResetScores;
+  UpdateScores;
+  TPscUtils.Toast('Scores reset!', TJToast.JavaClass.LENGTH_SHORT);
+end;
+
 { TFooterContainer }
 
 procedure TFooterContainer.AfterShow;
 begin
   inherited;
   Footer := Self;
+  UpdateScores;
 end;
 
 procedure UpdateScores;

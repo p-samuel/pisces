@@ -36,6 +36,7 @@ type
   ] TDetailScreen = class(TPisces)
     FContent: TDetailContent;
     FBackButton: TBackButton;
+    procedure DoShow; override;
   end;
 
 var
@@ -44,6 +45,8 @@ var
 implementation
 
 uses
+  System.SysUtils,
+  Androidapi.Helpers,
   Pisces.ScreenManager;
 
 { TBackButton }
@@ -55,6 +58,21 @@ begin
 end;
 
 { TDetailScreen }
+
+procedure TDetailScreen.DoShow;
+var
+  Source: String;
+  Title: String;
+  MessageText: String;
+begin
+  inherited;
+  Source := State.Get<String>('source', '...');
+  Title := State.Get<String>('title', '...');
+  MessageText := Format('%s (from %s). Click the back button to return.', [Title, Source]);
+
+  if (FContent <> nil) and (FContent.AndroidView <> nil) then
+    JTextView(FContent.AndroidView).setText(StrToJCharSequence(MessageText));
+end;
 
 initialization
   DetailScreen := TDetailScreen.Create;

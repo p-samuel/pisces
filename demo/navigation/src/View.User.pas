@@ -47,6 +47,7 @@ type
     UserName: TUserNameText;
     UserId: TUserIdText;
     BackButton: TUserBackButton;
+    procedure DoShow; override;
   end;
 
 var
@@ -55,6 +56,7 @@ var
 implementation
 
 uses
+  Androidapi.Helpers,
   Pisces.ScreenManager;
 
 { TUserBackButton }
@@ -66,6 +68,21 @@ begin
 end;
 
 { TUserScreen }
+
+procedure TUserScreen.DoShow;
+var
+  UserNameValue: String;
+  UserIdValue: Integer;
+begin
+  inherited;
+  UserNameValue := State.Get<String>('userName', 'John Doe');
+  UserIdValue := State.Get<Integer>('userId', 0);
+
+  if (UserName <> nil) and (UserName.AndroidView <> nil) then
+    JTextView(UserName.AndroidView).setText(StrToJCharSequence(UserNameValue));
+  if (UserId <> nil) and (UserId.AndroidView <> nil) then
+    JTextView(UserId.AndroidView).setText(StrToJCharSequence(Format('User ID: %d', [UserIdValue])));
+end;
 
 initialization
   UserScreen := TUserScreen.Create;

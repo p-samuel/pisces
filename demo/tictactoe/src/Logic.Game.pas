@@ -20,9 +20,12 @@ type
     FWinsO: Integer;
     function CheckWinner: TPlayer;
     function CheckLine(P1, P2, P3: TPlayer): TPlayer;
+    procedure LoadScores;
+    procedure SaveScores;
   public
     constructor Create;
     procedure Reset;
+    procedure ResetScores;
     function MakeMove(Row, Col: Integer): Boolean;
     function GetCell(Row, Col: Integer): TPlayer;
     function IsValidMove(Row, Col: Integer): Boolean;
@@ -69,9 +72,29 @@ end;
 constructor TTicTacToeGame.Create;
 begin
   inherited;
+  LoadScores;
+  Reset;
+end;
+
+procedure TTicTacToeGame.LoadScores;
+begin
+  TPscState.Load;
+  FWinsX := TPscState.GetValue<Integer>('ttt_winsX', 0);
+  FWinsO := TPscState.GetValue<Integer>('ttt_winsO', 0);
+end;
+
+procedure TTicTacToeGame.SaveScores;
+begin
+  TPscState.SetValue('ttt_winsX', FWinsX);
+  TPscState.SetValue('ttt_winsO', FWinsO);
+  TPscState.Save;
+end;
+
+procedure TTicTacToeGame.ResetScores;
+begin
   FWinsX := 0;
   FWinsO := 0;
-  Reset;
+  SaveScores;
 end;
 
 procedure TTicTacToeGame.Reset;
@@ -113,10 +136,12 @@ begin
   if Winner = plX then begin
     FStatus := gsWinX;
     Inc(FWinsX);
+    SaveScores;
   end
   else if Winner = plO then begin
     FStatus := gsWinO;
     Inc(FWinsO);
+    SaveScores;
   end
   else if FMoveCount = 9 then
     FStatus := gsDraw

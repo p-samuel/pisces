@@ -20,9 +20,9 @@ uses
   View.User in 'src\View.User.pas',
   Pisces.Audio in '..\..\src\Pisces.Audio.pas',
   Pisces.Adapters in '..\..\src\Pisces.Adapters.pas',
+  Pisces.State in '..\..\src\Pisces.State.pas',
+  Pisces.State.Model in '..\..\src\Pisces.State.Model.pas',
   Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas';
-
-{$R *.res}
 
 begin
 

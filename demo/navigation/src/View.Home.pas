@@ -66,6 +66,8 @@ uses
 procedure TDetailButton.OnClickHandler(AView: JView);
 begin
   TPscUtils.Log('Detail button clicked!', 'HandleClick', TLogger.Info, Self);
+  TPscState.SetValue('source', 'home');
+  TPscState.SetValue('title', 'Product Details');
   TPscScreenManager.Instance.PushByName('detailScreen');
 end;
 
@@ -74,6 +76,8 @@ end;
 procedure TUserButton.OnClickHandler(AView: JView);
 begin
   TPscUtils.Log('User button clicked!', 'HandleClick', TLogger.Info, Self);
+  TPscState.SetValue('userName', 'Alice Smith');
+  TPscState.SetValue('userId', 42);
   TPscScreenManager.Instance.PushByName('userScreen');
 end;
 
