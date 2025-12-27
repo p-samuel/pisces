@@ -18,6 +18,8 @@ uses
   Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas',
   Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas',
   Pisces.Adapters in '..\..\src\Pisces.Adapters.pas',
+  Pisces.State in '..\..\src\Pisces.State.pas',
+  Pisces.State.Model in '..\..\src\Pisces.State.Model.pas',
   View.Home in 'src\View.Home.pas',
   View.Detail in 'src\View.Detail.pas',
   View.Settings in 'src\View.Settings.pas',
@@ -25,7 +27,5 @@ uses
   View.Popup in 'src\View.Popup.pas';
 
 begin
-
-  // Toolbar Navigation Demo
 
 end.

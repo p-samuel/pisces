@@ -18,10 +18,9 @@ uses
   Pisces.Audio in '..\..\src\Pisces.Audio.pas',
   Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas',
   Pisces.Adapters in '..\..\src\Pisces.Adapters.pas',
+  Pisces.State in '..\..\src\Pisces.State.pas',
+  Pisces.State.Model in '..\..\src\Pisces.State.Model.pas',
   Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas';
-
-{$R *.res}
-
 begin
 
 end.

@@ -1,7 +1,5 @@
 program Edits;
 
-{$R *.res}
-
 uses
   Pisces.Attributes in '..\..\src\Pisces.Attributes.pas',
   Pisces.Base in '..\..\src\Pisces.Base.pas',
@@ -19,8 +17,10 @@ uses
   Pisces.Audio in '..\..\src\Pisces.Audio.pas',
   Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas',
   Pisces.Adapters in '..\..\src\Pisces.Adapters.pas',
-  View.Home in 'src\View.Home.pas',
-  Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas';
+  Pisces.State in '..\..\src\Pisces.State.pas',
+  Pisces.State.Model in '..\..\src\Pisces.State.Model.pas',
+  Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas',
+  View.Home in 'src\View.Home.pas';
 
 begin
 

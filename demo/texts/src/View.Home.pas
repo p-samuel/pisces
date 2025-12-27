@@ -432,7 +432,6 @@ implementation
 
 uses
   System.SysUtils,
-  Androidapi.JNI.GraphicsContentViewText,
   Androidapi.Helpers,
   Pisces.Utils;
 

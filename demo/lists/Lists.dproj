@@ -246,6 +246,8 @@
             <Form>$R *.res</Form>
         </DCCReference>
         <DCCReference Include="..\..\src\Pisces.Adapters.pas"/>
+        <DCCReference Include="..\..\src\Pisces.State.pas"/>
+        <DCCReference Include="..\..\src\Pisces.State.Model.pas"/>
         <DCCReference Include="src\View.Home.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
