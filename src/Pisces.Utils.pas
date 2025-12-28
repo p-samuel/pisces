@@ -556,10 +556,6 @@ begin
 
   // Set the ripple drawable as the view's foreground
   View.setForeground(RippleDrawable);
-
-  // Ensure the view is clickable to trigger the ripple effect
-  View.setClickable(True);
-  View.setFocusable(True);
 end;
 
 class procedure TPscUtils.SetMultiGradientBackground(View: JView;
