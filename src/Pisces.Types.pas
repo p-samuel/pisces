@@ -48,6 +48,7 @@ type
   TJAbsListView = Androidapi.JNI.Widget.TJAbsListView;
   TJListAdapter = Androidapi.JNI.Widget.TJListAdapter;
   TJTextView = Androidapi.JNI.Widget.TJTextView;
+  TJCheckedTextView = Pisces.JNI.Extensions.TJCheckedTextView;
   TJEditText = Androidapi.JNI.Widget.TJEditText;
   TJSwitch = Androidapi.JNI.Widget.TJSwitch;
   TJScroller = Androidapi.JNI.Widget.TJScroller;
@@ -91,6 +92,7 @@ type
   JListAdapter = Androidapi.JNI.Widget.JListAdapter;
   JViewGroup_LayoutParams = Androidapi.JNI.GraphicsContentViewText.JViewGroup_LayoutParams;
   JTextView = Androidapi.JNI.Widget.JTextView;
+  JCheckedTextView = Pisces.JNI.Extensions.JCheckedTextView;
   JEditText = Androidapi.JNI.Widget.JEditText;
   JSwitch = Androidapi.JNI.Widget.JSwitch;
   JScroller = Androidapi.JNI.Widget.JScroller;
@@ -890,7 +892,49 @@ type
 
   TColorStopArray = array of TColorStop;
 
+  TPscAlertDialogTheme = record
+  private
+    FThemeResId: Integer;
+    FHasThemeResId: Boolean;
+    FBackgroundColor: Integer;
+    FHasBackgroundColor: Boolean;
+    FTitleColor: Integer;
+    FHasTitleColor: Boolean;
+    FMessageColor: Integer;
+    FHasMessageColor: Boolean;
+    FButtonTextColor: Integer;
+    FHasButtonTextColor: Boolean;
+    FListItemTextColor: Integer;
+    FHasListItemTextColor: Boolean;
+    FListItemCheckColor: Integer;
+    FHasListItemCheckColor: Boolean;
+    class function MakeColor(Red, Green, Blue: Integer; Alpha: Double): Integer; static;
+    class procedure ApplyListTheme(const ATheme: TPscAlertDialogTheme; const AListView: JListView); static;
+  public
+    class function Create: TPscAlertDialogTheme; static;
+    function Theme(AThemeResId: Integer): TPscAlertDialogTheme;
+    function BackgroundColor(Red, Green, Blue: Integer; Alpha: Double = 1.0): TPscAlertDialogTheme;
+    function TitleColor(Red, Green, Blue: Integer; Alpha: Double = 1.0): TPscAlertDialogTheme;
+    function MessageColor(Red, Green, Blue: Integer; Alpha: Double = 1.0): TPscAlertDialogTheme;
+    function ButtonTextColor(Red, Green, Blue: Integer; Alpha: Double = 1.0): TPscAlertDialogTheme;
+    function ListItemTextColor(Red, Green, Blue: Integer; Alpha: Double = 1.0): TPscAlertDialogTheme;
+    function ListItemCheckColor(Red, Green, Blue: Integer; Alpha: Double = 1.0): TPscAlertDialogTheme;
+    procedure ApplyTo(const Dialog: JAlertDialog);
+    property HasThemeResId: Boolean read FHasThemeResId;
+    property ThemeResId: Integer read FThemeResId;
+  end;
+
 implementation
+
+type
+  TPscAlertDialogListThemeRunnable = class(TJavaLocal, JRunnable)
+  private
+    FTheme: TPscAlertDialogTheme;
+    FListView: JListView;
+  public
+    constructor Create(const ATheme: TPscAlertDialogTheme; const AListView: JListView);
+    procedure run; cdecl;
+  end;
 
 { TColorStop }
 
@@ -905,6 +949,234 @@ begin
     Position := APosition
   else
     Position := -1;
+end;
+
+{ TPscAlertDialogTheme }
+
+class function TPscAlertDialogTheme.Create: TPscAlertDialogTheme;
+begin
+  Result := Default(TPscAlertDialogTheme);
+end;
+
+class function TPscAlertDialogTheme.MakeColor(Red, Green, Blue: Integer; Alpha: Double): Integer;
+begin
+  if Alpha = 0 then
+    Result := TJColor.JavaClass.TRANSPARENT
+  else
+    Result := TJColor.JavaClass.argb(Trunc(Alpha * 255), Red, Green, Blue);
+end;
+
+function TPscAlertDialogTheme.Theme(AThemeResId: Integer): TPscAlertDialogTheme;
+begin
+  Result := Self;
+  Result.FThemeResId := AThemeResId;
+  Result.FHasThemeResId := True;
+end;
+
+function TPscAlertDialogTheme.BackgroundColor(Red, Green, Blue: Integer; Alpha: Double): TPscAlertDialogTheme;
+begin
+  Result := Self;
+  Result.FBackgroundColor := MakeColor(Red, Green, Blue, Alpha);
+  Result.FHasBackgroundColor := True;
+end;
+
+function TPscAlertDialogTheme.TitleColor(Red, Green, Blue: Integer; Alpha: Double): TPscAlertDialogTheme;
+begin
+  Result := Self;
+  Result.FTitleColor := MakeColor(Red, Green, Blue, Alpha);
+  Result.FHasTitleColor := True;
+end;
+
+function TPscAlertDialogTheme.MessageColor(Red, Green, Blue: Integer; Alpha: Double): TPscAlertDialogTheme;
+begin
+  Result := Self;
+  Result.FMessageColor := MakeColor(Red, Green, Blue, Alpha);
+  Result.FHasMessageColor := True;
+end;
+
+function TPscAlertDialogTheme.ButtonTextColor(Red, Green, Blue: Integer; Alpha: Double): TPscAlertDialogTheme;
+begin
+  Result := Self;
+  Result.FButtonTextColor := MakeColor(Red, Green, Blue, Alpha);
+  Result.FHasButtonTextColor := True;
+end;
+
+function TPscAlertDialogTheme.ListItemTextColor(Red, Green, Blue: Integer; Alpha: Double): TPscAlertDialogTheme;
+begin
+  Result := Self;
+  Result.FListItemTextColor := MakeColor(Red, Green, Blue, Alpha);
+  Result.FHasListItemTextColor := True;
+end;
+
+function TPscAlertDialogTheme.ListItemCheckColor(Red, Green, Blue: Integer; Alpha: Double): TPscAlertDialogTheme;
+begin
+  Result := Self;
+  Result.FListItemCheckColor := MakeColor(Red, Green, Blue, Alpha);
+  Result.FHasListItemCheckColor := True;
+end;
+
+class procedure TPscAlertDialogTheme.ApplyListTheme(const ATheme: TPscAlertDialogTheme; const AListView: JListView);
+var
+  Child: JView;
+  ItemView: JTextView;
+  CheckedView: JCheckedTextView;
+  CheckDrawable: JDrawable;
+  Drawables: TJavaObjectArray<JDrawable>;
+  i: Integer;
+  j: Integer;
+begin
+  if AListView = nil then
+    Exit;
+
+  for i := 0 to AListView.getChildCount - 1 do
+  begin
+    Child := AListView.getChildAt(i);
+    if Child = nil then
+      Continue;
+
+    if ATheme.FHasListItemTextColor then
+    begin
+      ItemView := TJTextView.Wrap(Child);
+      if ItemView <> nil then
+        ItemView.setTextColor(ATheme.FListItemTextColor);
+    end;
+
+    if ATheme.FHasListItemCheckColor then
+    begin
+      CheckedView := TJCheckedTextView.Wrap(Child);
+      if CheckedView <> nil then
+      begin
+        CheckDrawable := CheckedView.getCheckMarkDrawable;
+        if CheckDrawable <> nil then
+          CheckDrawable.setTint(ATheme.FListItemCheckColor);
+      end
+      else
+      begin
+        ItemView := TJTextView.Wrap(Child);
+        if ItemView <> nil then
+        begin
+          Drawables := ItemView.getCompoundDrawables;
+          if Drawables <> nil then
+            for j := 0 to Drawables.Length - 1 do
+              if Drawables.Items[j] <> nil then
+                Drawables.Items[j].setTint(ATheme.FListItemCheckColor);
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TPscAlertDialogTheme.ApplyTo(const Dialog: JAlertDialog);
+var
+  Window: JWindow;
+  Resources: JResources;
+  TitleId: Integer;
+  MessageId: Integer;
+  TitleView: JTextView;
+  MessageView: JTextView;
+  PosButton: JButton;
+  NegButton: JButton;
+  NeuButton: JButton;
+  ListId: Integer;
+  ListView: JListView;
+begin
+  if Dialog = nil then
+    Exit;
+
+  if FHasBackgroundColor then
+  begin
+    Window := Dialog.getWindow;
+    if Window <> nil then
+      Window.setBackgroundDrawable(TJColorDrawable.JavaClass.init(FBackgroundColor));
+  end;
+
+  if FHasTitleColor or FHasMessageColor then
+  begin
+    Resources := TAndroidHelper.Context.getResources;
+    if Resources <> nil then
+    begin
+      if FHasTitleColor then
+      begin
+        TitleId := Resources.getIdentifier(StringToJString('alertTitle'), StringToJString('id'), StringToJString('android'));
+        if TitleId <> 0 then
+        begin
+          TitleView := TJTextView.Wrap(Dialog.findViewById(TitleId));
+          if TitleView <> nil then
+            TitleView.setTextColor(FTitleColor);
+        end;
+      end;
+
+      if FHasMessageColor then
+      begin
+        MessageId := Resources.getIdentifier(StringToJString('message'), StringToJString('id'), StringToJString('android'));
+        if MessageId <> 0 then
+        begin
+          MessageView := TJTextView.Wrap(Dialog.findViewById(MessageId));
+          if MessageView <> nil then
+            MessageView.setTextColor(FMessageColor);
+        end;
+      end;
+    end;
+  end;
+
+  if FHasButtonTextColor then
+  begin
+    PosButton := Dialog.getButton(TJDialogInterface.JavaClass.BUTTON_POSITIVE);
+    if PosButton <> nil then
+      PosButton.setTextColor(FButtonTextColor);
+
+    NegButton := Dialog.getButton(TJDialogInterface.JavaClass.BUTTON_NEGATIVE);
+    if NegButton <> nil then
+      NegButton.setTextColor(FButtonTextColor);
+
+    NeuButton := Dialog.getButton(TJDialogInterface.JavaClass.BUTTON_NEUTRAL);
+    if NeuButton <> nil then
+      NeuButton.setTextColor(FButtonTextColor);
+  end;
+
+  if FHasListItemTextColor or FHasListItemCheckColor then
+  begin
+    ListView := Dialog.getListView;
+    if ListView = nil then
+    begin
+      if Resources = nil then
+        Resources := TAndroidHelper.Context.getResources;
+
+      if Resources <> nil then
+      begin
+        ListId := Resources.getIdentifier(StringToJString('select_dialog_listview'), StringToJString('id'), StringToJString('android'));
+        if ListId = 0 then
+          ListId := Resources.getIdentifier(StringToJString('list'), StringToJString('id'), StringToJString('android'));
+
+        if ListId <> 0 then
+          ListView := TJListView.Wrap(Dialog.findViewById(ListId))
+        else
+          ListView := nil;
+      end
+      else
+        ListView := nil;
+    end;
+
+    if ListView <> nil then
+    begin
+      ApplyListTheme(Self, ListView);
+      ListView.post(TPscAlertDialogListThemeRunnable.Create(Self, ListView));
+    end;
+  end;
+end;
+
+{ TPscAlertDialogListThemeRunnable }
+
+constructor TPscAlertDialogListThemeRunnable.Create(const ATheme: TPscAlertDialogTheme; const AListView: JListView);
+begin
+  inherited Create;
+  FTheme := ATheme;
+  FListView := AListView;
+end;
+
+procedure TPscAlertDialogListThemeRunnable.run;
+begin
+  TPscAlertDialogTheme.ApplyListTheme(FTheme, FListView);
 end;
 
 end.

@@ -148,7 +148,14 @@ begin
     .PositiveButton('Save', procedure begin
       TPscUtils.Toast('Settings saved!', 0);
     end)
-  .Show;
+  .Show(
+    TPscUtils.AlertDialogTheme
+      .BackgroundColor(255, 255, 255)
+      .TitleColor(31, 31, 31)
+      .ListItemTextColor(33, 33, 33)
+      .ListItemCheckColor(0, 150, 136)
+      .ButtonTextColor(0, 150, 136)
+  );
 end;
 
 { TSimpleAlertButton }
@@ -167,7 +174,13 @@ begin
     .NeutralButton('Maybe', procedure begin
       TPscUtils.Toast('You clicked Maybe!', 0);
     end)
-  .Show;
+  .Show(
+    TPscUtils.AlertDialogTheme
+      .BackgroundColor(255, 243, 224)
+      .TitleColor(230, 81, 0)
+      .MessageColor(93, 64, 55)
+      .ButtonTextColor(255, 152, 0)
+  );
 end;
 
 { TSingleChoiceButton }
@@ -184,7 +197,15 @@ begin
       TPscUtils.Toast('Theme applied!', 0);
     end)
     .NegativeButton('Cancel', nil)
-  .Show;
+  .Show
+  .ApplyTheme(
+    TPscUtils.AlertDialogTheme
+      .BackgroundColor(45, 67, 101)
+      .TitleColor(114, 170, 255)
+      .ListItemTextColor(220, 230, 245)
+      .ListItemCheckColor(114, 170, 255)
+      .ButtonTextColor(156, 39, 176)
+  );
 end;
 
 { TCustomViewButton }
@@ -211,7 +232,12 @@ begin
       .OnDismiss(procedure begin
         HomeView.FCustomDialogContent.Visible := False;
       end)
-    .Show;
+    .Show(
+      TPscUtils.AlertDialogTheme
+        .BackgroundColor(252, 228, 236)
+        .TitleColor(173, 20, 87)
+        .ButtonTextColor(216, 27, 96)
+    );
   end;
 end;
 

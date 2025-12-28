@@ -135,6 +135,7 @@ type
     { UI Components }
     class function PopupWindow: IPscPopupWindow;
     class function AlertDialog: IPscAlertDialog;
+    class function AlertDialogTheme: TPscAlertDialogTheme;
     class procedure ShowPopupWindow(Anchor: JView; ContentView: JView; AWidth, AHeight: Integer);
     class procedure Toast(Text: String; Duration: Integer);
     class function Animate: TPscAnimate;
@@ -728,6 +729,11 @@ end;
 class function TPscUtils.AlertDialog: IPscAlertDialog;
 begin
   Result := TPscAlertDialog.New;
+end;
+
+class function TPscUtils.AlertDialogTheme: TPscAlertDialogTheme;
+begin
+  Result := TPscAlertDialogTheme.Create;
 end;
 
 class procedure TPscUtils.StatusBarColor(Color: Integer);

@@ -14,6 +14,7 @@ uses
   Androidapi.JNIBridge,
   Androidapi.JNI.JavaTypes,
   Androidapi.JNI.GraphicsContentViewText,
+  Androidapi.JNI.Util,
   Androidapi.JNI.Widget;
 
 type
@@ -66,6 +67,25 @@ type
   end;
 
   TJArrayAdapter = class(TJavaGenericImport<JArrayAdapterClass, JArrayAdapter>) end;
+
+  [JavaSignature('android/widget/CheckedTextView')]
+  JCheckedTextView = interface(JTextView)
+    ['{9F1A6E6E-6A6F-4B6D-9E7E-4D1F2E07A4D3}']
+    function getCheckMarkDrawable: JDrawable; cdecl;
+    procedure setCheckMarkTintList(tint: JColorStateList); cdecl;
+    procedure setCheckMarkTintMode(mode: JPorterDuff_Mode); cdecl;
+  end;
+
+  [JavaSignature('android/widget/CheckedTextView')]
+  JCheckedTextViewClass = interface(JTextViewClass)
+    ['{2C9C7E25-2B4B-45E6-9E91-2D3B8B77C0D1}']
+    {class} function init(context: JContext): JCheckedTextView; cdecl; overload;
+    {class} function init(context: JContext; attrs: JAttributeSet): JCheckedTextView; cdecl; overload;
+    {class} function init(context: JContext; attrs: JAttributeSet; defStyleAttr: Integer): JCheckedTextView; cdecl; overload;
+    {class} function init(context: JContext; attrs: JAttributeSet; defStyleAttr: Integer; defStyleRes: Integer): JCheckedTextView; cdecl; overload;
+  end;
+
+  TJCheckedTextView = class(TJavaGenericImport<JCheckedTextViewClass, JCheckedTextView>) end;
 
 implementation
 

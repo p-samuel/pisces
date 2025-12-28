@@ -110,7 +110,9 @@ type
     function Cancelable(AValue: Boolean): IPscAlertDialog;
     function OnCancel(AProc: TProc): IPscAlertDialog;
     function OnDismiss(AProc: TProc): IPscAlertDialog;
-    function Show: IPscAlertDialog;
+    function ApplyTheme(const ATheme: TPscAlertDialogTheme): IPscAlertDialog;
+    function Show: IPscAlertDialog; overload;
+    function Show(const ATheme: TPscAlertDialogTheme): IPscAlertDialog; overload;
     function Dismiss: IPscAlertDialog;
   end;
 
@@ -648,8 +650,8 @@ type
     FMultiChoiceProc: TAlertDialogMultiChoiceProc;
     FCustomView: JView;
     FSelectedIndex: Integer;
-    procedure EnsureBuilder;
-    procedure BuildDialog;
+    procedure EnsureBuilder(const ATheme: TPscAlertDialogTheme);
+    procedure BuildDialog(const ATheme: TPscAlertDialogTheme);
   public
     constructor Create;
     destructor Destroy; override;
@@ -671,8 +673,11 @@ type
     function Cancelable(AValue: Boolean): IPscAlertDialog;
     function OnCancel(AProc: TProc): IPscAlertDialog;
     function OnDismiss(AProc: TProc): IPscAlertDialog;
+    // Theming
+    function ApplyTheme(const ATheme: TPscAlertDialogTheme): IPscAlertDialog;
     // Actions
-    function Show: IPscAlertDialog;
+    function Show: IPscAlertDialog; overload;
+    function Show(const ATheme: TPscAlertDialogTheme): IPscAlertDialog; overload;
     function Dismiss: IPscAlertDialog;
     // Property accessors
     function GetSelectedIndex: Integer;
@@ -4256,13 +4261,15 @@ begin
   Result := TPscAlertDialog.Create;
 end;
 
-procedure TPscAlertDialog.EnsureBuilder;
+procedure TPscAlertDialog.EnsureBuilder(const ATheme: TPscAlertDialogTheme);
 begin
-  if FBuilder = nil then
+  if ATheme.HasThemeResId then
+    FBuilder := TJAlertDialog_Builder.JavaClass.init(TAndroidHelper.Activity, ATheme.ThemeResId)
+  else
     FBuilder := TJAlertDialog_Builder.JavaClass.init(TAndroidHelper.Activity);
 end;
 
-procedure TPscAlertDialog.BuildDialog;
+procedure TPscAlertDialog.BuildDialog(const ATheme: TPscAlertDialogTheme);
 var
   JItems: TJavaObjectArray<JCharSequence>;
   JCheckedItems: TJavaArray<Boolean>;
@@ -4270,7 +4277,7 @@ var
   ClickListener: TPscDialogClickListener;
   MultiClickListener: TPscDialogMultiChoiceClickListener;
 begin
-  EnsureBuilder;
+  EnsureBuilder(ATheme);
 
   if FTitle <> '' then
     FBuilder.setTitle(StrToJCharSequence(FTitle));
@@ -4432,12 +4439,27 @@ begin
   FOnDismissProc := AProc;
 end;
 
-function TPscAlertDialog.Show: IPscAlertDialog;
+function TPscAlertDialog.ApplyTheme(const ATheme: TPscAlertDialogTheme): IPscAlertDialog;
 begin
   Result := Self;
-  BuildDialog;
   if FDialog <> nil then
+    ATheme.ApplyTo(FDialog);
+end;
+
+function TPscAlertDialog.Show: IPscAlertDialog;
+begin
+  Result := Show(TPscAlertDialogTheme.Create);
+end;
+
+function TPscAlertDialog.Show(const ATheme: TPscAlertDialogTheme): IPscAlertDialog;
+begin
+  Result := Self;
+  BuildDialog(ATheme);
+  if FDialog <> nil then
+  begin
     FDialog.show;
+    ATheme.ApplyTo(FDialog);
+  end;
 end;
 
 function TPscAlertDialog.Dismiss: IPscAlertDialog;
