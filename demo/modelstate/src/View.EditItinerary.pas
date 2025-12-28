@@ -9,6 +9,7 @@ uses
   Model.TripPlanner;
 
 type
+
   [ TextView('lblDaysList'),
     Text('Day Plans:'),
     TextSize(14),
@@ -79,35 +80,43 @@ type
     FEdtNewDayTitle: TEdtNewDayTitle;
     FBtnAddDay: TBtnAddDay;
     FBtnClearDays: TBtnClearDays;
+    procedure OnViewAttachedToWindowHandler(AView: JView); override;
+    procedure RefreshDaysList;
   end;
-
-var
-  CurrentItineraryTrip: TTripPlan;
-  CurrentItineraryView: TEditItineraryView;
-
-procedure PopulateEditItineraryForm(View: TEditItineraryView; Trip: TTripPlan);
-procedure RefreshDaysList;
 
 implementation
 
 uses
   Androidapi.Helpers;
 
-procedure RefreshDaysList;
+{ TEditItineraryView }
+
+procedure TEditItineraryView.OnViewAttachedToWindowHandler(AView: JView);
+var
+  EdtTitle: JEditText;
+begin
+  EdtTitle := JEditText(FEdtNewDayTitle.AndroidView);
+  EdtTitle.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
+  RefreshDaysList;
+end;
+
+procedure TEditItineraryView.RefreshDaysList;
 var
   I: Integer;
   DaysText: String;
   TxtDays: JTextView;
   Day: TDayPlan;
+  Trip: TTripPlan;
 begin
-  if (CurrentItineraryTrip = nil) or (CurrentItineraryView = nil) then Exit;
+  Trip := AppState.GetActiveTrip;
+  if Trip = nil then Exit;
 
-  if Length(CurrentItineraryTrip.Itinerary) = 0 then
+  if Length(Trip.Itinerary) = 0 then
     DaysText := '(no days planned)'
   else begin
     DaysText := '';
-    for I := 0 to Length(CurrentItineraryTrip.Itinerary) - 1 do begin
-      Day := CurrentItineraryTrip.Itinerary[I];
+    for I := 0 to Length(Trip.Itinerary) - 1 do begin
+      Day := Trip.Itinerary[I];
       if I > 0 then DaysText := DaysText + #13#10;
       DaysText := DaysText + IntToStr(I + 1) + '. ' +
         FormatDateTime('yyyy-mm-dd', Day.Date) + ' - ' + Day.Title;
@@ -116,71 +125,67 @@ begin
     end;
   end;
 
-  TxtDays := JTextView(CurrentItineraryView.FTxtDaysList.AndroidView);
+  TxtDays := JTextView(FTxtDaysList.AndroidView);
   TxtDays.setText(StrToJCharSequence(DaysText));
-end;
-
-procedure PopulateEditItineraryForm(View: TEditItineraryView; Trip: TTripPlan);
-var
-  EdtTitle: JEditText;
-begin
-  CurrentItineraryTrip := Trip;
-  CurrentItineraryView := View;
-
-  EdtTitle := JEditText(View.FEdtNewDayTitle.AndroidView);
-  EdtTitle.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
-
-  RefreshDaysList;
 end;
 
 { TBtnAddDay }
 
 procedure TBtnAddDay.OnClickHandler(AView: JView);
 var
+  ParentView: TEditItineraryView;
   EdtTitle: JEditText;
   NewTitle: String;
   Days: TArray<TDayPlan>;
   NewDay: TDayPlan;
   NextDate: TDate;
+  Trip: TTripPlan;
 begin
-  if CurrentItineraryTrip = nil then Exit;
+  Trip := AppState.GetActiveTrip;
+  if Trip = nil then Exit;
 
-  EdtTitle := JEditText(CurrentItineraryView.FEdtNewDayTitle.AndroidView);
+  ParentView := TEditItineraryView(Parent);
+  EdtTitle := JEditText(ParentView.FEdtNewDayTitle.AndroidView);
   NewTitle := Trim(JCharSequenceToStr(EdtTitle.getText));
 
   if NewTitle = '' then
-    NewTitle := 'Day ' + IntToStr(Length(CurrentItineraryTrip.Itinerary) + 1);
+    NewTitle := 'Day ' + IntToStr(Length(Trip.Itinerary) + 1);
 
   NewDay := TDayPlan.Create;
   NewDay.Id := TGUID.NewGuid.ToString;
   NewDay.Title := NewTitle;
 
-  if Length(CurrentItineraryTrip.Itinerary) = 0 then
-    NextDate := CurrentItineraryTrip.StartDate
+  if Length(Trip.Itinerary) = 0 then
+    NextDate := Trip.StartDate
   else
-    NextDate := CurrentItineraryTrip.Itinerary[High(CurrentItineraryTrip.Itinerary)].Date + 1;
+    NextDate := Trip.Itinerary[High(Trip.Itinerary)].Date + 1;
 
   NewDay.Date := NextDate;
   NewDay.Activities := [];
 
-  Days := CurrentItineraryTrip.Itinerary;
+  Days := Trip.Itinerary;
   SetLength(Days, Length(Days) + 1);
   Days[High(Days)] := NewDay;
-  CurrentItineraryTrip.Itinerary := Days;
+  Trip.Itinerary := Days;
 
   EdtTitle.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
-  RefreshDaysList;
+  ParentView.RefreshDaysList;
   TPscUtils.Toast('Day added', 0);
 end;
 
 { TBtnClearDays }
 
 procedure TBtnClearDays.OnClickHandler(AView: JView);
+var
+  ParentView: TEditItineraryView;
+  Trip: TTripPlan;
 begin
-  if CurrentItineraryTrip = nil then Exit;
+  Trip := AppState.GetActiveTrip;
+  if Trip = nil then Exit;
 
-  CurrentItineraryTrip.Itinerary := [];
-  RefreshDaysList;
+  ParentView := TEditItineraryView(Parent);
+  Trip.Itinerary := [];
+  ParentView.RefreshDaysList;
   TPscUtils.Toast('Itinerary cleared', 0);
 end;
 

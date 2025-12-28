@@ -236,6 +236,14 @@
         <DCCReference Include="..\..\src\Pisces.State.Model.pas">
             <Form>$R *.res</Form>
         </DCCReference>
+        <DCCReference Include="src\Model.TripPlanner.pas"/>
+        <DCCReference Include="src\View.EditTrip.pas"/>
+        <DCCReference Include="src\View.EditTraveler.pas"/>
+        <DCCReference Include="src\View.EditSettings.pas"/>
+        <DCCReference Include="src\View.EditNotes.pas"/>
+        <DCCReference Include="src\View.EditItinerary.pas"/>
+        <DCCReference Include="src\View.EditActivity.pas"/>
+        <DCCReference Include="src\View.EditReminders.pas"/>
         <DCCReference Include="src\View.Main.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
@@ -1466,12 +1474,6 @@
             <Platforms>
                 <Platform value="Android">True</Platform>
                 <Platform value="Android64">True</Platform>
-                <Platform value="iOSDevice32">False</Platform>
-                <Platform value="iOSDevice64">False</Platform>
-                <Platform value="iOSSimARM64">False</Platform>
-                <Platform value="OSX32">False</Platform>
-                <Platform value="OSX64">False</Platform>
-                <Platform value="OSXARM64">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>

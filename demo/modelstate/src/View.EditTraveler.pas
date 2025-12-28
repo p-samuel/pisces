@@ -8,6 +8,7 @@ uses
   Model.TripPlanner;
 
 type
+
   [ TextView('lblTravelerName'),
     Text('Name:'),
     TextSize(14),
@@ -90,24 +91,34 @@ type
     FEdtPhone: TEdtPhone;
     FLblPreferences: TLblPreferences;
     FEdtPreferences: TEdtPreferences;
+    procedure OnViewAttachedToWindowHandler(AView: JView); override;
+    procedure Save;
   end;
-
-procedure PopulateEditTravelerForm(View: TEditTravelerView; Traveler: TTraveler);
-procedure SaveEditTravelerForm(View: TEditTravelerView; Traveler: TTraveler);
 
 implementation
 
 uses
   Androidapi.Helpers;
 
-procedure PopulateEditTravelerForm(View: TEditTravelerView; Traveler: TTraveler);
+{ TEditTravelerView }
+
+procedure TEditTravelerView.OnViewAttachedToWindowHandler(AView: JView);
 var
   EdtName, EdtEmail, EdtPhone, EdtPrefs: JEditText;
+  Trip: TTripPlan;
+  Traveler: TTraveler;
 begin
-  EdtName := JEditText(View.FEdtName.AndroidView);
-  EdtEmail := JEditText(View.FEdtEmail.AndroidView);
-  EdtPhone := JEditText(View.FEdtPhone.AndroidView);
-  EdtPrefs := JEditText(View.FEdtPreferences.AndroidView);
+  Trip := AppState.GetActiveTrip;
+  if Trip = nil then Exit;
+
+  if Trip.Traveler = nil then
+    Trip.Traveler := TTraveler.Create;
+  Traveler := Trip.Traveler;
+
+  EdtName := JEditText(FEdtName.AndroidView);
+  EdtEmail := JEditText(FEdtEmail.AndroidView);
+  EdtPhone := JEditText(FEdtPhone.AndroidView);
+  EdtPrefs := JEditText(FEdtPreferences.AndroidView);
 
   EdtName.setText(StrToJCharSequence(Traveler.Name), TJTextView_BufferType.JavaClass.EDITABLE);
   EdtEmail.setText(StrToJCharSequence(Traveler.Email), TJTextView_BufferType.JavaClass.EDITABLE);
@@ -115,14 +126,20 @@ begin
   EdtPrefs.setText(StrToJCharSequence(Traveler.Preferences), TJTextView_BufferType.JavaClass.EDITABLE);
 end;
 
-procedure SaveEditTravelerForm(View: TEditTravelerView; Traveler: TTraveler);
+procedure TEditTravelerView.Save;
 var
   EdtName, EdtEmail, EdtPhone, EdtPrefs: JEditText;
+  Trip: TTripPlan;
+  Traveler: TTraveler;
 begin
-  EdtName := JEditText(View.FEdtName.AndroidView);
-  EdtEmail := JEditText(View.FEdtEmail.AndroidView);
-  EdtPhone := JEditText(View.FEdtPhone.AndroidView);
-  EdtPrefs := JEditText(View.FEdtPreferences.AndroidView);
+  Trip := AppState.GetActiveTrip;
+  if (Trip = nil) or (Trip.Traveler = nil) then Exit;
+  Traveler := Trip.Traveler;
+
+  EdtName := JEditText(FEdtName.AndroidView);
+  EdtEmail := JEditText(FEdtEmail.AndroidView);
+  EdtPhone := JEditText(FEdtPhone.AndroidView);
+  EdtPrefs := JEditText(FEdtPreferences.AndroidView);
 
   Traveler.Name := JCharSequenceToStr(EdtName.getText);
   Traveler.Email := JCharSequenceToStr(EdtEmail.getText);

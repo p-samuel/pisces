@@ -9,6 +9,7 @@ uses
   Model.TripPlanner;
 
 type
+
   [ TextView('lblRemindersList'),
     Text('Reminders:'),
     TextSize(14),
@@ -88,6 +89,9 @@ type
     Padding(90, 90, 90, 90),
     Height(650)
   ] TEditRemindersView = class(TPisces)
+  private
+    FCurrentActivity: TActivity;
+  public
     FLblRemindersList: TLblRemindersList;
     FTxtRemindersList: TTxtRemindersList;
     FLblNewReminder: TLblNewReminder;
@@ -96,35 +100,47 @@ type
     FEdtReminderTime: TEdtReminderTime;
     FBtnAddReminder: TBtnAddReminder;
     FBtnClearReminders: TBtnClearReminders;
+    procedure SetActivity(Activity: TActivity);
+    procedure RefreshRemindersList;
+    property CurrentActivity: TActivity read FCurrentActivity;
   end;
-
-var
-  CurrentReminderActivity: TActivity;
-  CurrentRemindersView: TEditRemindersView;
-
-procedure PopulateEditRemindersForm(View: TEditRemindersView; Activity: TActivity);
-procedure RefreshRemindersList;
 
 implementation
 
 uses
   Androidapi.Helpers;
 
-procedure RefreshRemindersList;
+{ TEditRemindersView }
+
+procedure TEditRemindersView.SetActivity(Activity: TActivity);
+var
+  EdtNote, EdtTime: JEditText;
+begin
+  FCurrentActivity := Activity;
+
+  EdtNote := JEditText(FEdtNewReminderNote.AndroidView);
+  EdtTime := JEditText(FEdtReminderTime.AndroidView);
+  EdtNote.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
+  EdtTime.setText(StrToJCharSequence('09:00'), TJTextView_BufferType.JavaClass.EDITABLE);
+
+  RefreshRemindersList;
+end;
+
+procedure TEditRemindersView.RefreshRemindersList;
 var
   I: Integer;
   RemindersText: String;
   TxtReminders: JTextView;
   Reminder: TReminder;
 begin
-  if (CurrentReminderActivity = nil) or (CurrentRemindersView = nil) then Exit;
+  if FCurrentActivity = nil then Exit;
 
-  if Length(CurrentReminderActivity.Reminders) = 0 then
+  if Length(FCurrentActivity.Reminders) = 0 then
     RemindersText := '(no reminders)'
   else begin
     RemindersText := '';
-    for I := 0 to Length(CurrentReminderActivity.Reminders) - 1 do begin
-      Reminder := CurrentReminderActivity.Reminders[I];
+    for I := 0 to Length(FCurrentActivity.Reminders) - 1 do begin
+      Reminder := FCurrentActivity.Reminders[I];
       if I > 0 then RemindersText := RemindersText + #13#10;
       RemindersText := RemindersText + IntToStr(I + 1) + '. ' +
         FormatDateTime('hh:nn', Reminder.Time) + ' - ' + Reminder.Note;
@@ -135,39 +151,26 @@ begin
     end;
   end;
 
-  TxtReminders := JTextView(CurrentRemindersView.FTxtRemindersList.AndroidView);
+  TxtReminders := JTextView(FTxtRemindersList.AndroidView);
   TxtReminders.setText(StrToJCharSequence(RemindersText));
-end;
-
-procedure PopulateEditRemindersForm(View: TEditRemindersView; Activity: TActivity);
-var
-  EdtNote, EdtTime: JEditText;
-begin
-  CurrentReminderActivity := Activity;
-  CurrentRemindersView := View;
-
-  EdtNote := JEditText(View.FEdtNewReminderNote.AndroidView);
-  EdtTime := JEditText(View.FEdtReminderTime.AndroidView);
-  EdtNote.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
-  EdtTime.setText(StrToJCharSequence('09:00'), TJTextView_BufferType.JavaClass.EDITABLE);
-
-  RefreshRemindersList;
 end;
 
 { TBtnAddReminder }
 
 procedure TBtnAddReminder.OnClickHandler(AView: JView);
 var
+  ParentView: TEditRemindersView;
   EdtNote, EdtTime: JEditText;
   NewNote, TimeStr: String;
   Reminders: TArray<TReminder>;
   NewReminder: TReminder;
   Hour, Min: Integer;
 begin
-  if CurrentReminderActivity = nil then Exit;
+  ParentView := TEditRemindersView(Parent);
+  if ParentView.CurrentActivity = nil then Exit;
 
-  EdtNote := JEditText(CurrentRemindersView.FEdtNewReminderNote.AndroidView);
-  EdtTime := JEditText(CurrentRemindersView.FEdtReminderTime.AndroidView);
+  EdtNote := JEditText(ParentView.FEdtNewReminderNote.AndroidView);
+  EdtTime := JEditText(ParentView.FEdtReminderTime.AndroidView);
   NewNote := Trim(JCharSequenceToStr(EdtNote.getText));
   TimeStr := Trim(JCharSequenceToStr(EdtTime.getText));
 
@@ -188,24 +191,27 @@ begin
   NewReminder.Note := NewNote;
   NewReminder.Enabled := True;
 
-  Reminders := CurrentReminderActivity.Reminders;
+  Reminders := ParentView.CurrentActivity.Reminders;
   SetLength(Reminders, Length(Reminders) + 1);
   Reminders[High(Reminders)] := NewReminder;
-  CurrentReminderActivity.Reminders := Reminders;
+  ParentView.CurrentActivity.Reminders := Reminders;
 
   EdtNote.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
-  RefreshRemindersList;
+  ParentView.RefreshRemindersList;
   TPscUtils.Toast('Reminder added', 0);
 end;
 
 { TBtnClearReminders }
 
 procedure TBtnClearReminders.OnClickHandler(AView: JView);
+var
+  ParentView: TEditRemindersView;
 begin
-  if CurrentReminderActivity = nil then Exit;
+  ParentView := TEditRemindersView(Parent);
+  if ParentView.CurrentActivity = nil then Exit;
 
-  CurrentReminderActivity.Reminders := [];
-  RefreshRemindersList;
+  ParentView.CurrentActivity.Reminders := [];
+  ParentView.RefreshRemindersList;
   TPscUtils.Toast('Reminders cleared', 0);
 end;
 

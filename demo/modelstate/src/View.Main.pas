@@ -161,16 +161,12 @@ type
     FEditRemindersDialog: TEditRemindersView;
     procedure AfterInitialize; override;
     procedure AfterShow; override;
+    procedure RefreshDisplay;
+    procedure SaveAndRefresh;
   end;
 
 var
   HomeScreen: THomeScreen;
-  AppState: TTripPlannerState;
-  CurrentDayIndex: Integer = -1;
-  CurrentActivityIndex: Integer = -1;
-
-procedure RefreshDisplay;
-procedure SaveAndRefresh;
 
 implementation
 
@@ -178,7 +174,9 @@ uses
   Androidapi.Helpers,
   Pisces.ScreenManager;
 
-procedure RefreshDisplay;
+{ THomeScreen }
+
+procedure THomeScreen.RefreshDisplay;
 var
   Trip: TTripPlan;
   Summary, Status: String;
@@ -200,14 +198,14 @@ begin
     Status := 'Create a new trip to get started';
   end;
 
-  TxtSummary := JTextView(HomeScreen.FTripSummary.AndroidView);
+  TxtSummary := JTextView(FTripSummary.AndroidView);
   TxtSummary.setText(StrToJCharSequence(Summary));
 
-  TxtStatus := JTextView(HomeScreen.FStatusText.AndroidView);
+  TxtStatus := JTextView(FStatusText.AndroidView);
   TxtStatus.setText(StrToJCharSequence(Status));
 end;
 
-procedure SaveAndRefresh;
+procedure THomeScreen.SaveAndRefresh;
 begin
   AppState.Save;
   RefreshDisplay;
@@ -221,14 +219,13 @@ begin
     TPscUtils.Toast('Create a trip first', 0);
     Exit;
   end;
-  PopulateEditTripForm(HomeScreen.FEditTripDialog, AppState.GetActiveTrip);
   HomeScreen.FEditTripDialog.Visible := True;
   TPscUtils.AlertDialog
     .Title('Edit Trip Info')
     .CustomView(HomeScreen.FEditTripDialog.AndroidView)
     .PositiveButton('Save', procedure begin
-      SaveEditTripForm(HomeScreen.FEditTripDialog, AppState.GetActiveTrip);
-      SaveAndRefresh;
+      HomeScreen.FEditTripDialog.Save;
+      HomeScreen.SaveAndRefresh;
     end)
     .NegativeButton('Cancel', nil)
     .OnDismiss(procedure begin
@@ -240,24 +237,18 @@ end;
 { TEditTravelerBtn }
 
 procedure TEditTravelerBtn.OnClickHandler(AView: JView);
-var
-  Trip: TTripPlan;
 begin
-  Trip := AppState.GetActiveTrip;
-  if Trip = nil then begin
+  if AppState.GetActiveTrip = nil then begin
     TPscUtils.Toast('Create a trip first', 0);
     Exit;
   end;
-  if Trip.Traveler = nil then
-    Trip.Traveler := TTraveler.Create;
-  PopulateEditTravelerForm(HomeScreen.FEditTravelerDialog, Trip.Traveler);
   HomeScreen.FEditTravelerDialog.Visible := True;
   TPscUtils.AlertDialog
     .Title('Edit Traveler')
     .CustomView(HomeScreen.FEditTravelerDialog.AndroidView)
     .PositiveButton('Save', procedure begin
-      SaveEditTravelerForm(HomeScreen.FEditTravelerDialog, Trip.Traveler);
-      SaveAndRefresh;
+      HomeScreen.FEditTravelerDialog.Save;
+      HomeScreen.SaveAndRefresh;
     end)
     .NegativeButton('Cancel', nil)
     .OnDismiss(procedure begin
@@ -269,28 +260,22 @@ end;
 { TEditSettingsBtn }
 
 procedure TEditSettingsBtn.OnClickHandler(AView: JView);
-var
-  Trip: TTripPlan;
 begin
-  Trip := AppState.GetActiveTrip;
-  if Trip = nil then begin
+  if AppState.GetActiveTrip = nil then begin
     TPscUtils.Toast('Create a trip first', 0);
     Exit;
   end;
-  if Trip.Settings = nil then
-    Trip.Settings := TTripSettings.Create;
-  PopulateEditSettingsForm(HomeScreen.FEditSettingsDialog, Trip.Settings);
   HomeScreen.FEditSettingsDialog.Visible := True;
   TPscUtils.AlertDialog
     .Title('Edit Settings')
     .CustomView(HomeScreen.FEditSettingsDialog.AndroidView)
     .PositiveButton('Save', procedure begin
-      SaveEditSettingsForm(HomeScreen.FEditSettingsDialog, Trip.Settings);
-      SaveAndRefresh;
+      HomeScreen.FEditSettingsDialog.Save;
+      HomeScreen.SaveAndRefresh;
     end)
     .NegativeButton('Cancel', nil)
     .OnDismiss(procedure begin
-      HomeScreen.FEditSettingsDialog.Visible := False;
+      HomeScreen.FEditSettingsDialog.Visible  := False;
     end)
   .Show;
 end;
@@ -298,21 +283,17 @@ end;
 { TEditItineraryBtn }
 
 procedure TEditItineraryBtn.OnClickHandler(AView: JView);
-var
-  Trip: TTripPlan;
 begin
-  Trip := AppState.GetActiveTrip;
-  if Trip = nil then begin
+  if AppState.GetActiveTrip = nil then begin
     TPscUtils.Toast('Create a trip first', 0);
     Exit;
   end;
-  PopulateEditItineraryForm(HomeScreen.FEditItineraryDialog, Trip);
   HomeScreen.FEditItineraryDialog.Visible := True;
   TPscUtils.AlertDialog
     .Title('Edit Itinerary')
     .CustomView(HomeScreen.FEditItineraryDialog.AndroidView)
     .PositiveButton('Done', procedure begin
-      SaveAndRefresh;
+      HomeScreen.SaveAndRefresh;
     end)
     .OnDismiss(procedure begin
       HomeScreen.FEditItineraryDialog.Visible := False;
@@ -323,21 +304,17 @@ end;
 { TEditNotesBtn }
 
 procedure TEditNotesBtn.OnClickHandler(AView: JView);
-var
-  Trip: TTripPlan;
 begin
-  Trip := AppState.GetActiveTrip;
-  if Trip = nil then begin
+  if AppState.GetActiveTrip = nil then begin
     TPscUtils.Toast('Create a trip first', 0);
     Exit;
   end;
-  PopulateEditNotesForm(HomeScreen.FEditNotesDialog, Trip);
   HomeScreen.FEditNotesDialog.Visible := True;
   TPscUtils.AlertDialog
     .Title('Edit Notes')
     .CustomView(HomeScreen.FEditNotesDialog.AndroidView)
     .PositiveButton('Done', procedure begin
-      SaveAndRefresh;
+      HomeScreen.SaveAndRefresh;
     end)
     .OnDismiss(procedure begin
       HomeScreen.FEditNotesDialog.Visible := False;
@@ -370,7 +347,7 @@ begin
   AppState.Trips := Trips;
   AppState.ActiveTripId := NewTrip.Id;
 
-  SaveAndRefresh;
+  HomeScreen.SaveAndRefresh;
   TPscUtils.Toast('New trip created', 0);
 end;
 
@@ -406,7 +383,7 @@ begin
     .PositiveButton('Load', procedure begin
       if (SelectedTripIndex >= 0) and (SelectedTripIndex < Length(AppState.Trips)) then begin
         AppState.ActiveTripId := AppState.Trips[SelectedTripIndex].Id;
-        SaveAndRefresh;
+        HomeScreen.SaveAndRefresh;
         TPscUtils.Toast('Trip loaded', 0);
       end;
     end)
@@ -429,24 +406,16 @@ begin
     .PositiveButton('Delete All', procedure begin
       AppState.Trips := [];
       AppState.ActiveTripId := '';
-      SaveAndRefresh;
+      HomeScreen.SaveAndRefresh;
       TPscUtils.Toast('All trips cleared', 0);
     end)
     .NegativeButton('Cancel', nil)
   .Show;
 end;
 
-{ THomeScreen }
-
 procedure THomeScreen.AfterInitialize;
 begin
   inherited;
-  AppState := TTripPlannerState.Load<TTripPlannerState>;
-  if Length(AppState.Trips) = 0 then begin
-    AppState.Free;
-    AppState := TTripPlannerState.CreateSampleData;
-    AppState.Save;
-  end;
 end;
 
 procedure THomeScreen.AfterShow;
@@ -469,6 +438,5 @@ initialization
 
 finalization
   HomeScreen.Free;
-  AppState.Free;
 
 end.

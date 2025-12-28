@@ -140,6 +140,9 @@ type
     function GetActiveTripIndex: Integer;
   end;
 
+var
+  AppState: TTripPlannerState;
+
 implementation
 
 { TTripPlannerState }
@@ -262,5 +265,16 @@ begin
   if (Result = -1) and (Length(Trips) > 0) then
     Result := 0;
 end;
+
+initialization
+  AppState := TTripPlannerState.Load<TTripPlannerState>;
+  if Length(AppState.Trips) = 0 then begin
+    AppState.Free;
+    AppState := TTripPlannerState.CreateSampleData;
+    AppState.Save;
+  end;
+
+finalization
+  AppState.Free;
 
 end.

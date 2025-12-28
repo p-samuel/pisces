@@ -8,6 +8,7 @@ uses
   Model.TripPlanner;
 
 type
+
   [ TextView('lblNotesList'),
     Text('Notes:'),
     TextSize(14),
@@ -78,66 +79,65 @@ type
     FEdtNewNote: TEdtNewNote;
     FBtnAddNote: TBtnAddNote;
     FBtnClearNotes: TBtnClearNotes;
+    procedure OnViewAttachedToWindowHandler(AView: JView); override;
+    procedure RefreshNotesList;
   end;
-
-var
-  CurrentNotesTrip: TTripPlan;
-  CurrentNotesView: TEditNotesView;
-
-procedure PopulateEditNotesForm(View: TEditNotesView; Trip: TTripPlan);
-procedure RefreshNotesList;
 
 implementation
 
 uses
   Androidapi.Helpers;
 
-procedure RefreshNotesList;
+{ TEditNotesView }
+
+procedure TEditNotesView.OnViewAttachedToWindowHandler(AView: JView);
+var
+  EdtNew: JEditText;
+begin
+  EdtNew := JEditText(FEdtNewNote.AndroidView);
+  EdtNew.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
+  RefreshNotesList;
+end;
+
+procedure TEditNotesView.RefreshNotesList;
 var
   I: Integer;
   NotesText: String;
   TxtNotes: JTextView;
+  Trip: TTripPlan;
 begin
-  if (CurrentNotesTrip = nil) or (CurrentNotesView = nil) then Exit;
+  Trip := AppState.GetActiveTrip;
+  if Trip = nil then Exit;
 
-  if Length(CurrentNotesTrip.Notes) = 0 then
+  if Length(Trip.Notes) = 0 then
     NotesText := '(no notes)'
   else begin
     NotesText := '';
-    for I := 0 to Length(CurrentNotesTrip.Notes) - 1 do begin
+    for I := 0 to Length(Trip.Notes) - 1 do begin
       if I > 0 then NotesText := NotesText + #13#10;
-      NotesText := NotesText + IntToStr(I + 1) + '. ' + CurrentNotesTrip.Notes[I];
+      NotesText := NotesText + IntToStr(I + 1) + '. ' + Trip.Notes[I];
     end;
   end;
 
-  TxtNotes := JTextView(CurrentNotesView.FTxtNotesList.AndroidView);
+  TxtNotes := JTextView(FTxtNotesList.AndroidView);
   TxtNotes.setText(StrToJCharSequence(NotesText));
-end;
-
-procedure PopulateEditNotesForm(View: TEditNotesView; Trip: TTripPlan);
-var
-  EdtNew: JEditText;
-begin
-  CurrentNotesTrip := Trip;
-  CurrentNotesView := View;
-
-  EdtNew := JEditText(View.FEdtNewNote.AndroidView);
-  EdtNew.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
-
-  RefreshNotesList;
 end;
 
 { TBtnAddNote }
 
 procedure TBtnAddNote.OnClickHandler(AView: JView);
 var
+  ParentView: TEditNotesView;
   EdtNew: JEditText;
   NewNote: String;
   Notes: TArray<String>;
+  Trip: TTripPlan;
 begin
-  if CurrentNotesTrip = nil then Exit;
+  Trip := AppState.GetActiveTrip;
+  if Trip = nil then Exit;
 
-  EdtNew := JEditText(CurrentNotesView.FEdtNewNote.AndroidView);
+  ParentView := TEditNotesView(Parent);
+  EdtNew := JEditText(ParentView.FEdtNewNote.AndroidView);
   NewNote := Trim(JCharSequenceToStr(EdtNew.getText));
 
   if NewNote = '' then begin
@@ -145,24 +145,29 @@ begin
     Exit;
   end;
 
-  Notes := CurrentNotesTrip.Notes;
+  Notes := Trip.Notes;
   SetLength(Notes, Length(Notes) + 1);
   Notes[High(Notes)] := NewNote;
-  CurrentNotesTrip.Notes := Notes;
+  Trip.Notes := Notes;
 
   EdtNew.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
-  RefreshNotesList;
+  ParentView.RefreshNotesList;
   TPscUtils.Toast('Note added', 0);
 end;
 
 { TBtnClearNotes }
 
 procedure TBtnClearNotes.OnClickHandler(AView: JView);
+var
+  ParentView: TEditNotesView;
+  Trip: TTripPlan;
 begin
-  if CurrentNotesTrip = nil then Exit;
+  Trip := AppState.GetActiveTrip;
+  if Trip = nil then Exit;
 
-  CurrentNotesTrip.Notes := [];
-  RefreshNotesList;
+  ParentView := TEditNotesView(Parent);
+  Trip.Notes := [];
+  ParentView.RefreshNotesList;
   TPscUtils.Toast('Notes cleared', 0);
 end;
 

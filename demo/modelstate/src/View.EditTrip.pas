@@ -8,6 +8,7 @@ uses
   Model.TripPlanner;
 
 type
+
   [ TextView('lblName'),
     Text('Trip Name:'),
     TextSize(14),
@@ -89,24 +90,29 @@ type
     FEdtStartDate: TEdtStartDate;
     FLblEndDate: TLblEndDate;
     FEdtEndDate: TEdtEndDate;
+    procedure OnViewAttachedToWindowHandler(AView: JView); override;
+    procedure Save;
   end;
-
-procedure PopulateEditTripForm(View: TEditTripView; Trip: TTripPlan);
-procedure SaveEditTripForm(View: TEditTripView; Trip: TTripPlan);
 
 implementation
 
 uses
   Androidapi.Helpers;
 
-procedure PopulateEditTripForm(View: TEditTripView; Trip: TTripPlan);
+{ TEditTripView }
+
+procedure TEditTripView.OnViewAttachedToWindowHandler(AView: JView);
 var
   EdtName, EdtDest, EdtStart, EdtEnd: JEditText;
+  Trip: TTripPlan;
 begin
-  EdtName := JEditText(View.FEdtName.AndroidView);
-  EdtDest := JEditText(View.FEdtDestination.AndroidView);
-  EdtStart := JEditText(View.FEdtStartDate.AndroidView);
-  EdtEnd := JEditText(View.FEdtEndDate.AndroidView);
+  Trip := AppState.GetActiveTrip;
+  if Trip = nil then Exit;
+
+  EdtName := JEditText(FEdtName.AndroidView);
+  EdtDest := JEditText(FEdtDestination.AndroidView);
+  EdtStart := JEditText(FEdtStartDate.AndroidView);
+  EdtEnd := JEditText(FEdtEndDate.AndroidView);
 
   EdtName.setText(StrToJCharSequence(Trip.Name), TJTextView_BufferType.JavaClass.EDITABLE);
   EdtDest.setText(StrToJCharSequence(Trip.Destination), TJTextView_BufferType.JavaClass.EDITABLE);
@@ -114,14 +120,18 @@ begin
   EdtEnd.setText(StrToJCharSequence(FormatDateTime('yyyy-mm-dd', Trip.EndDate)), TJTextView_BufferType.JavaClass.EDITABLE);
 end;
 
-procedure SaveEditTripForm(View: TEditTripView; Trip: TTripPlan);
+procedure TEditTripView.Save;
 var
   EdtName, EdtDest, EdtStart, EdtEnd: JEditText;
+  Trip: TTripPlan;
 begin
-  EdtName := JEditText(View.FEdtName.AndroidView);
-  EdtDest := JEditText(View.FEdtDestination.AndroidView);
-  EdtStart := JEditText(View.FEdtStartDate.AndroidView);
-  EdtEnd := JEditText(View.FEdtEndDate.AndroidView);
+  Trip := AppState.GetActiveTrip;
+  if Trip = nil then Exit;
+
+  EdtName := JEditText(FEdtName.AndroidView);
+  EdtDest := JEditText(FEdtDestination.AndroidView);
+  EdtStart := JEditText(FEdtStartDate.AndroidView);
+  EdtEnd := JEditText(FEdtEndDate.AndroidView);
 
   Trip.Name := JCharSequenceToStr(EdtName.getText);
   Trip.Destination := JCharSequenceToStr(EdtDest.getText);

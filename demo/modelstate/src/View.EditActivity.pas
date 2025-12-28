@@ -9,6 +9,7 @@ uses
   Model.TripPlanner;
 
 type
+
   [ TextView('lblActivitiesList'),
     Text('Activities:'),
     TextSize(14),
@@ -77,6 +78,9 @@ type
     Padding(90, 90, 90, 90),
     Height(650)
   ] TEditActivityView = class(TPisces)
+  private
+    FCurrentDay: TDayPlan;
+  public
     FLblActivitiesList: TLblActivitiesList;
     FTxtActivitiesList: TTxtActivitiesList;
     FLblNewActivity: TLblNewActivity;
@@ -84,35 +88,47 @@ type
     FLblLocation: TLblLocation;
     FEdtLocation: TEdtLocation;
     FBtnAddActivity: TBtnAddActivity;
+    procedure SetDay(Day: TDayPlan);
+    procedure RefreshActivitiesList;
+    property CurrentDay: TDayPlan read FCurrentDay;
   end;
-
-var
-  CurrentActivityDay: TDayPlan;
-  CurrentActivityView: TEditActivityView;
-
-procedure PopulateEditActivityForm(View: TEditActivityView; Day: TDayPlan);
-procedure RefreshActivitiesList;
 
 implementation
 
 uses
   Androidapi.Helpers;
 
-procedure RefreshActivitiesList;
+{ TEditActivityView }
+
+procedure TEditActivityView.SetDay(Day: TDayPlan);
+var
+  EdtName, EdtLoc: JEditText;
+begin
+  FCurrentDay := Day;
+
+  EdtName := JEditText(FEdtNewActivityName.AndroidView);
+  EdtLoc := JEditText(FEdtLocation.AndroidView);
+  EdtName.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
+  EdtLoc.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
+
+  RefreshActivitiesList;
+end;
+
+procedure TEditActivityView.RefreshActivitiesList;
 var
   I: Integer;
   ActivitiesText: String;
   TxtActivities: JTextView;
   Activity: TActivity;
 begin
-  if (CurrentActivityDay = nil) or (CurrentActivityView = nil) then Exit;
+  if FCurrentDay = nil then Exit;
 
-  if Length(CurrentActivityDay.Activities) = 0 then
+  if Length(FCurrentDay.Activities) = 0 then
     ActivitiesText := '(no activities)'
   else begin
     ActivitiesText := '';
-    for I := 0 to Length(CurrentActivityDay.Activities) - 1 do begin
-      Activity := CurrentActivityDay.Activities[I];
+    for I := 0 to Length(FCurrentDay.Activities) - 1 do begin
+      Activity := FCurrentDay.Activities[I];
       if I > 0 then ActivitiesText := ActivitiesText + #13#10;
       ActivitiesText := ActivitiesText + IntToStr(I + 1) + '. ' +
         Activity.Name + ' @ ' + Activity.Location;
@@ -123,38 +139,25 @@ begin
     end;
   end;
 
-  TxtActivities := JTextView(CurrentActivityView.FTxtActivitiesList.AndroidView);
+  TxtActivities := JTextView(FTxtActivitiesList.AndroidView);
   TxtActivities.setText(StrToJCharSequence(ActivitiesText));
-end;
-
-procedure PopulateEditActivityForm(View: TEditActivityView; Day: TDayPlan);
-var
-  EdtName, EdtLoc: JEditText;
-begin
-  CurrentActivityDay := Day;
-  CurrentActivityView := View;
-
-  EdtName := JEditText(View.FEdtNewActivityName.AndroidView);
-  EdtLoc := JEditText(View.FEdtLocation.AndroidView);
-  EdtName.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
-  EdtLoc.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
-
-  RefreshActivitiesList;
 end;
 
 { TBtnAddActivity }
 
 procedure TBtnAddActivity.OnClickHandler(AView: JView);
 var
+  ParentView: TEditActivityView;
   EdtName, EdtLoc: JEditText;
   NewName, NewLoc: String;
   Activities: TArray<TActivity>;
   NewActivity: TActivity;
 begin
-  if CurrentActivityDay = nil then Exit;
+  ParentView := TEditActivityView(Parent);
+  if ParentView.CurrentDay = nil then Exit;
 
-  EdtName := JEditText(CurrentActivityView.FEdtNewActivityName.AndroidView);
-  EdtLoc := JEditText(CurrentActivityView.FEdtLocation.AndroidView);
+  EdtName := JEditText(ParentView.FEdtNewActivityName.AndroidView);
+  EdtLoc := JEditText(ParentView.FEdtLocation.AndroidView);
   NewName := Trim(JCharSequenceToStr(EdtName.getText));
   NewLoc := Trim(JCharSequenceToStr(EdtLoc.getText));
 
@@ -167,19 +170,19 @@ begin
   NewActivity.Id := TGUID.NewGuid.ToString;
   NewActivity.Name := NewName;
   NewActivity.Location := NewLoc;
-  NewActivity.StartTime := CurrentActivityDay.Date + EncodeTime(9, 0, 0, 0);
+  NewActivity.StartTime := ParentView.CurrentDay.Date + EncodeTime(9, 0, 0, 0);
   NewActivity.Duration := 60;
   NewActivity.Notes := '';
   NewActivity.Reminders := [];
 
-  Activities := CurrentActivityDay.Activities;
+  Activities := ParentView.CurrentDay.Activities;
   SetLength(Activities, Length(Activities) + 1);
   Activities[High(Activities)] := NewActivity;
-  CurrentActivityDay.Activities := Activities;
+  ParentView.CurrentDay.Activities := Activities;
 
   EdtName.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
   EdtLoc.setText(StrToJCharSequence(''), TJTextView_BufferType.JavaClass.EDITABLE);
-  RefreshActivitiesList;
+  ParentView.RefreshActivitiesList;
   TPscUtils.Toast('Activity added', 0);
 end;
 

@@ -8,6 +8,7 @@ uses
   Model.TripPlanner;
 
 type
+
   [ TextView('lblCurrency'),
     Text('Currency (USD, EUR, etc.):'),
     TextSize(14),
@@ -71,36 +72,52 @@ type
     FEdtUnits: TEdtUnits;
     FLblTheme: TLblTheme;
     FEdtTheme: TEdtTheme;
+    procedure OnViewAttachedToWindowHandler(AView: JView); override;
+    procedure Save;
   end;
-
-procedure PopulateEditSettingsForm(View: TEditSettingsView; Settings: TTripSettings);
-procedure SaveEditSettingsForm(View: TEditSettingsView; Settings: TTripSettings);
 
 implementation
 
 uses
   Androidapi.Helpers;
 
-procedure PopulateEditSettingsForm(View: TEditSettingsView; Settings: TTripSettings);
+{ TEditSettingsView }
+
+procedure TEditSettingsView.OnViewAttachedToWindowHandler(AView: JView);
 var
   EdtCurrency, EdtUnits, EdtTheme: JEditText;
+  Trip: TTripPlan;
+  Settings: TTripSettings;
 begin
-  EdtCurrency := JEditText(View.FEdtCurrency.AndroidView);
-  EdtUnits := JEditText(View.FEdtUnits.AndroidView);
-  EdtTheme := JEditText(View.FEdtTheme.AndroidView);
+  Trip := AppState.GetActiveTrip;
+  if Trip = nil then Exit;
+
+  if Trip.Settings = nil then
+    Trip.Settings := TTripSettings.Create;
+  Settings := Trip.Settings;
+
+  EdtCurrency := JEditText(FEdtCurrency.AndroidView);
+  EdtUnits := JEditText(FEdtUnits.AndroidView);
+  EdtTheme := JEditText(FEdtTheme.AndroidView);
 
   EdtCurrency.setText(StrToJCharSequence(Settings.Currency), TJTextView_BufferType.JavaClass.EDITABLE);
   EdtUnits.setText(StrToJCharSequence(Settings.Units), TJTextView_BufferType.JavaClass.EDITABLE);
   EdtTheme.setText(StrToJCharSequence(Settings.Theme), TJTextView_BufferType.JavaClass.EDITABLE);
 end;
 
-procedure SaveEditSettingsForm(View: TEditSettingsView; Settings: TTripSettings);
+procedure TEditSettingsView.Save;
 var
   EdtCurrency, EdtUnits, EdtTheme: JEditText;
+  Trip: TTripPlan;
+  Settings: TTripSettings;
 begin
-  EdtCurrency := JEditText(View.FEdtCurrency.AndroidView);
-  EdtUnits := JEditText(View.FEdtUnits.AndroidView);
-  EdtTheme := JEditText(View.FEdtTheme.AndroidView);
+  Trip := AppState.GetActiveTrip;
+  if (Trip = nil) or (Trip.Settings = nil) then Exit;
+  Settings := Trip.Settings;
+
+  EdtCurrency := JEditText(FEdtCurrency.AndroidView);
+  EdtUnits := JEditText(FEdtUnits.AndroidView);
+  EdtTheme := JEditText(FEdtTheme.AndroidView);
 
   Settings.Currency := JCharSequenceToStr(EdtCurrency.getText);
   Settings.Units := JCharSequenceToStr(EdtUnits.getText);
