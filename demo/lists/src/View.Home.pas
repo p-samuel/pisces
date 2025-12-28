@@ -35,7 +35,7 @@ type
     ListViewItem(True),
     Clickable(False),
     Focusable(False),
-    Height(80)
+    Height(90)
   ] TConstelationDetail = class(TPisces)
 
   end;
@@ -62,6 +62,7 @@ type
     TextSize(25),
     TextColor(255, 255, 255),
     Padding(50, 150, 50, 50),
+    BackgroundColor(46, 53, 61),
     Height(275),
     Text('Selected Count: 0')
   ] TSelectionCountText = class(TPisces)
