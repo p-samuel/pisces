@@ -30,8 +30,10 @@ type
     FViewLifecycleListener: TPscViewLifecycleListener;            // View's Lifecycle events
     FWindowFocusListener: TPscWindowFocusChangeListener;
     FKeyboardHelper: TPscKeyboardHelper;
+    FScreenTransitions: TPscScreenTransitions;
 
     procedure ReadAttributes;
+    procedure ReadTransitionAttributes;
     procedure ProcessFields(ParentClass: TObject);
     procedure ShowView;
     procedure BuildScreen;
@@ -83,6 +85,7 @@ type
     property ViewId: Integer read FViewId;
     property ViewName: String read FViewName;
     property ViewGUID: String read FViewGUID;
+    property ScreenTransitions: TPscScreenTransitions read FScreenTransitions write FScreenTransitions;
 
     // Basic event handler methods (virtual - override in descendants)
     procedure OnClickHandler(AView: JView); virtual;
@@ -758,6 +761,7 @@ begin
     TPscUtils.Log('', 'Create', TLogger.Info, Self);
     CreateViewIdentification;
     ReadAttributes;
+    ReadTransitionAttributes;
     FChildren := TObjectDictionary<Integer, TPisces>.Create;
   except
     on E: Exception do
@@ -1072,6 +1076,75 @@ end;
 procedure TPisces.OnActivityConfigurationChangedHandler(AActivity: JActivity);
 begin
   // Override in descendants to handle configuration changed events
+end;
+
+procedure TPisces.ReadTransitionAttributes;
+var
+  RttiContext: TRttiContext;
+  RttiType: TRttiType;
+  Attribute: TCustomAttribute;
+  AttrCount: Integer;
+begin
+  FScreenTransitions := TPscScreenTransitions.Default;
+  RttiContext := TRttiContext.Create;
+  try
+    RttiType := RttiContext.GetType(Self.ClassType);
+    AttrCount := 0;
+    for Attribute in RttiType.GetAttributes do
+    begin
+      Inc(AttrCount);
+      TPscUtils.Log(Format('Found attribute: %s', [Attribute.ClassName]),
+        'ReadTransitionAttributes', TLogger.Info, Self);
+
+      if Attribute is EnterTransitionAttribute then
+      begin
+        with EnterTransitionAttribute(Attribute) do
+        begin
+          FScreenTransitions.EnterTransition := TPscTransitionConfig.Create(TransitionType, Easing, Duration);
+          TPscUtils.Log(Format('EnterTransition set: Type=%d, Easing=%d, Duration=%d',
+            [Ord(TransitionType), Ord(Easing), Duration]),
+            'ReadTransitionAttributes', TLogger.Info, Self);
+        end;
+      end;
+
+      if Attribute is ExitTransitionAttribute then
+      begin
+        with ExitTransitionAttribute(Attribute) do
+        begin
+          FScreenTransitions.ExitTransition := TPscTransitionConfig.Create(TransitionType, Easing, Duration);
+          TPscUtils.Log(Format('ExitTransition set: Type=%d, Easing=%d, Duration=%d',
+            [Ord(TransitionType), Ord(Easing), Duration]),
+            'ReadTransitionAttributes', TLogger.Info, Self);
+        end;
+      end;
+
+      if Attribute is PopEnterTransitionAttribute then
+      begin
+        with PopEnterTransitionAttribute(Attribute) do
+        begin
+          FScreenTransitions.PopEnterTransition := TPscTransitionConfig.Create(TransitionType, Easing, Duration);
+          TPscUtils.Log(Format('PopEnterTransition set: Type=%d, Easing=%d, Duration=%d',
+            [Ord(TransitionType), Ord(Easing), Duration]),
+            'ReadTransitionAttributes', TLogger.Info, Self);
+        end;
+      end;
+
+      if Attribute is PopExitTransitionAttribute then
+      begin
+        with PopExitTransitionAttribute(Attribute) do
+        begin
+          FScreenTransitions.PopExitTransition := TPscTransitionConfig.Create(TransitionType, Easing, Duration);
+          TPscUtils.Log(Format('PopExitTransition set: Type=%d, Easing=%d, Duration=%d',
+            [Ord(TransitionType), Ord(Easing), Duration]),
+            'ReadTransitionAttributes', TLogger.Info, Self);
+        end;
+      end;
+    end;
+    TPscUtils.Log(Format('Total attributes found: %d', [AttrCount]),
+      'ReadTransitionAttributes', TLogger.Info, Self);
+  finally
+    RttiContext.Free;
+  end;
 end;
 
 procedure TPisces.ReadAttributes;

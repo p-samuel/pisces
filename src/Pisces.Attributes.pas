@@ -886,6 +886,49 @@ type
   ForegroundRippleColorAttribute = class(TPiscesColorAttribute);
   EnableKeyboardPadding = class(TPiscesBooleanAttribute);
 
+  //Screen Transitions
+  TTransitionAttribute = class(TCustomAttribute)
+  private
+    FTransitionType: TTransitionType;
+    FEasing: TEasingType;
+    FDuration: Integer;
+  public
+    constructor Create(AType: TTransitionType;
+      AEasing: TEasingType = TEasingType.AccelerateDecelerate;
+      ADuration: Integer = 300);
+    property TransitionType: TTransitionType read FTransitionType;
+    property Easing: TEasingType read FEasing;
+    property Duration: Integer read FDuration;
+  end;
+
+  EnterTransitionAttribute = class(TTransitionAttribute)
+  public
+    constructor Create(AType: TTransitionType;
+      AEasing: TEasingType = TEasingType.AccelerateDecelerate;
+      ADuration: Integer = 300);
+  end;
+
+  ExitTransitionAttribute = class(TTransitionAttribute)
+  public
+    constructor Create(AType: TTransitionType;
+      AEasing: TEasingType = TEasingType.AccelerateDecelerate;
+      ADuration: Integer = 300);
+  end;
+
+  PopEnterTransitionAttribute = class(TTransitionAttribute)
+  public
+    constructor Create(AType: TTransitionType;
+      AEasing: TEasingType = TEasingType.AccelerateDecelerate;
+      ADuration: Integer = 300);
+  end;
+
+  PopExitTransitionAttribute = class(TTransitionAttribute)
+  public
+    constructor Create(AType: TTransitionType;
+      AEasing: TEasingType = TEasingType.AccelerateDecelerate;
+      ADuration: Integer = 300);
+  end;
+
 implementation
 
 uses
@@ -1550,6 +1593,49 @@ end;
 constructor TReturnKeyTypeAttribute.Create(AValue: TReturnKeyType);
 begin
   FValue := AValue;
+end;
+
+{ TTransitionAttribute }
+
+constructor TTransitionAttribute.Create(AType: TTransitionType;
+  AEasing: TEasingType; ADuration: Integer);
+begin
+  inherited Create;
+  FTransitionType := AType;
+  FEasing := AEasing;
+  FDuration := ADuration;
+end;
+
+{ EnterTransitionAttribute }
+
+constructor EnterTransitionAttribute.Create(AType: TTransitionType;
+  AEasing: TEasingType; ADuration: Integer);
+begin
+  inherited Create(AType, AEasing, ADuration);
+end;
+
+{ ExitTransitionAttribute }
+
+constructor ExitTransitionAttribute.Create(AType: TTransitionType;
+  AEasing: TEasingType; ADuration: Integer);
+begin
+  inherited Create(AType, AEasing, ADuration);
+end;
+
+{ PopEnterTransitionAttribute }
+
+constructor PopEnterTransitionAttribute.Create(AType: TTransitionType;
+  AEasing: TEasingType; ADuration: Integer);
+begin
+  inherited Create(AType, AEasing, ADuration);
+end;
+
+{ PopExitTransitionAttribute }
+
+constructor PopExitTransitionAttribute.Create(AType: TTransitionType;
+  AEasing: TEasingType; ADuration: Integer);
+begin
+  inherited Create(AType, AEasing, ADuration);
 end;
 
 end.

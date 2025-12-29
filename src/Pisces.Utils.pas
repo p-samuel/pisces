@@ -9,7 +9,7 @@ uses
   Androidapi.JNI.JavaTypes,
   Androidapi.JNI.Widget,
   System.SysUtils,
-  Pisces.Types, Pisces.Registry, Pisces.Audio, Pisces.View;
+  Pisces.Types, Pisces.Registry, Pisces.Audio, Pisces.View, Pisces.JNI.Extensions;
 
 type
 
@@ -80,6 +80,7 @@ type
     function WithStartAction(AProc: TProc): TPscAnimate;
     function WithEndAction(AProc: TProc): TPscAnimate;
     function WithLayer: TPscAnimate;
+    function Interpolator(AEasing: TEasingType): TPscAnimate;
 
     // Predefined animations
     function FadeIn(ADuration: Int64 = 300): TPscAnimate;
@@ -88,6 +89,16 @@ type
     function SlideInFromRight(ADuration: Int64 = 300): TPscAnimate;
     function SlideOutToLeft(ADuration: Int64 = 300): TPscAnimate;
     function SlideOutToRight(ADuration: Int64 = 300): TPscAnimate;
+    function SlideInFromTop(ADuration: Int64 = 300): TPscAnimate;
+    function SlideInFromBottom(ADuration: Int64 = 300): TPscAnimate;
+    function SlideOutToTop(ADuration: Int64 = 300): TPscAnimate;
+    function SlideOutToBottom(ADuration: Int64 = 300): TPscAnimate;
+    function ScaleIn(ADuration: Int64 = 300): TPscAnimate;
+    function ScaleOut(ADuration: Int64 = 300): TPscAnimate;
+    function FlipInHorizontal(ADuration: Int64 = 300): TPscAnimate;
+    function FlipOutHorizontal(ADuration: Int64 = 300): TPscAnimate;
+    function FlipInVertical(ADuration: Int64 = 300): TPscAnimate;
+    function FlipOutVertical(ADuration: Int64 = 300): TPscAnimate;
     function Pulse(ADuration: Int64 = 600): TPscAnimate;
 
     // Control
@@ -1263,6 +1274,195 @@ begin
     FAnimatorProperties := FAnimatorProperties.translationX(CurrentView.getWidth);
     if ADuration > 0 then
       FAnimatorProperties := FAnimatorProperties.setDuration(ADuration);
+  end;
+  Result := Self;
+end;
+
+function TPscAnimate.SlideInFromTop(ADuration: Int64): TPscAnimate;
+var
+  CurrentView: JView;
+begin
+  CurrentView := FFromView;
+  if (CurrentView <> nil) and (FAnimatorProperties <> nil) then
+  begin
+    CurrentView.setTranslationY(-CurrentView.getHeight);
+    FAnimatorProperties := FAnimatorProperties.translationY(0);
+    if ADuration > 0 then
+      FAnimatorProperties := FAnimatorProperties.setDuration(ADuration);
+  end;
+  Result := Self;
+end;
+
+function TPscAnimate.SlideInFromBottom(ADuration: Int64): TPscAnimate;
+var
+  CurrentView: JView;
+begin
+  CurrentView := FFromView;
+  if (CurrentView <> nil) and (FAnimatorProperties <> nil) then
+  begin
+    CurrentView.setTranslationY(CurrentView.getHeight);
+    FAnimatorProperties := FAnimatorProperties.translationY(0);
+    if ADuration > 0 then
+      FAnimatorProperties := FAnimatorProperties.setDuration(ADuration);
+  end;
+  Result := Self;
+end;
+
+function TPscAnimate.SlideOutToTop(ADuration: Int64): TPscAnimate;
+var
+  CurrentView: JView;
+begin
+  CurrentView := FFromView;
+  if (CurrentView <> nil) and (FAnimatorProperties <> nil) then
+  begin
+    FAnimatorProperties := FAnimatorProperties.translationY(-CurrentView.getHeight);
+    if ADuration > 0 then
+      FAnimatorProperties := FAnimatorProperties.setDuration(ADuration);
+  end;
+  Result := Self;
+end;
+
+function TPscAnimate.SlideOutToBottom(ADuration: Int64): TPscAnimate;
+var
+  CurrentView: JView;
+begin
+  CurrentView := FFromView;
+  if (CurrentView <> nil) and (FAnimatorProperties <> nil) then
+  begin
+    FAnimatorProperties := FAnimatorProperties.translationY(CurrentView.getHeight);
+    if ADuration > 0 then
+      FAnimatorProperties := FAnimatorProperties.setDuration(ADuration);
+  end;
+  Result := Self;
+end;
+
+function TPscAnimate.ScaleIn(ADuration: Int64): TPscAnimate;
+var
+  CurrentView: JView;
+begin
+  CurrentView := FFromView;
+  if (CurrentView <> nil) and (FAnimatorProperties <> nil) then
+  begin
+    CurrentView.setPivotX(CurrentView.getWidth / 2);
+    CurrentView.setPivotY(CurrentView.getHeight / 2);
+    CurrentView.setScaleX(0);
+    CurrentView.setScaleY(0);
+    FAnimatorProperties := FAnimatorProperties.scaleX(1.0);
+    FAnimatorProperties := FAnimatorProperties.scaleY(1.0);
+    if ADuration > 0 then
+      FAnimatorProperties := FAnimatorProperties.setDuration(ADuration);
+  end;
+  Result := Self;
+end;
+
+function TPscAnimate.ScaleOut(ADuration: Int64): TPscAnimate;
+var
+  CurrentView: JView;
+begin
+  CurrentView := FFromView;
+  if (CurrentView <> nil) and (FAnimatorProperties <> nil) then
+  begin
+    CurrentView.setPivotX(CurrentView.getWidth / 2);
+    CurrentView.setPivotY(CurrentView.getHeight / 2);
+    FAnimatorProperties := FAnimatorProperties.scaleX(0);
+    FAnimatorProperties := FAnimatorProperties.scaleY(0);
+    if ADuration > 0 then
+      FAnimatorProperties := FAnimatorProperties.setDuration(ADuration);
+  end;
+  Result := Self;
+end;
+
+function TPscAnimate.FlipInHorizontal(ADuration: Int64): TPscAnimate;
+var
+  CurrentView: JView;
+begin
+  CurrentView := FFromView;
+  if (CurrentView <> nil) and (FAnimatorProperties <> nil) then
+  begin
+    CurrentView.setPivotX(CurrentView.getWidth / 2);
+    CurrentView.setRotationY(-90);
+    FAnimatorProperties := FAnimatorProperties.rotationY(0);
+    if ADuration > 0 then
+      FAnimatorProperties := FAnimatorProperties.setDuration(ADuration);
+  end;
+  Result := Self;
+end;
+
+function TPscAnimate.FlipOutHorizontal(ADuration: Int64): TPscAnimate;
+var
+  CurrentView: JView;
+begin
+  CurrentView := FFromView;
+  if (CurrentView <> nil) and (FAnimatorProperties <> nil) then
+  begin
+    CurrentView.setPivotX(CurrentView.getWidth / 2);
+    FAnimatorProperties := FAnimatorProperties.rotationY(90);
+    if ADuration > 0 then
+      FAnimatorProperties := FAnimatorProperties.setDuration(ADuration);
+  end;
+  Result := Self;
+end;
+
+function TPscAnimate.FlipInVertical(ADuration: Int64): TPscAnimate;
+var
+  CurrentView: JView;
+begin
+  CurrentView := FFromView;
+  if (CurrentView <> nil) and (FAnimatorProperties <> nil) then
+  begin
+    CurrentView.setPivotY(CurrentView.getHeight / 2);
+    CurrentView.setRotationX(-90);
+    FAnimatorProperties := FAnimatorProperties.rotationX(0);
+    if ADuration > 0 then
+      FAnimatorProperties := FAnimatorProperties.setDuration(ADuration);
+  end;
+  Result := Self;
+end;
+
+function TPscAnimate.FlipOutVertical(ADuration: Int64): TPscAnimate;
+var
+  CurrentView: JView;
+begin
+  CurrentView := FFromView;
+  if (CurrentView <> nil) and (FAnimatorProperties <> nil) then
+  begin
+    CurrentView.setPivotY(CurrentView.getHeight / 2);
+    FAnimatorProperties := FAnimatorProperties.rotationX(90);
+    if ADuration > 0 then
+      FAnimatorProperties := FAnimatorProperties.setDuration(ADuration);
+  end;
+  Result := Self;
+end;
+
+function TPscAnimate.Interpolator(AEasing: TEasingType): TPscAnimate;
+var
+  Interp: JTimeInterpolator;
+  AnimatorEx: JViewPropertyAnimatorEx;
+begin
+  Interp := nil;
+  case AEasing of
+    TEasingType.Linear:
+      Interp := TJLinearInterpolator.JavaClass.init;
+    TEasingType.AccelerateDecelerate:
+      Interp := TJAccelerateDecelerateInterpolator.JavaClass.init;
+    TEasingType.Accelerate:
+      Interp := TJAccelerateInterpolator.JavaClass.init;
+    TEasingType.Decelerate:
+      Interp := TJDecelerateInterpolator.JavaClass.init;
+    TEasingType.Anticipate:
+      Interp := TJAnticipateInterpolator.JavaClass.init;
+    TEasingType.Overshoot:
+      Interp := TJOvershootInterpolator.JavaClass.init;
+    TEasingType.AnticipateOvershoot:
+      Interp := TJAnticipateOvershootInterpolator.JavaClass.init;
+    TEasingType.Bounce:
+      Interp := TJBounceInterpolator.JavaClass.init;
+  end;
+  if (FAnimatorProperties <> nil) and (Interp <> nil) then
+  begin
+    // Cast to extended interface that has setInterpolator
+    AnimatorEx := TJViewPropertyAnimatorEx.Wrap((FAnimatorProperties as ILocalObject).GetObjectID);
+    AnimatorEx.setInterpolator(Interp);
   end;
   Result := Self;
 end;

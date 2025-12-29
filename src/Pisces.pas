@@ -343,6 +343,12 @@ type
   ForegroundRippleColorAttribute = Pisces.Attributes.ForegroundRippleColorAttribute;
   EnableKeyboardPadding = Pisces.Attributes.EnableKeyboardPadding;
 
+  //Screen Transitions
+  EnterTransitionAttribute = Pisces.Attributes.EnterTransitionAttribute;
+  ExitTransitionAttribute = Pisces.Attributes.ExitTransitionAttribute;
+  PopEnterTransitionAttribute = Pisces.Attributes.PopEnterTransitionAttribute;
+  PopExitTransitionAttribute = Pisces.Attributes.PopExitTransitionAttribute;
+
   // Java Widgets class type helpers
   TJViewGroup_LayoutParams = Pisces.Types.TJViewGroup_LayoutParams;
   TJInputType = Pisces.Types.TJInputType;
@@ -1134,6 +1140,10 @@ type
   TGradientShape = Pisces.Types.TGradientShape;
   TColorStopArray = Pisces.Types.TColorStopArray;
   TScreenOrientation = Pisces.Types.TScreenOrientation;
+  TTransitionType = Pisces.Types.TTransitionType;
+  TEasingType = Pisces.Types.TEasingType;
+  TPscTransitionConfig = Pisces.Types.TPscTransitionConfig;
+  TPscScreenTransitions = Pisces.Types.TPscScreenTransitions;
   TAutoLink = Pisces.Types.TAutoLink;
   TAutoLinkSet = Pisces.Types.TAutoLinkSet;
   TPaintFlag = Pisces.Types.TPaintFlag;

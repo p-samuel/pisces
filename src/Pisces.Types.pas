@@ -868,6 +868,29 @@ type
     Unspecified, Portrait, Landscape, SensorPortrait, SensorLandscape,
     ReverseLandscape, ReversePortrait, Sensor, NoSensor, Locked);
 
+  TTransitionType = (
+    None,           // No animation
+    Fade,           // Alpha fade in/out
+    SlideLeft,      // Slide from/to left
+    SlideRight,     // Slide from/to right
+    SlideUp,        // Slide from/to top
+    SlideDown,      // Slide from/to bottom
+    ScaleCenter,    // Scale from/to center
+    FlipHorizontal, // 3D flip around Y-axis
+    FlipVertical    // 3D flip around X-axis
+  );
+
+  TEasingType = (
+    Linear,                // Constant rate
+    AccelerateDecelerate,  // Slow start/end, fast middle
+    Accelerate,            // Slow start, fast end
+    Decelerate,            // Fast start, slow end
+    Anticipate,            // Slight overshoot backward before forward
+    Overshoot,             // Overshoots target then settles
+    AnticipateOvershoot,   // Both anticipate and overshoot
+    Bounce                 // Bounces at the end
+  );
+
   {$SCOPEDENUMS OFF}
 
   TGravitySet = set of TGravity;
@@ -891,6 +914,25 @@ type
   end;
 
   TColorStopArray = array of TColorStop;
+
+  TPscTransitionConfig = record
+    TransitionType: TTransitionType;
+    Easing: TEasingType;
+    DurationMs: Integer;
+    class function Default: TPscTransitionConfig; static;
+    class function Create(AType: TTransitionType;
+      AEasing: TEasingType = TEasingType.AccelerateDecelerate;
+      ADuration: Integer = 300): TPscTransitionConfig; static;
+  end;
+
+  TPscScreenTransitions = record
+    EnterTransition: TPscTransitionConfig;
+    ExitTransition: TPscTransitionConfig;
+    PopEnterTransition: TPscTransitionConfig;
+    PopExitTransition: TPscTransitionConfig;
+    class function Default: TPscScreenTransitions; static;
+    class function Create(AEnter, AExit, APopEnter, APopExit: TPscTransitionConfig): TPscScreenTransitions; static;
+  end;
 
   TPscAlertDialogTheme = record
   private
@@ -935,6 +977,42 @@ type
     constructor Create(const ATheme: TPscAlertDialogTheme; const AListView: JListView);
     procedure run; cdecl;
   end;
+
+{ TPscTransitionConfig }
+
+class function TPscTransitionConfig.Default: TPscTransitionConfig;
+begin
+  Result.TransitionType := TTransitionType.Fade;
+  Result.Easing := TEasingType.AccelerateDecelerate;
+  Result.DurationMs := 300;
+end;
+
+class function TPscTransitionConfig.Create(AType: TTransitionType;
+  AEasing: TEasingType; ADuration: Integer): TPscTransitionConfig;
+begin
+  Result.TransitionType := AType;
+  Result.Easing := AEasing;
+  Result.DurationMs := ADuration;
+end;
+
+{ TPscScreenTransitions }
+
+class function TPscScreenTransitions.Default: TPscScreenTransitions;
+begin
+  Result.EnterTransition := TPscTransitionConfig.Default;
+  Result.ExitTransition := TPscTransitionConfig.Default;
+  Result.PopEnterTransition := TPscTransitionConfig.Default;
+  Result.PopExitTransition := TPscTransitionConfig.Default;
+end;
+
+class function TPscScreenTransitions.Create(AEnter, AExit, APopEnter,
+  APopExit: TPscTransitionConfig): TPscScreenTransitions;
+begin
+  Result.EnterTransition := AEnter;
+  Result.ExitTransition := AExit;
+  Result.PopEnterTransition := APopEnter;
+  Result.PopExitTransition := APopExit;
+end;
 
 { TColorStop }
 

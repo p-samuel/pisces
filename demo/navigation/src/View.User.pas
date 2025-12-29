@@ -8,23 +8,32 @@ uses
 
 type
 
-  [ TextView('tvUserName'),
-    Text('John Doe'),
+  [ TextView('tvUserTitle'),
+    Text('User Screen'),
     TextSize(24),
-    TextColor(0, 0, 0),
-    Height(150),
+    TextColor(60, 60, 60),
+    Height(80),
+    Gravity([TGravity.Center])
+  ] TUserTitle = class(TPisces)
+  end;
+
+  [ TextView('tvUserName'),
+    Text('Animation Demo'),
+    TextSize(18),
+    TextColor(80, 80, 80),
+    Height(100),
     Gravity([TGravity.Center])
   ] TUserNameText = class(TPisces)
   end;
 
-  [ TextView('tvUserId'),
-    Text('User ID: 123'),
-    TextSize(16),
-    TextColor(100, 100, 100),
-    Height(150),
-    Padding(0, 16, 0, 0),
+  [ TextView('tvUserInfo'),
+    Text('Tap "Go Back" to see the pop animation.'),
+    TextSize(14),
+    TextColor(120, 120, 120),
+    Height(80),
+    Padding(32, 0, 32, 0),
     Gravity([TGravity.Center])
-  ] TUserIdText = class(TPisces)
+  ] TUserInfoText = class(TPisces)
   end;
 
   [ Button('btnBack'),
@@ -32,21 +41,27 @@ type
     TextSize(18),
     TextColor(255, 255, 255),
     BackgroundTintList(100, 149, 237),
-    Height(120)
+    Height(100)
   ] TUserBackButton = class(TPisces)
     procedure OnClickHandler(AView: JView); override;
   end;
 
   [ LinearLayout('userScreen'),
     Orientation(TOrientation.Vertical),
-    BackgroundColor(255, 250, 240),
+    BackgroundColor(255, 253, 231),
     FullScreen(True),
     Gravity([TGravity.Center]),
-    Padding(32, 32, 32, 32)
+    Padding(32, 32, 32, 32),
+    // Default transitions (can be overridden dynamically)
+    EnterTransition(TTransitionType.ScaleCenter, TEasingType.Overshoot, 450),
+    ExitTransition(TTransitionType.Fade, TEasingType.Accelerate, 450),
+    PopEnterTransition(TTransitionType.Fade, TEasingType.Decelerate, 450),
+    PopExitTransition(TTransitionType.ScaleCenter, TEasingType.Anticipate, 450)
   ] TUserScreen = class(TPisces)
-    UserName: TUserNameText;
-    UserId: TUserIdText;
-    BackButton: TUserBackButton;
+    FTitle: TUserTitle;
+    FUserName: TUserNameText;
+    FUserInfo: TUserInfoText;
+    FBackButton: TUserBackButton;
     procedure DoShow; override;
   end;
 
@@ -63,7 +78,6 @@ uses
 
 procedure TUserBackButton.OnClickHandler(AView: JView);
 begin
-  TPscUtils.Log('Back button clicked!', 'HandleClick', TLogger.Info, Self);
   TPscScreenManager.Instance.Pop;
 end;
 
@@ -73,15 +87,19 @@ procedure TUserScreen.DoShow;
 var
   UserNameValue: String;
   UserIdValue: Integer;
+  DisplayText: String;
 begin
   inherited;
-  UserNameValue := State.Get<String>('userName', 'John Doe');
+  UserNameValue := State.Get<String>('userName', 'Animation Demo');
   UserIdValue := State.Get<Integer>('userId', 0);
 
-  if (UserName <> nil) and (UserName.AndroidView <> nil) then
-    JTextView(UserName.AndroidView).setText(StrToJCharSequence(UserNameValue));
-  if (UserId <> nil) and (UserId.AndroidView <> nil) then
-    JTextView(UserId.AndroidView).setText(StrToJCharSequence(Format('User ID: %d', [UserIdValue])));
+  if UserIdValue > 0 then
+    DisplayText := Format('%s (ID: %d)', [UserNameValue, UserIdValue])
+  else
+    DisplayText := UserNameValue;
+
+  if (FUserName <> nil) and (FUserName.AndroidView <> nil) then
+    JTextView(FUserName.AndroidView).setText(StrToJCharSequence(DisplayText));
 end;
 
 initialization

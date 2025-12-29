@@ -5,11 +5,15 @@ interface
 uses
   System.SysUtils,
   System.Generics.Collections,
+  Androidapi.JNIBridge,
+  Androidapi.Helpers,
+  Androidapi.JNI.Util,
   Androidapi.JNI.GraphicsContentViewText,
   Pisces.Types,
   Pisces.Registry,
   Pisces.Utils,
-  Pisces.Base;
+  Pisces.Base,
+  Pisces.JNI.Extensions;
 
 type
 
@@ -41,6 +45,223 @@ type
   end;
 
 implementation
+
+function GetInterpolatorForEasing(AEasing: TEasingType): JTimeInterpolator;
+begin
+  Result := nil;
+  case AEasing of
+    TEasingType.Linear:
+      Result := TJLinearInterpolator.JavaClass.init;
+    TEasingType.AccelerateDecelerate:
+      Result := TJAccelerateDecelerateInterpolator.JavaClass.init;
+    TEasingType.Accelerate:
+      Result := TJAccelerateInterpolator.JavaClass.init;
+    TEasingType.Decelerate:
+      Result := TJDecelerateInterpolator.JavaClass.init;
+    TEasingType.Anticipate:
+      Result := TJAnticipateInterpolator.JavaClass.init;
+    TEasingType.Overshoot:
+      Result := TJOvershootInterpolator.JavaClass.init;
+    TEasingType.AnticipateOvershoot:
+      Result := TJAnticipateOvershootInterpolator.JavaClass.init;
+    TEasingType.Bounce:
+      Result := TJBounceInterpolator.JavaClass.init;
+  end;
+end;
+
+function GetScreenWidth: Integer;
+var
+  DisplayMetrics: JDisplayMetrics;
+begin
+  DisplayMetrics := TAndroidHelper.Context.getResources.getDisplayMetrics;
+  Result := DisplayMetrics.widthPixels;
+end;
+
+function GetScreenHeight: Integer;
+var
+  DisplayMetrics: JDisplayMetrics;
+begin
+  DisplayMetrics := TAndroidHelper.Context.getResources.getDisplayMetrics;
+  Result := DisplayMetrics.heightPixels;
+end;
+
+procedure PrepareViewForTransition(AView: JView; AConfig: TPscTransitionConfig; IsEnter: Boolean);
+var
+  Width, Height: Integer;
+begin
+  if AConfig.TransitionType = TTransitionType.None then
+    Exit;
+
+  // Use view dimensions if available, otherwise use screen dimensions
+  Width := AView.getWidth;
+  Height := AView.getHeight;
+  if Width = 0 then
+    Width := GetScreenWidth;
+  if Height = 0 then
+    Height := GetScreenHeight;
+
+  TPscUtils.Log(Format('PrepareViewForTransition: Type=%d, IsEnter=%s, Width=%d, Height=%d',
+    [Ord(AConfig.TransitionType), BoolToStr(IsEnter, True), Width, Height]),
+    'PrepareViewForTransition', TLogger.Info, 'TPscScreenManager');
+
+  case AConfig.TransitionType of
+    TTransitionType.Fade:
+      if IsEnter then AView.setAlpha(0.0);
+
+    TTransitionType.SlideLeft:
+      if IsEnter then AView.setTranslationX(-Width);
+
+    TTransitionType.SlideRight:
+      if IsEnter then AView.setTranslationX(Width);
+
+    TTransitionType.SlideUp:
+      if IsEnter then AView.setTranslationY(-Height);
+
+    TTransitionType.SlideDown:
+      if IsEnter then AView.setTranslationY(Height);
+
+    TTransitionType.ScaleCenter:
+      begin
+        AView.setPivotX(Width / 2);
+        AView.setPivotY(Height / 2);
+        if IsEnter then
+        begin
+          AView.setScaleX(0);
+          AView.setScaleY(0);
+        end;
+      end;
+
+    TTransitionType.FlipHorizontal:
+      begin
+        AView.setPivotX(Width / 2);
+        if IsEnter then AView.setRotationY(-90);
+      end;
+
+    TTransitionType.FlipVertical:
+      begin
+        AView.setPivotY(Height / 2);
+        if IsEnter then AView.setRotationX(-90);
+      end;
+  end;
+end;
+
+procedure ExecuteTransition(AView: JView; AConfig: TPscTransitionConfig;
+  IsEnter: Boolean; OnComplete: TProc);
+var
+  Animator: JViewPropertyAnimator;
+  AnimatorEx: JViewPropertyAnimatorEx;
+  Interp: JTimeInterpolator;
+  Width, Height: Integer;
+begin
+  if AConfig.TransitionType = TTransitionType.None then
+  begin
+    if Assigned(OnComplete) then
+      OnComplete;
+    Exit;
+  end;
+
+  // Use view dimensions if available, otherwise use screen dimensions
+  Width := AView.getWidth;
+  Height := AView.getHeight;
+  if Width = 0 then
+    Width := GetScreenWidth;
+  if Height = 0 then
+    Height := GetScreenHeight;
+
+  TPscUtils.Log(Format('ExecuteTransition: Type=%d, IsEnter=%s, Width=%d, Height=%d',
+    [Ord(AConfig.TransitionType), BoolToStr(IsEnter, True), Width, Height]),
+    'ExecuteTransition', TLogger.Info, 'TPscScreenManager');
+
+  Interp := GetInterpolatorForEasing(AConfig.Easing);
+
+  Animator := AView.animate;
+  Animator := Animator.setDuration(AConfig.DurationMs);
+
+  if Interp <> nil then
+  begin
+    // Cast to extended interface that has setInterpolator
+    AnimatorEx := TJViewPropertyAnimatorEx.Wrap((Animator as ILocalObject).GetObjectID);
+    AnimatorEx.setInterpolator(Interp);
+  end;
+
+  case AConfig.TransitionType of
+    TTransitionType.Fade:
+      if IsEnter then
+        Animator := Animator.alpha(1.0)
+      else
+        Animator := Animator.alpha(0.0);
+
+    TTransitionType.SlideLeft:
+      if IsEnter then
+        Animator := Animator.translationX(0)
+      else
+        Animator := Animator.translationX(-Width);
+
+    TTransitionType.SlideRight:
+      if IsEnter then
+        Animator := Animator.translationX(0)
+      else
+        Animator := Animator.translationX(Width);
+
+    TTransitionType.SlideUp:
+      if IsEnter then
+        Animator := Animator.translationY(0)
+      else
+        Animator := Animator.translationY(-Height);
+
+    TTransitionType.SlideDown:
+      if IsEnter then
+        Animator := Animator.translationY(0)
+      else
+        Animator := Animator.translationY(Height);
+
+    TTransitionType.ScaleCenter:
+      begin
+        if IsEnter then
+        begin
+          Animator := Animator.scaleX(1.0);
+          Animator := Animator.scaleY(1.0);
+        end
+        else
+        begin
+          Animator := Animator.scaleX(0);
+          Animator := Animator.scaleY(0);
+        end;
+      end;
+
+    TTransitionType.FlipHorizontal:
+      if IsEnter then
+        Animator := Animator.rotationY(0)
+      else
+        Animator := Animator.rotationY(90);
+
+    TTransitionType.FlipVertical:
+      if IsEnter then
+        Animator := Animator.rotationX(0)
+      else
+        Animator := Animator.rotationX(90);
+  end;
+
+  if Assigned(OnComplete) then
+    Animator := Animator.withEndAction(TPscUtils.Runnable(nil,
+      procedure(V: JView)
+      begin
+        OnComplete;
+      end));
+
+  Animator.start;
+end;
+
+procedure ResetViewTransform(AView: JView);
+begin
+  AView.setTranslationX(0);
+  AView.setTranslationY(0);
+  AView.setScaleX(1);
+  AView.setScaleY(1);
+  AView.setRotationX(0);
+  AView.setRotationY(0);
+  AView.setAlpha(1);
+end;
 
 { TPscScreenManager }
 
@@ -76,6 +297,7 @@ var
   CurrentView, NewView: JView;
   RegInfo, NewRegInfo: TViewRegistrationInfo;
   CurrentInstance, NewInstance: TPisces;
+  CurrentTransitions, NewTransitions: TPscScreenTransitions;
 begin
   TPscUtils.Log(Format('Pushing screen with GUID: %s', [ScreenGUID]), 'Push', TLogger.Info, 'TPscScreenManager');
 
@@ -89,6 +311,12 @@ begin
   NewInstance := TPisces(NewRegInfo.Instance);
   TPscUtils.Log(Format('Found screen: %s', [NewRegInfo.ViewName]), 'Push', TLogger.Info, 'TPscScreenManager');
 
+  // Get transition configurations
+  if Assigned(NewInstance) then
+    NewTransitions := NewInstance.ScreenTransitions
+  else
+    NewTransitions := TPscScreenTransitions.Default;
+
   // Hide current screen if exists
   if FCurrentScreenGUID <> '' then begin
     TPscUtils.Log(Format('Hiding current screen: %s', [FCurrentScreenGUID]), 'Push', TLogger.Info, 'TPscScreenManager');
@@ -97,12 +325,25 @@ begin
       CurrentInstance := TPisces(RegInfo.Instance);
       TPscUtils.Log(Format('Current screen name: %s', [RegInfo.ViewName]), 'Push', TLogger.Info, 'TPscScreenManager');
 
+      // Get current screen's exit transition
+      if Assigned(CurrentInstance) then
+        CurrentTransitions := CurrentInstance.ScreenTransitions
+      else
+        CurrentTransitions := TPscScreenTransitions.Default;
+
       // Call DoHide lifecycle method on current screen
       if Assigned(CurrentInstance) then
         CurrentInstance.DoHide;
 
-      CurrentView.setVisibility(TJView.JavaClass.GONE);
-      TPscUtils.Log('Current screen hidden', 'Push', TLogger.Info, 'TPscScreenManager');
+      // Execute exit transition
+      ExecuteTransition(CurrentView, CurrentTransitions.ExitTransition, False,
+        procedure
+        begin
+          CurrentView.setVisibility(TJView.JavaClass.GONE);
+          ResetViewTransform(CurrentView);
+        end);
+
+      TPscUtils.Log('Current screen hidden with transition', 'Push', TLogger.Info, 'TPscScreenManager');
     end;
   end;
 
@@ -112,21 +353,21 @@ begin
 
   FCurrentScreenGUID := ScreenGUID;
 
-  // Show new screen with fade transition
+  // Show new screen with enter transition
   TPscUtils.Log('Setting new screen visible', 'Push', TLogger.Info, 'TPscScreenManager');
-  NewView.setAlpha(0);
+  PrepareViewForTransition(NewView, NewTransitions.EnterTransition, True);
   NewView.setVisibility(TJView.JavaClass.VISIBLE);
   NewView.bringToFront;
-  NewView.animate
-    .alpha(1)
-    .setDuration(300)
-    .start;
 
-  // Call DoShow lifecycle method on new screen
-  if Assigned(NewInstance) then
-    NewInstance.DoShow;
+  ExecuteTransition(NewView, NewTransitions.EnterTransition, True,
+    procedure
+    begin
+      // Call DoShow lifecycle method on new screen after transition completes
+      if Assigned(NewInstance) then
+        NewInstance.DoShow;
+    end);
 
-  TPscUtils.Log('Screen pushed successfully', 'Push', TLogger.Info, 'TPscScreenManager');
+  TPscUtils.Log('Screen pushed successfully with transition', 'Push', TLogger.Info, 'TPscScreenManager');
 end;
 
 procedure TPscScreenManager.Pop;
@@ -135,6 +376,7 @@ var
   PreviousGUID: String;
   RegInfo, PreviousRegInfo: TViewRegistrationInfo;
   CurrentInstance, PreviousInstance: TPisces;
+  CurrentTransitions, PreviousTransitions: TPscScreenTransitions;
 begin
   if FScreenStack.Count = 0 then
   begin
@@ -147,47 +389,58 @@ begin
   // Get previous screen from stack
   PreviousGUID := FScreenStack.Pop;
 
-  // Hide current screen
+  // Hide current screen with PopExitTransition
   if ViewsRegistry.TryGetValue(FCurrentScreenGUID, RegInfo) then
   begin
     CurrentView := RegInfo.View;
     CurrentInstance := TPisces(RegInfo.Instance);
 
+    // Get current screen's pop exit transition
+    if Assigned(CurrentInstance) then
+      CurrentTransitions := CurrentInstance.ScreenTransitions
+    else
+      CurrentTransitions := TPscScreenTransitions.Default;
+
     // Call DoHide lifecycle method on current screen
     if Assigned(CurrentInstance) then
       CurrentInstance.DoHide;
 
-    CurrentView.animate
-      .alpha(0)
-      .setDuration(300)
-      .withEndAction(TPscUtils.Runnable(CurrentView,
-        procedure(AView: JView)
-        begin
-          AView.setVisibility(TJView.JavaClass.GONE);
-        end))
-      .start;
+    // Execute pop exit transition
+    ExecuteTransition(CurrentView, CurrentTransitions.PopExitTransition, False,
+      procedure
+      begin
+        CurrentView.setVisibility(TJView.JavaClass.GONE);
+        ResetViewTransform(CurrentView);
+      end);
   end;
 
-  // Show previous screen
+  // Show previous screen with PopEnterTransition
   if ViewsRegistry.TryGetValue(PreviousGUID, PreviousRegInfo) then
   begin
     PreviousView := PreviousRegInfo.View;
     PreviousInstance := TPisces(PreviousRegInfo.Instance);
-    PreviousView.setAlpha(0);
-    PreviousView.setVisibility(TJView.JavaClass.VISIBLE);
-    PreviousView.animate
-      .alpha(1)
-      .setDuration(300)
-      .start;
 
-    // Call DoShow lifecycle method on previous screen (returning to it)
+    // Get previous screen's pop enter transition
     if Assigned(PreviousInstance) then
-      PreviousInstance.DoShow;
+      PreviousTransitions := PreviousInstance.ScreenTransitions
+    else
+      PreviousTransitions := TPscScreenTransitions.Default;
+
+    PrepareViewForTransition(PreviousView, PreviousTransitions.PopEnterTransition, True);
+    PreviousView.setVisibility(TJView.JavaClass.VISIBLE);
+
+    ExecuteTransition(PreviousView, PreviousTransitions.PopEnterTransition, True,
+      procedure
+      begin
+        // Call DoShow lifecycle method on previous screen after transition
+        if Assigned(PreviousInstance) then
+          PreviousInstance.DoShow;
+      end);
   end;
 
   FCurrentScreenGUID := PreviousGUID;
 
-  TPscUtils.Log('Screen popped successfully', 'Pop', TLogger.Info, 'TPscScreenManager');
+  TPscUtils.Log('Screen popped successfully with transition', 'Pop', TLogger.Info, 'TPscScreenManager');
 end;
 
 procedure TPscScreenManager.PopToRoot;
