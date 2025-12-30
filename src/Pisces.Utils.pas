@@ -9,7 +9,8 @@ uses
   Androidapi.JNI.JavaTypes,
   Androidapi.JNI.Widget,
   System.SysUtils,
-  Pisces.Types, Pisces.Registry, Pisces.Audio, Pisces.View, Pisces.JNI.Extensions;
+  Pisces.Types, Pisces.Registry, Pisces.Audio, Pisces.View, Pisces.JNI.Extensions,
+  Pisces.FilePicker;
 
 type
 
@@ -157,6 +158,9 @@ type
 
     { Intents & Actions }
     class function Intent: TPscUtilsIntent;
+
+    { File Picker }
+    class function Picker: TPscFilePicker;
 
     { Utilities }
     class procedure Log(Msg, MethodName: String; LogType: TLogger; ClassInstance: TObject); overload;
@@ -372,6 +376,11 @@ end;
 class function TPscUtils.Intent: TPscUtilsIntent;
 begin
   Result := TPscUtilsIntent.Create;
+end;
+
+class function TPscUtils.Picker: TPscFilePicker;
+begin
+  Result := TPscFilePicker.Create;
 end;
 
 class function TPscUtils.IsDarkMode: Boolean;
@@ -1502,3 +1511,4 @@ end;
 
 
 end.
+
