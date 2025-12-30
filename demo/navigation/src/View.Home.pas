@@ -18,7 +18,7 @@ type
   end;
 
   [ TextView('tvSubtitle'),
-    Text('Tap buttons to see different animations'),
+    Text('Tap buttons or swipe from left edge to go back'),
     TextSize(14),
     TextColor(220, 220, 220),
     Height(60),
@@ -161,7 +161,7 @@ end;
 
 procedure TScaleButton.OnClickHandler(AView: JView);
 begin
-  TPscState.SetValue('userName', 'Scale Demo');
+  TPscState.SetValue('userName', 'Scale Demo (No Gesture)');
   TPscState.SetValue('userId', 1);
   UserScreen.ScreenTransitions := TPscScreenTransitions.Create(
     TPscTransitionConfig.Create(TTransitionType.ScaleCenter, TEasingType.Overshoot, 450),
@@ -192,7 +192,7 @@ end;
 
 procedure TBounceButton.OnClickHandler(AView: JView);
 begin
-  TPscState.SetValue('userName', 'Bounce Demo');
+  TPscState.SetValue('userName', 'Bounce Demo (No Gesture)');
   TPscState.SetValue('userId', 2);
   UserScreen.ScreenTransitions := TPscScreenTransitions.Create(
     TPscTransitionConfig.Create(TTransitionType.ScaleCenter, TEasingType.Bounce, 450),

@@ -929,6 +929,9 @@ type
       ADuration: Integer = 300);
   end;
 
+  // Interactive Pop Navigation
+  DisableInteractivePopAttribute = class(TPiscesBooleanAttribute);
+
 implementation
 
 uses

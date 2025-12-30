@@ -853,6 +853,14 @@ type
 
   TSwipeDirection = (Left, Right, Up, Down, Touch, Leave);
 
+  TGesturePhase = (
+    None,       // No gesture active
+    Began,      // Touch down detected in edge zone
+    Changed,    // Finger is moving
+    Ended,      // Finger lifted - decide commit or cancel
+    Cancelled   // Gesture cancelled (e.g., scrollable child took over)
+  );
+
   TGradientShape = (Linear, Radial, Sweep);
 
   TChoiceMode = (None, Single, Multiple);
@@ -934,6 +942,33 @@ type
     class function Create(AEnter, AExit, APopEnter, APopExit: TPscTransitionConfig): TPscScreenTransitions; static;
   end;
 
+  TPscInteractivePopState = record
+    Phase: TGesturePhase;
+    StartX: Single;
+    StartY: Single;
+    CurrentX: Single;
+    CurrentY: Single;
+    Progress: Single;           // 0.0 to 1.0
+    VelocityX: Single;          // Current horizontal velocity (px/sec)
+    VelocityY: Single;          // Current vertical velocity (px/sec)
+    PeakVelocityX: Single;      // Peak horizontal velocity during gesture
+    LastEventTime: Int64;
+    IsActive: Boolean;
+    procedure Reset;
+    function DeltaX: Single;
+    function DeltaY: Single;
+  end;
+
+  TPscInteractivePopConfig = record
+    Enabled: Boolean;                    // Global enable/disable (default True)
+    EdgeThreshold: Single;               // Pixels from left edge to trigger (default 40)
+    ProgressThreshold: Single;           // Min progress to commit pop (default 0.35)
+    VelocityThreshold: Single;           // Min velocity to force commit (default 800 px/sec)
+    MaxVerticalDeviation: Single;        // Max Y deviation before cancel (default 150)
+    AnimationDurationMs: Integer;        // Duration for finish/cancel animation (default 250)
+    class function Default: TPscInteractivePopConfig; static;
+  end;
+
   TPscAlertDialogTheme = record
   private
     FThemeResId: Integer;
@@ -1012,6 +1047,45 @@ begin
   Result.ExitTransition := AExit;
   Result.PopEnterTransition := APopEnter;
   Result.PopExitTransition := APopExit;
+end;
+
+{ TPscInteractivePopState }
+
+procedure TPscInteractivePopState.Reset;
+begin
+  Phase := TGesturePhase.None;
+  StartX := 0;
+  StartY := 0;
+  CurrentX := 0;
+  CurrentY := 0;
+  Progress := 0;
+  VelocityX := 0;
+  VelocityY := 0;
+  PeakVelocityX := 0;
+  LastEventTime := 0;
+  IsActive := False;
+end;
+
+function TPscInteractivePopState.DeltaX: Single;
+begin
+  Result := CurrentX - StartX;
+end;
+
+function TPscInteractivePopState.DeltaY: Single;
+begin
+  Result := CurrentY - StartY;
+end;
+
+{ TPscInteractivePopConfig }
+
+class function TPscInteractivePopConfig.Default: TPscInteractivePopConfig;
+begin
+  Result.Enabled := True;
+  Result.EdgeThreshold := 40;
+  Result.ProgressThreshold := 0.25;    // Lowered from 0.35 for easier commit
+  Result.VelocityThreshold := 400;     // Lowered from 800 for faster swipe detection
+  Result.MaxVerticalDeviation := 150;
+  Result.AnimationDurationMs := 250;
 end;
 
 { TColorStop }

@@ -27,7 +27,7 @@ type
   end;
 
   [ TextView('tvUserInfo'),
-    Text('Tap "Go Back" to see the pop animation.'),
+    Text('This screen has gesture navigation disabled.'),
     TextSize(14),
     TextColor(120, 120, 120),
     Height(80),
@@ -56,7 +56,9 @@ type
     EnterTransition(TTransitionType.ScaleCenter, TEasingType.Overshoot, 450),
     ExitTransition(TTransitionType.Fade, TEasingType.Accelerate, 450),
     PopEnterTransition(TTransitionType.Fade, TEasingType.Decelerate, 450),
-    PopExitTransition(TTransitionType.ScaleCenter, TEasingType.Anticipate, 450)
+    PopExitTransition(TTransitionType.ScaleCenter, TEasingType.Anticipate, 450),
+    // Disable interactive pop gesture for this screen (demo of opt-out)
+    DisableInteractivePop(False)
   ] TUserScreen = class(TPisces)
     FTitle: TUserTitle;
     FUserName: TUserNameText;
@@ -88,6 +90,7 @@ var
   UserNameValue: String;
   UserIdValue: Integer;
   DisplayText: String;
+  InfoText: String;
 begin
   inherited;
   UserNameValue := State.Get<String>('userName', 'Animation Demo');
@@ -98,8 +101,15 @@ begin
   else
     DisplayText := UserNameValue;
 
+  InfoText := 'This screen uses DisableInteractivePop(True).'#10 +
+              'Edge swipe gesture is disabled here.'#10 +
+              'Use the button to go back.';
+
   if (FUserName <> nil) and (FUserName.AndroidView <> nil) then
     JTextView(FUserName.AndroidView).setText(StrToJCharSequence(DisplayText));
+
+  if (FUserInfo <> nil) and (FUserInfo.AndroidView <> nil) then
+    JTextView(FUserInfo.AndroidView).setText(StrToJCharSequence(InfoText));
 end;
 
 initialization

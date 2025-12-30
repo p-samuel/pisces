@@ -348,6 +348,7 @@ type
   ExitTransitionAttribute = Pisces.Attributes.ExitTransitionAttribute;
   PopEnterTransitionAttribute = Pisces.Attributes.PopEnterTransitionAttribute;
   PopExitTransitionAttribute = Pisces.Attributes.PopExitTransitionAttribute;
+  DisableInteractivePopAttribute = Pisces.Attributes.DisableInteractivePopAttribute;
 
   // Java Widgets class type helpers
   TJViewGroup_LayoutParams = Pisces.Types.TJViewGroup_LayoutParams;

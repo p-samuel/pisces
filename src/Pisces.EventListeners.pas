@@ -135,10 +135,25 @@ type
     FMinDistance: Single;
     FProc: TProc<JView, TSwipeDirection, Single, Single>;
     FHasDetectedSwipe: Boolean;
+    // Interactive pop gesture support
+    FLastX, FLastY: Single;
+    FLastEventTime: Int64;
+    FVelocityX, FVelocityY: Single;
+    FPeakVelocityX: Single;  // Track peak velocity during gesture
+    FEdgeThreshold: Single;
+    FIsEdgeGesture: Boolean;
+    FInteractivePopProc: TProc<JView, TPscInteractivePopState>;
+    // Store raw (screen-absolute) coordinates for interactive pop
+    // This prevents coordinate drift when view translates during gesture
+    FRawStartX, FRawStartY: Single;
+    procedure UpdateVelocity(CurrentX, CurrentY: Single; EventTime: Int64);
+    function IsWithinEdge(X: Single): Boolean;
   public
     constructor Create;
     function onTouch(v: JView; event: JMotionEvent): Boolean; cdecl;
     property Proc: TProc<JView, TSwipeDirection, Single, Single> read FProc write FProc;
+    property InteractivePopProc: TProc<JView, TPscInteractivePopState> read FInteractivePopProc write FInteractivePopProc;
+    property EdgeThreshold: Single read FEdgeThreshold write FEdgeThreshold;
   end;
 
   TPscViewKeyListener = class(TJavaLocal, JView_OnKeyListener)
@@ -228,7 +243,7 @@ type
 implementation
 
 uses
-  Pisces.Utils, Androidapi.JNI.Util;
+  System.Math, Pisces.Utils, Androidapi.JNI.Util;
 
 { TPscViewClickListener }
 
@@ -411,18 +426,57 @@ begin
   inherited Create;
   FMinDistance := 0.01; // Very small distance for real-time updates
   FHasDetectedSwipe := False;
+  // Interactive pop defaults
+  FEdgeThreshold := 40;
+  FIsEdgeGesture := False;
+  FVelocityX := 0;
+  FVelocityY := 0;
+  FPeakVelocityX := 0;
+  FLastEventTime := 0;
+  FRawStartX := 0;
+  FRawStartY := 0;
+end;
+
+procedure TPscViewTouchListener.UpdateVelocity(CurrentX, CurrentY: Single; EventTime: Int64);
+var
+  DeltaTime: Single;
+begin
+  if FLastEventTime > 0 then
+  begin
+    DeltaTime := (EventTime - FLastEventTime) / 1000.0; // Convert to seconds
+    if DeltaTime > 0 then
+    begin
+      // Simple velocity calculation with smoothing
+      FVelocityX := (FVelocityX * 0.3) + ((CurrentX - FLastX) / DeltaTime * 0.7);
+      FVelocityY := (FVelocityY * 0.3) + ((CurrentY - FLastY) / DeltaTime * 0.7);
+    end;
+  end;
+  FLastX := CurrentX;
+  FLastY := CurrentY;
+  FLastEventTime := EventTime;
+end;
+
+function TPscViewTouchListener.IsWithinEdge(X: Single): Boolean;
+begin
+  Result := X <= FEdgeThreshold;
 end;
 
 function TPscViewTouchListener.onTouch(v: JView; event: JMotionEvent): Boolean;
 var
   Action: Integer;
   CurrentX, CurrentY, DiffX, DiffY: Single;
+  RawX: Single;
+  EventTime: Int64;
+  ScreenWidth: Single;
+  PopState: TPscInteractivePopState;
 begin
   Result := False; // Allow the event to propagate for normal scrolling
 
   Action := event.getActionMasked;
   CurrentX := event.getX;
   CurrentY := event.getY;
+  RawX := event.getRawX;  // Use raw X for edge detection
+  EventTime := event.getEventTime;
 
   case Action of
     // ACTION_DOWN = 0
@@ -431,11 +485,43 @@ begin
       // Store initial touch coordinates
       FStartX := CurrentX;
       FStartY := CurrentY;
+      FLastX := CurrentX;
+      FLastY := CurrentY;
+      FLastEventTime := EventTime;
+      FVelocityX := 0;
+      FVelocityY := 0;
+      FPeakVelocityX := 0;  // Reset peak velocity for new gesture
       FHasDetectedSwipe := False;
-      
+
+      // Check if touch started within edge zone for interactive pop
+      FIsEdgeGesture := IsWithinEdge(RawX) and Assigned(FInteractivePopProc);
+
+      if FIsEdgeGesture then
+      begin
+        // Store raw (screen-absolute) coordinates for interactive pop
+        // This prevents coordinate drift when view translates during gesture
+        FRawStartX := RawX;
+        FRawStartY := event.getRawY;
+
+        PopState.Reset;
+        PopState.Phase := TGesturePhase.Began;
+        PopState.StartX := FRawStartX;
+        PopState.StartY := FRawStartY;
+        PopState.CurrentX := FRawStartX;
+        PopState.CurrentY := FRawStartY;
+        PopState.Progress := 0;
+        PopState.VelocityX := 0;
+        PopState.VelocityY := 0;
+        PopState.PeakVelocityX := 0;
+        PopState.IsActive := True;
+        PopState.LastEventTime := EventTime;
+        FInteractivePopProc(v, PopState);
+        Result := True; // Consume if edge gesture started
+      end;
+
       if Assigned(FProc) then
         FProc(v, TSwipeDirection.Touch, CurrentX, CurrentY);
-        
+
       // Log initial touch position
       TPscUtils.Log(Format('X: %.2f Y: %.2f', [CurrentX, CurrentY]), 'Down', TLogger.Info, Self);
     end;
@@ -443,49 +529,124 @@ begin
     // ACTION_MOVE = 2
     2:
     begin
-      // Log every move event
-      TPscUtils.Log(Format('X: %.2f Y: %.2f', [CurrentX, CurrentY]), 'Movement', TLogger.Info, Self);
-      
-      // Calculate distance moved from last position
-      DiffX := CurrentX - FStartX;
-      DiffY := CurrentY - FStartY;
+      UpdateVelocity(CurrentX, CurrentY, EventTime);
 
-      // Check if movement exceeds minimum distance (now 0.01)
-      if ((Abs(DiffX) >= FMinDistance) or (Abs(DiffY) >= FMinDistance)) then
+      // Track peak velocity during gesture
+      if FVelocityX > FPeakVelocityX then
+        FPeakVelocityX := FVelocityX;
+
+      // Handle interactive pop gesture
+      if FIsEdgeGesture and Assigned(FInteractivePopProc) then
       begin
-        // Determine swipe direction and call proc
-        if Abs(DiffX) > Abs(DiffY) then begin
-          // Horizontal swipe
-          if DiffX > 0 then begin
-            if Assigned(FProc) then
-              FProc(v, TSwipeDirection.Right, CurrentX, CurrentY);
-          end else begin
-            if Assigned(FProc) then
-              FProc(v, TSwipeDirection.Left, CurrentX, CurrentY);
-          end;
-        end else begin
-          // Vertical swipe
-          if DiffY > 0 then begin
-            if Assigned(FProc) then
-              FProc(v, TSwipeDirection.Down, CurrentX, CurrentY);
-          end else begin
-            if Assigned(FProc) then
-              FProc(v, TSwipeDirection.Up, CurrentX, CurrentY);
-          end;
-        end;
+        ScreenWidth := v.getWidth;
+        if ScreenWidth <= 0 then
+          ScreenWidth := 1080; // Fallback
 
-        // Update start position to current position for continuous detection
-        FStartX := CurrentX;
-        FStartY := CurrentY;
+        PopState.Phase := TGesturePhase.Changed;
+        PopState.StartX := FRawStartX;
+        PopState.StartY := FRawStartY;
+        // Use getRawX() for current position - screen-absolute coordinates
+        // This prevents coordinate drift when view translates during gesture
+        PopState.CurrentX := event.getRawX;
+        PopState.CurrentY := event.getRawY;
+        // Progress is based on horizontal movement relative to half screen width
+        // Use raw coordinates to avoid drift as view translates
+        PopState.Progress := Max(0, Min(1, (event.getRawX - FRawStartX) / (ScreenWidth * 0.5)));
+        PopState.VelocityX := FVelocityX;
+        PopState.VelocityY := FVelocityY;
+        PopState.PeakVelocityX := FPeakVelocityX;
+        PopState.IsActive := True;
+        PopState.LastEventTime := EventTime;
+
+        // Log interactive gesture movement
+        TPscUtils.Log(Format('RawX: %.2f RawY: %.2f Progress: %.2f',
+          [PopState.CurrentX, PopState.CurrentY, PopState.Progress]),
+          'InteractiveMove', TLogger.Info, Self);
+
+        FInteractivePopProc(v, PopState);
+        Result := True;
+      end
+      else
+      begin
+        // Log every move event
+        TPscUtils.Log(Format('X: %.2f Y: %.2f', [CurrentX, CurrentY]), 'Movement', TLogger.Info, Self);
+
+        // Calculate distance moved from last position
+        DiffX := CurrentX - FStartX;
+        DiffY := CurrentY - FStartY;
+
+        // Check if movement exceeds minimum distance (now 0.01)
+        if ((Abs(DiffX) >= FMinDistance) or (Abs(DiffY) >= FMinDistance)) then
+        begin
+          // Determine swipe direction and call proc
+          if Abs(DiffX) > Abs(DiffY) then begin
+            // Horizontal swipe
+            if DiffX > 0 then begin
+              if Assigned(FProc) then
+                FProc(v, TSwipeDirection.Right, CurrentX, CurrentY);
+            end else begin
+              if Assigned(FProc) then
+                FProc(v, TSwipeDirection.Left, CurrentX, CurrentY);
+            end;
+          end else begin
+            // Vertical swipe
+            if DiffY > 0 then begin
+              if Assigned(FProc) then
+                FProc(v, TSwipeDirection.Down, CurrentX, CurrentY);
+            end else begin
+              if Assigned(FProc) then
+                FProc(v, TSwipeDirection.Up, CurrentX, CurrentY);
+            end;
+          end;
+
+          // Update start position to current position for continuous detection
+          FStartX := CurrentX;
+          FStartY := CurrentY;
+        end;
       end;
     end;
-    
+
     // ACTION_UP = 1 or ACTION_CANCEL = 3
     1, 3:
     begin
-      // Reset swipe detection state
+      UpdateVelocity(CurrentX, CurrentY, EventTime);
+
+      // Final update to peak velocity
+      if FVelocityX > FPeakVelocityX then
+        FPeakVelocityX := FVelocityX;
+
+      // Handle interactive pop gesture end
+      if FIsEdgeGesture and Assigned(FInteractivePopProc) then
+      begin
+        ScreenWidth := v.getWidth;
+        if ScreenWidth <= 0 then
+          ScreenWidth := 1080;
+
+        if Action = 3 then
+          PopState.Phase := TGesturePhase.Cancelled
+        else
+          PopState.Phase := TGesturePhase.Ended;
+
+        PopState.StartX := FRawStartX;
+        PopState.StartY := FRawStartY;
+        // Use getRawX() for final position - screen-absolute coordinates
+        PopState.CurrentX := event.getRawX;
+        PopState.CurrentY := event.getRawY;
+        // Use raw coordinates for progress calculation
+        PopState.Progress := Max(0, Min(1, (event.getRawX - FRawStartX) / (ScreenWidth * 0.5)));
+        PopState.VelocityX := FVelocityX;
+        PopState.VelocityY := FVelocityY;
+        PopState.PeakVelocityX := FPeakVelocityX;  // Pass peak velocity for commit decision
+        PopState.IsActive := False;
+        PopState.LastEventTime := EventTime;
+        FInteractivePopProc(v, PopState);
+        Result := True;
+      end;
+
+      FIsEdgeGesture := False;
       FHasDetectedSwipe := False;
-      
+      FLastEventTime := 0;
+
       if (Action = 1) and Assigned(FProc) then
         FProc(v, TSwipeDirection.Leave, CurrentX, CurrentY);
 

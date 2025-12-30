@@ -36,6 +36,16 @@ type
     procedure OnClickHandler(AView: JView); override;
   end;
 
+  [ Button('otherScreen'),
+    Text('Stack Another'),
+    TextSize(18),
+    TextColor(255, 255, 255),
+    BackgroundTintList(100, 149, 237),
+    Height(100)
+  ] TStackAnotherButton = class(TPisces)
+    procedure OnClickHandler(AView: JView); override;
+  end;
+
   [ LinearLayout('detailScreen'),
     Orientation(TOrientation.Vertical),
     BackgroundColor(236, 239, 241),
@@ -51,6 +61,7 @@ type
     FTitle: TDetailTitle;
     FContent: TDetailContent;
     FBackButton: TBackButton;
+    FStackAnother: TStackAnotherButton;
     procedure DoShow; override;
   end;
 
@@ -62,7 +73,7 @@ implementation
 uses
   System.SysUtils,
   Androidapi.Helpers,
-  Pisces.ScreenManager;
+  Pisces.ScreenManager, View.User;
 
 { TBackButton }
 
@@ -85,7 +96,9 @@ begin
   Source := State.Get<String>('source', 'unknown');
   Title := State.Get<String>('title', 'Detail Screen');
 
-  MessageText := Format('Transition: %s'#10'Source: %s'#10#10'Tap "Go Back" to see the pop animation.',
+  MessageText := Format('Transition: %s'#10'Source: %s'#10#10 +
+    'Swipe from the left edge to go back interactively,'#10 +
+    'or tap "Go Back" button.',
     [TransitionName, Source]);
 
   if (FTitle <> nil) and (FTitle.AndroidView <> nil) then
@@ -93,6 +106,24 @@ begin
   if (FContent <> nil) and (FContent.AndroidView <> nil) then
     JTextView(FContent.AndroidView).setText(StrToJCharSequence(MessageText));
 end;
+
+{ TStackAnotherButton }
+
+procedure TStackAnotherButton.OnClickHandler(AView: JView);
+begin
+  inherited;
+  TPscState.SetValue('transition', 'Fade');
+  TPscState.SetValue('source', 'Fade button');
+  TPscState.SetValue('title', 'Fade Demo');
+  UserScreen.ScreenTransitions := TPscScreenTransitions.Create(
+    TPscTransitionConfig.Create(TTransitionType.SlideRight, TEasingType.Decelerate, 450),
+    TPscTransitionConfig.Create(TTransitionType.SlideLeft, TEasingType.Accelerate, 450),
+    TPscTransitionConfig.Create(TTransitionType.SlideRight, TEasingType.Decelerate, 450),
+    TPscTransitionConfig.Create(TTransitionType.SlideRight, TEasingType.Accelerate, 450)
+  );
+  TPscScreenManager.Instance.PushByName('userScreen');
+end;
+
 
 initialization
   DetailScreen := TDetailScreen.Create;

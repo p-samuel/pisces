@@ -31,6 +31,7 @@ type
     FWindowFocusListener: TPscWindowFocusChangeListener;
     FKeyboardHelper: TPscKeyboardHelper;
     FScreenTransitions: TPscScreenTransitions;
+    FAllowInteractivePop: Boolean;
 
     procedure ReadAttributes;
     procedure ReadTransitionAttributes;
@@ -49,6 +50,7 @@ type
     function GetVisible: Boolean;
     procedure SetVisible(const Value: Boolean);
     procedure SetKeyboardPadding;
+    procedure SetupInteractivePopGesture;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -86,6 +88,7 @@ type
     property ViewName: String read FViewName;
     property ViewGUID: String read FViewGUID;
     property ScreenTransitions: TPscScreenTransitions read FScreenTransitions write FScreenTransitions;
+    property AllowInteractivePop: Boolean read FAllowInteractivePop write FAllowInteractivePop;
 
     // Basic event handler methods (virtual - override in descendants)
     procedure OnClickHandler(AView: JView); virtual;
@@ -129,7 +132,9 @@ uses
   Pisces.Utils,
   Pisces.Attributes,
   Pisces.ViewGroup,
-  Pisces.View;
+  Pisces.View,
+  Pisces.EventListeners,
+  Pisces.ScreenManager;
 
 type
   // Record to capture all event handlers with proper value semantics.
@@ -735,6 +740,10 @@ begin
     if not IsListViewItem and not Supports(FView, IPscAdapterView) then
       IPscView(FView).OnTouch(OnTouchHandler);
 
+    // Setup interactive pop gesture for root screens
+    if not IsListViewItem and not Supports(FView, IPscAdapterView) then
+      SetupInteractivePopGesture;
+
     // When the native view is fully built, we register it
     RttiContext := TRttiContext.Create;
     try
@@ -1086,6 +1095,7 @@ var
   AttrCount: Integer;
 begin
   FScreenTransitions := TPscScreenTransitions.Default;
+  FAllowInteractivePop := True; // Default to enabled
   RttiContext := TRttiContext.Create;
   try
     RttiType := RttiContext.GetType(Self.ClassType);
@@ -1138,6 +1148,14 @@ begin
             [Ord(TransitionType), Ord(Easing), Duration]),
             'ReadTransitionAttributes', TLogger.Info, Self);
         end;
+      end;
+
+      if Attribute is DisableInteractivePopAttribute then
+      begin
+        FAllowInteractivePop := not DisableInteractivePopAttribute(Attribute).Value;
+        TPscUtils.Log(Format('DisableInteractivePop set: AllowInteractivePop=%s',
+          [BoolToStr(FAllowInteractivePop, True)]),
+          'ReadTransitionAttributes', TLogger.Info, Self);
       end;
     end;
     TPscUtils.Log(Format('Total attributes found: %d', [AttrCount]),
@@ -1433,6 +1451,59 @@ begin
     on E: Exception do
       TPscUtils.Log(E.Message, 'SetKeyboardPadding', TLogger.Fatal, Self);
   end;
+end;
+
+procedure TPisces.SetupInteractivePopGesture;
+var
+  ScreenMgr: TPscScreenManager;
+  TouchListener: TPscViewTouchListener;
+  ViewIntf: IPscView;
+begin
+  // Only setup for root screens (no parent) that allow interactive pop
+  if not FAllowInteractivePop then
+  begin
+    TPscUtils.Log('Skipping - DisableInteractivePop is set', 'SetupInteractivePopGesture', TLogger.Info, Self);
+    Exit;
+  end;
+  if Assigned(FParent) then
+  begin
+    TPscUtils.Log('Skipping - has parent (not a root screen)', 'SetupInteractivePopGesture', TLogger.Info, Self);
+    Exit;
+  end;
+
+  ScreenMgr := TPscScreenManager.Instance;
+  if not ScreenMgr.InteractivePopConfig.Enabled then
+  begin
+    TPscUtils.Log('Skipping - global interactive pop is disabled', 'SetupInteractivePopGesture', TLogger.Info, Self);
+    Exit;
+  end;
+
+  // Get the view interface to access the touch listener
+  if not Supports(FView, IPscView, ViewIntf) then Exit;
+
+  // Create and configure the touch listener for interactive pop
+  TouchListener := TPscViewTouchListener.Create;
+  TouchListener.EdgeThreshold := ScreenMgr.InteractivePopConfig.EdgeThreshold;
+  TouchListener.InteractivePopProc :=
+    procedure(V: JView; State: TPscInteractivePopState)
+    begin
+      case State.Phase of
+        TGesturePhase.Began:
+          if ScreenMgr.CanInteractivePop then
+            ScreenMgr.BeginInteractivePop(State);
+        TGesturePhase.Changed:
+          ScreenMgr.UpdateInteractivePop(State);
+        TGesturePhase.Ended:
+          ScreenMgr.EndInteractivePop(State);
+        TGesturePhase.Cancelled:
+          ScreenMgr.CancelInteractivePop;
+      end;
+    end;
+
+  // Set the touch listener on the view
+  ViewIntf.GetView.setOnTouchListener(TouchListener);
+
+  TPscUtils.Log('Interactive pop gesture setup complete', 'SetupInteractivePopGesture', TLogger.Info, Self);
 end;
 
 end.
