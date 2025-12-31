@@ -3,7 +3,10 @@ unit Global.WebImage;
 interface
 
 uses
-  Pisces, System.Classes, System.SysUtils, Androidapi.JNIBridge, Androidapi.Helpers;
+  System.Classes,
+  System.SysUtils,
+  Androidapi.Helpers,
+  Pisces;
 
 type
   TStatusUpdateProc = reference to procedure(const StatusText: string);
@@ -34,6 +37,7 @@ type
     procedure SafeSetBitmap(const Bitmap: JBitmap);
   public
     procedure AfterShow; override;
+    procedure OnLongClickHandler(AView: JView); override;
     procedure LoadImageFromUrl(const Url: string);
     destructor Destroy; override;
   end;
@@ -41,7 +45,9 @@ type
 implementation
 
 uses
-  System.Threading, System.Net.HttpClient;
+  Androidapi.JNIBridge,
+  System.Threading,
+  System.Net.HttpClient;
 
 { TImageLoader }
 
@@ -208,6 +214,36 @@ begin
   );
 
   LoadImageFromUrl('https://picsum.photos/250/200?random=' + Random(10).ToString);
+end;
+
+procedure TBaseWebImage.OnLongClickHandler(AView: JView);
+var
+  Self_: TBaseWebImage;
+begin
+  inherited;
+  Self_ := Self;
+
+  UpdateStatus('Opening image picker...');
+
+  TPscUtils.Picker.PickImage(
+    procedure(Uri: Jnet_Uri)
+    var
+      Bitmap: JBitmap;
+    begin
+      if not Self_.FIsDestroyed and (Uri <> nil) then begin
+        Bitmap := TPscUtils.LoadBitmap(Uri);
+        if Bitmap <> nil then
+        begin
+          Self_.SafeSetBitmap(Bitmap);
+          Self_.UpdateStatus('Image loaded from gallery');
+        end;
+      end;
+    end,
+    procedure begin
+      if not Self_.FIsDestroyed then
+        Self_.UpdateStatus('Image selection cancelled');
+    end
+  );
 end;
 
 destructor TBaseWebImage.Destroy;

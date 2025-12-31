@@ -20,6 +20,7 @@ uses
   Pisces.Adapters in '..\..\src\Pisces.Adapters.pas',
   Pisces.State in '..\..\src\Pisces.State.pas',
   Pisces.State.Model in '..\..\src\Pisces.State.Model.pas',
+  Pisces.FilePicker in '..\..\src\Pisces.FilePicker.pas',
   View.Home in 'src\View.Home.pas',
   View.Header in 'src\View.Header.pas',
   View.GameBoard in 'src\View.GameBoard.pas',

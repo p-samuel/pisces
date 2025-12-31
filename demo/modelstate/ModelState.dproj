@@ -236,6 +236,7 @@
         <DCCReference Include="..\..\src\Pisces.State.Model.pas">
             <Form>$R *.res</Form>
         </DCCReference>
+        <DCCReference Include="..\..\src\Pisces.FilePicker.pas"/>
         <DCCReference Include="src\Model.TripPlanner.pas"/>
         <DCCReference Include="src\View.EditTrip.pas"/>
         <DCCReference Include="src\View.EditTraveler.pas"/>

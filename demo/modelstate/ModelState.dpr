@@ -20,6 +20,7 @@ uses
   Pisces.Adapters in '..\..\src\Pisces.Adapters.pas',
   Pisces.State in '..\..\src\Pisces.State.pas',
   Pisces.State.Model in '..\..\src\Pisces.State.Model.pas',
+  Pisces.FilePicker in '..\..\src\Pisces.FilePicker.pas',
   Model.TripPlanner in 'src\Model.TripPlanner.pas',
   View.EditTrip in 'src\View.EditTrip.pas',
   View.EditTraveler in 'src\View.EditTraveler.pas',

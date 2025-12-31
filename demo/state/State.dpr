@@ -16,10 +16,11 @@ uses
   Pisces.ScreenManager in '..\..\src\Pisces.ScreenManager.pas',
   Pisces.Audio in '..\..\src\Pisces.Audio.pas',
   Pisces.Keyboard in '..\..\src\Pisces.Keyboard.pas',
-  Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas' {$R *.res},
+  Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas',
   Pisces.Adapters in '..\..\src\Pisces.Adapters.pas',
   Pisces.State in '..\..\src\Pisces.State.pas',
   Pisces.State.Model in '..\..\src\Pisces.State.Model.pas',
+  Pisces.FilePicker in '..\..\src\Pisces.FilePicker.pas',
   View.Home in 'src\View.Home.pas';
 
 begin

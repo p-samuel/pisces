@@ -99,6 +99,10 @@
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <SanitizedProjectName>Carousel</SanitizedProjectName>
+        <AUP_READ_MEDIA_IMAGES>true</AUP_READ_MEDIA_IMAGES>
+        <AUP_READ_MEDIA_AUDIO>true</AUP_READ_MEDIA_AUDIO>
+        <AUP_READ_MEDIA_VIDEO>true</AUP_READ_MEDIA_VIDEO>
+        <AUP_READ_MEDIA_VISUAL_USER_SELECTED>true</AUP_READ_MEDIA_VISUAL_USER_SELECTED>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Android)'!=''">
         <DCC_UsePackage>fmx;DbxCommonDriver;bindengine;IndyIPCommon;FireDACCommonDriver;IndyProtocols;IndyIPClient;dbxcds;bindcompfmx;FireDACSqliteDriver;DbxClientDriver;soapmidas;fmxFireDAC;dbexpress;inet;fmxase;dbrtl;CustomIPTransport;DBXInterBaseDriver;IndySystem;bindcomp;FireDACCommon;IndyCore;RESTBackendComponents;bindcompdbx;rtl;RESTComponents;DBXSqliteDriver;IndyIPServer;dsnapxml;FireDAC;xmlrtl;tethering;dsnap;CloudService;soaprtl;soapserver;FireDACIBDriver;$(DCC_UsePackage)</DCC_UsePackage>
@@ -266,6 +270,7 @@
         <DCCReference Include="..\..\src\Pisces.State.pas"/>
         <DCCReference Include="..\..\src\Pisces.State.Model.pas"/>
         <DCCReference Include="..\..\src\Pisces.Keyboard.pas"/>
+        <DCCReference Include="..\..\src\Pisces.FilePicker.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

@@ -20,6 +20,7 @@ uses
   Pisces.Adapters in '..\..\src\Pisces.Adapters.pas',
   Pisces.State in '..\..\src\Pisces.State.pas',
   Pisces.State.Model in '..\..\src\Pisces.State.Model.pas',
+  Pisces.FilePicker in '..\..\src\Pisces.FilePicker.pas',
   Pisces.JNI.Extensions in '..\..\src\Pisces.JNI.Extensions.pas';
 begin
 
