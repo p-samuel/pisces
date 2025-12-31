@@ -1599,7 +1599,7 @@ begin
   // Check camera permission
   if TAndroidHelper.Context.checkSelfPermission(StringToJString('android.permission.CAMERA')) <> TJPackageManager.JavaClass.PERMISSION_GRANTED then
   begin
-    TPscUtils.Toast('Camera permission is required to take photos.', 1);
+    TPscLogger.Log('Camera permission is required to take photos.', 'TakePhoto', TLogger.Warning, 'TPscUtilsMedia');
     Exit;
   end;
 
@@ -1623,7 +1623,7 @@ begin
   // Check camera permission
   if TAndroidHelper.Context.checkSelfPermission(StringToJString('android.permission.CAMERA')) <> TJPackageManager.JavaClass.PERMISSION_GRANTED then
   begin
-    TPscUtils.Toast('Camera permission is required to record videos.', 1);
+    TPscLogger.Log('Camera permission is required to record videos.', 'TakeVideo', TLogger.Warning, 'TPscUtilsMedia');
     Exit;
   end;
 
