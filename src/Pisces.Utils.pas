@@ -6,10 +6,14 @@ uses
   Androidapi.JNIBridge,
   System.Generics.Collections,
   System.Classes,
+  System.IOUtils,
   Androidapi.JNI.GraphicsContentViewText,
   Androidapi.JNI.JavaTypes,
   Androidapi.JNI.Widget,
   Androidapi.JNI.Net,
+  Androidapi.JNI.App,
+  Androidapi.JNI.Media,
+  Androidapi.JNI.Os,
   System.SysUtils,
   Pisces.Types,
   Pisces.Registry,
@@ -59,11 +63,16 @@ type
     class var FOnUriSuccess: TProc<Jnet_Uri>;
     class var FOnCancel: TProc;
     class var FCurrentRequestCode: Integer;
+    class var FOutputUri: Jnet_Uri;
     class procedure HandleActivityResult(const Sender: TObject; const M: TMessage);
+    class function CreateMediaStoreUri(const FileName, MimeType: String; IsVideo: Boolean): Jnet_Uri;
   public
     // Camera actions - return Uri
     class procedure TakePhoto(const OnSuccess: TProc<Jnet_Uri>; const OnCancel: TProc = nil);
     class procedure TakeVideo(const OnSuccess: TProc<Jnet_Uri>; const OnCancel: TProc = nil);
+
+    // Cleanup - call after done with the Uri to remove from gallery
+    class procedure DeleteMediaUri(const Uri: Jnet_Uri);
 
     // Sharing - fire and forget
     class procedure ShareText(const Text: string; const Title: string = 'Share');
@@ -207,11 +216,9 @@ implementation
 
 uses
   Androidapi.Helpers,
-  Androidapi.JNI.App,
   Androidapi.JNI.Provider,
   Androidapi.JNI.Bluetooth,
   Androidapi.JNI.Util,
-  Androidapi.JNI.Os,
   System.Hash,
   Pisces.EventListeners,
   Pisces.Logger;
@@ -1559,6 +1566,32 @@ const
   REQUEST_MEDIA_TAKE_PHOTO = 9101;
   REQUEST_MEDIA_TAKE_VIDEO = 9102;
 
+class function TPscUtilsMedia.CreateMediaStoreUri(const FileName, MimeType: String; IsVideo: Boolean): Jnet_Uri;
+var
+  ContentValues: JContentValues;
+  Collection: Jnet_Uri;
+begin
+  // Create ContentValues with file metadata
+  ContentValues := TJContentValues.JavaClass.init;
+  ContentValues.put(StringToJString('_display_name'), StringToJString(FileName));
+  ContentValues.put(StringToJString('mime_type'), StringToJString(MimeType));
+
+  // Select the appropriate MediaStore collection URI
+  if IsVideo then
+    Collection := TJnet_Uri.JavaClass.parse(StringToJString('content://media/external/video/media'))
+  else
+    Collection := TJnet_Uri.JavaClass.parse(StringToJString('content://media/external/images/media'));
+
+  // Insert into MediaStore and get content:// URI back
+  Result := TAndroidHelper.Context.getContentResolver.insert(Collection, ContentValues);
+end;
+
+class procedure TPscUtilsMedia.DeleteMediaUri(const Uri: Jnet_Uri);
+begin
+  if Uri <> nil then
+    TAndroidHelper.Context.getContentResolver.delete(Uri, nil, nil);
+end;
+
 class procedure TPscUtilsMedia.TakePhoto(const OnSuccess: TProc<Jnet_Uri>; const OnCancel: TProc);
 var
   Intent: JIntent;
@@ -1566,10 +1599,13 @@ begin
   FOnUriSuccess := OnSuccess;
   FOnCancel := OnCancel;
   FCurrentRequestCode := REQUEST_MEDIA_TAKE_PHOTO;
+  FOutputUri := CreateMediaStoreUri('pisces_photo_' + FormatDateTime('yyyymmdd_hhnnss', Now) + '.jpg', 'image/jpeg', False);
 
   TMessageManager.DefaultManager.SubscribeToMessage(TMessageResultNotification, HandleActivityResult);
 
   Intent := TJIntent.JavaClass.init(TJMediaStore.JavaClass.ACTION_IMAGE_CAPTURE);
+  Intent.putExtra(TJMediaStore.JavaClass.EXTRA_OUTPUT, TJParcelable.Wrap((FOutputUri as ILocalObject).GetObjectID));
+  Intent.addFlags(TJIntent.JavaClass.FLAG_GRANT_WRITE_URI_PERMISSION);
   TAndroidHelper.Activity.startActivityForResult(Intent, REQUEST_MEDIA_TAKE_PHOTO);
 end;
 
@@ -1580,17 +1616,19 @@ begin
   FOnUriSuccess := OnSuccess;
   FOnCancel := OnCancel;
   FCurrentRequestCode := REQUEST_MEDIA_TAKE_VIDEO;
+  FOutputUri := CreateMediaStoreUri('pisces_video_' + FormatDateTime('yyyymmdd_hhnnss', Now) + '.mp4', 'video/mp4', True);
 
   TMessageManager.DefaultManager.SubscribeToMessage(TMessageResultNotification, HandleActivityResult);
 
   Intent := TJIntent.JavaClass.init(TJMediaStore.JavaClass.ACTION_VIDEO_CAPTURE);
+  Intent.putExtra(TJMediaStore.JavaClass.EXTRA_OUTPUT, TJParcelable.Wrap((FOutputUri as ILocalObject).GetObjectID));
+  Intent.addFlags(TJIntent.JavaClass.FLAG_GRANT_WRITE_URI_PERMISSION);
   TAndroidHelper.Activity.startActivityForResult(Intent, REQUEST_MEDIA_TAKE_VIDEO);
 end;
 
 class procedure TPscUtilsMedia.HandleActivityResult(const Sender: TObject; const M: TMessage);
 var
   Msg: TMessageResultNotification;
-  Uri: Jnet_Uri;
 begin
   Msg := TMessageResultNotification(M);
 
@@ -1601,12 +1639,9 @@ begin
 
   if Msg.ResultCode = TJActivity.JavaClass.RESULT_OK then
   begin
-    if Msg.Value <> nil then
-    begin
-      Uri := Msg.Value.getData;
-      if Assigned(FOnUriSuccess) and (Uri <> nil) then
-        FOnUriSuccess(Uri);
-    end;
+    // Use the stored output URI (camera wrote to this file)
+    if Assigned(FOnUriSuccess) and (FOutputUri <> nil) then
+      FOnUriSuccess(FOutputUri);
   end
   else
   begin
@@ -1616,6 +1651,7 @@ begin
 
   FOnUriSuccess := nil;
   FOnCancel := nil;
+  FOutputUri := nil;
 end;
 
 class procedure TPscUtilsMedia.ShareText(const Text: string; const Title: string);
