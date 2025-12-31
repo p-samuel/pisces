@@ -398,6 +398,7 @@ type
   JPorterDuff_Mode = Pisces.Types.JPorterDuff_Mode;
   JColorFilter = Pisces.Types.JColorFilter;
   JBitmap = Pisces.Types.JBitmap;
+  Jnet_Uri = Pisces.Types.Jnet_Uri;
   JMenuItem = Pisces.Types.JMenuItem;
   JTimePicker = Pisces.Types.JTimePicker;
   JViewGroup = Pisces.Types.JViewGroup;
@@ -1077,6 +1078,7 @@ type
   TJXmlPullParser = Pisces.Types.TJXmlPullParser;
   TJXmlSerializer = Pisces.Types.TJXmlSerializer;
   TJBitmapFactory = Pisces.Types.TJBitmapFactory;
+  TJnet_Uri = Pisces.Types.TJnet_Uri;
 
   // java bridge
   IJava = Pisces.Types.IJava;

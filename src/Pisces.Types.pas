@@ -9,6 +9,7 @@ uses
   Androidapi.JNIBridge,
   Androidapi.JNI.Os,
   Androidapi.JNI.App,
+  Androidapi.JNI.Net,
   Androidapi.Helpers,
   System.SysUtils,
   Pisces.JNI.Extensions,
@@ -33,6 +34,7 @@ type
   TJRelativeLayout = Androidapi.JNI.Widget.TJRelativeLayout;
   TJAbsoluteLayout = Androidapi.JNI.Widget.TJAbsoluteLayout;
   TJLinearLayout = Androidapi.JNI.Widget.TJLinearLayout;
+  TJnet_Uri = Androidapi.JNI.Net.TJnet_Uri;
   TJTimePicker = Androidapi.JNI.Widget.TJTimePicker;
   TJScrowView = Androidapi.JNI.Widget.TJScrollView;
   TJHorizontalScrollView = Pisces.JNI.Extensions.TJHorizontalScrollView;
@@ -69,6 +71,7 @@ type
   JContentCaptureSession = Androidapi.JNI.GraphicsContentViewText.JContentCaptureSession;
   JColorFilter = Androidapi.JNI.GraphicsContentViewText.JColorFilter;
   JBitmap = Androidapi.JNI.GraphicsContentViewText.JBitmap;
+  Jnet_Uri = Androidapi.JNI.Net.Jnet_Uri;
   JMenuItem = Androidapi.JNI.GraphicsContentViewText.JMenuItem;
   JTimePicker = Androidapi.JNI.Widget.JTimePicker;
   JViewGroup = Androidapi.JNI.GraphicsContentViewText.JViewGroup;

@@ -5,12 +5,18 @@ interface
 uses
   Androidapi.JNIBridge,
   System.Generics.Collections,
+  System.Classes,
   Androidapi.JNI.GraphicsContentViewText,
   Androidapi.JNI.JavaTypes,
   Androidapi.JNI.Widget,
+  Androidapi.JNI.Net,
   System.SysUtils,
-  Pisces.Types, Pisces.Registry, Pisces.Audio, Pisces.View, Pisces.JNI.Extensions,
-  Pisces.FilePicker;
+  Pisces.Types,
+  Pisces.Registry,
+  Pisces.Audio,
+  Pisces.View,
+  Pisces.JNI.Extensions,
+  Pisces.FilePicker, System.Messaging;
 
 type
 
@@ -46,6 +52,23 @@ type
     class procedure ActionOpenWifiSettings;
     class procedure ActionOpenBluetoothSettings;
 
+  end;
+
+  TPscUtilsMedia = class
+  private
+    class var FOnUriSuccess: TProc<Jnet_Uri>;
+    class var FOnCancel: TProc;
+    class var FCurrentRequestCode: Integer;
+    class procedure HandleActivityResult(const Sender: TObject; const M: TMessage);
+  public
+    // Camera actions - return Uri
+    class procedure TakePhoto(const OnSuccess: TProc<Jnet_Uri>; const OnCancel: TProc = nil);
+    class procedure TakeVideo(const OnSuccess: TProc<Jnet_Uri>; const OnCancel: TProc = nil);
+
+    // Sharing - fire and forget
+    class procedure ShareText(const Text: string; const Title: string = 'Share');
+    class procedure ShareImage(const ImageUri: Jnet_Uri; const Title: string = 'Share');
+    class procedure ShareFile(const FileUri: Jnet_Uri; const MimeType: string; const Title: string = 'Share');
   end;
 
   TAnimationCallback = procedure of object;
@@ -159,8 +182,15 @@ type
     { Intents & Actions }
     class function Intent: TPscUtilsIntent;
 
+    { Media Actions }
+    class function Media: TPscUtilsMedia;
+
     { File Picker }
     class function Picker: TPscFilePicker;
+
+    { Loaders }
+    class function LoadBitmap(const Uri: Jnet_Uri): JBitmap;
+    class function LoadStream(const Uri: Jnet_Uri): TMemoryStream;
 
     { Utilities }
     class procedure Log(Msg, MethodName: String; LogType: TLogger; ClassInstance: TObject); overload;
@@ -178,7 +208,6 @@ implementation
 uses
   Androidapi.Helpers,
   Androidapi.JNI.App,
-  Androidapi.JNI.Net,
   Androidapi.JNI.Provider,
   Androidapi.JNI.Bluetooth,
   Androidapi.JNI.Util,
@@ -378,9 +407,24 @@ begin
   Result := TPscUtilsIntent.Create;
 end;
 
+class function TPscUtils.Media: TPscUtilsMedia;
+begin
+  Result := TPscUtilsMedia.Create;
+end;
+
 class function TPscUtils.Picker: TPscFilePicker;
 begin
   Result := TPscFilePicker.Create;
+end;
+
+class function TPscUtils.LoadBitmap(const Uri: Jnet_Uri): JBitmap;
+begin
+  Result := TPscFilePicker.UriToBitmap(Uri);
+end;
+
+class function TPscUtils.LoadStream(const Uri: Jnet_Uri): TMemoryStream;
+begin
+  Result := TPscFilePicker.UriToStream(Uri);
 end;
 
 class function TPscUtils.IsDarkMode: Boolean;
@@ -1509,6 +1553,111 @@ begin
   end;
 end;
 
+{ TPscUtilsMedia }
+
+const
+  REQUEST_MEDIA_TAKE_PHOTO = 9101;
+  REQUEST_MEDIA_TAKE_VIDEO = 9102;
+
+class procedure TPscUtilsMedia.TakePhoto(const OnSuccess: TProc<Jnet_Uri>; const OnCancel: TProc);
+var
+  Intent: JIntent;
+begin
+  FOnUriSuccess := OnSuccess;
+  FOnCancel := OnCancel;
+  FCurrentRequestCode := REQUEST_MEDIA_TAKE_PHOTO;
+
+  TMessageManager.DefaultManager.SubscribeToMessage(TMessageResultNotification, HandleActivityResult);
+
+  Intent := TJIntent.JavaClass.init(TJMediaStore.JavaClass.ACTION_IMAGE_CAPTURE);
+  TAndroidHelper.Activity.startActivityForResult(Intent, REQUEST_MEDIA_TAKE_PHOTO);
+end;
+
+class procedure TPscUtilsMedia.TakeVideo(const OnSuccess: TProc<Jnet_Uri>; const OnCancel: TProc);
+var
+  Intent: JIntent;
+begin
+  FOnUriSuccess := OnSuccess;
+  FOnCancel := OnCancel;
+  FCurrentRequestCode := REQUEST_MEDIA_TAKE_VIDEO;
+
+  TMessageManager.DefaultManager.SubscribeToMessage(TMessageResultNotification, HandleActivityResult);
+
+  Intent := TJIntent.JavaClass.init(TJMediaStore.JavaClass.ACTION_VIDEO_CAPTURE);
+  TAndroidHelper.Activity.startActivityForResult(Intent, REQUEST_MEDIA_TAKE_VIDEO);
+end;
+
+class procedure TPscUtilsMedia.HandleActivityResult(const Sender: TObject; const M: TMessage);
+var
+  Msg: TMessageResultNotification;
+  Uri: Jnet_Uri;
+begin
+  Msg := TMessageResultNotification(M);
+
+  if Msg.RequestCode <> FCurrentRequestCode then
+    Exit;
+
+  TMessageManager.DefaultManager.Unsubscribe(TMessageResultNotification, HandleActivityResult);
+
+  if Msg.ResultCode = TJActivity.JavaClass.RESULT_OK then
+  begin
+    if Msg.Value <> nil then
+    begin
+      Uri := Msg.Value.getData;
+      if Assigned(FOnUriSuccess) and (Uri <> nil) then
+        FOnUriSuccess(Uri);
+    end;
+  end
+  else
+  begin
+    if Assigned(FOnCancel) then
+      FOnCancel();
+  end;
+
+  FOnUriSuccess := nil;
+  FOnCancel := nil;
+end;
+
+class procedure TPscUtilsMedia.ShareText(const Text: string; const Title: string);
+var
+  Intent: JIntent;
+  ChooserIntent: JIntent;
+begin
+  Intent := TJIntent.JavaClass.init(TJIntent.JavaClass.ACTION_SEND);
+  Intent.setType(StringToJString('text/plain'));
+  Intent.putExtra(TJIntent.JavaClass.EXTRA_TEXT, StringToJString(Text));
+
+  ChooserIntent := TJIntent.JavaClass.createChooser(Intent, StrToJCharSequence(Title));
+  TAndroidHelper.Activity.startActivity(ChooserIntent);
+end;
+
+class procedure TPscUtilsMedia.ShareImage(const ImageUri: Jnet_Uri; const Title: string);
+var
+  Intent: JIntent;
+  ChooserIntent: JIntent;
+begin
+  Intent := TJIntent.JavaClass.init(TJIntent.JavaClass.ACTION_SEND);
+  Intent.setType(StringToJString('image/*'));
+  Intent.putExtra(TJIntent.JavaClass.EXTRA_STREAM, TJParcelable.Wrap((ImageUri as ILocalObject).GetObjectID));
+  Intent.addFlags(TJIntent.JavaClass.FLAG_GRANT_READ_URI_PERMISSION);
+
+  ChooserIntent := TJIntent.JavaClass.createChooser(Intent, StrToJCharSequence(Title));
+  TAndroidHelper.Activity.startActivity(ChooserIntent);
+end;
+
+class procedure TPscUtilsMedia.ShareFile(const FileUri: Jnet_Uri; const MimeType: string; const Title: string);
+var
+  Intent: JIntent;
+  ChooserIntent: JIntent;
+begin
+  Intent := TJIntent.JavaClass.init(TJIntent.JavaClass.ACTION_SEND);
+  Intent.setType(StringToJString(MimeType));
+  Intent.putExtra(TJIntent.JavaClass.EXTRA_STREAM, TJParcelable.Wrap((FileUri as ILocalObject).GetObjectID));
+  Intent.addFlags(TJIntent.JavaClass.FLAG_GRANT_READ_URI_PERMISSION);
+
+  ChooserIntent := TJIntent.JavaClass.createChooser(Intent, StrToJCharSequence(Title));
+  TAndroidHelper.Activity.startActivity(ChooserIntent);
+end;
 
 end.
 
