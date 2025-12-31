@@ -1596,6 +1596,13 @@ class procedure TPscUtilsMedia.TakePhoto(const OnSuccess: TProc<Jnet_Uri>; const
 var
   Intent: JIntent;
 begin
+  // Check camera permission
+  if TAndroidHelper.Context.checkSelfPermission(StringToJString('android.permission.CAMERA')) <> TJPackageManager.JavaClass.PERMISSION_GRANTED then
+  begin
+    TPscUtils.Toast('Camera permission is required to take photos.', 1);
+    Exit;
+  end;
+
   FOnUriSuccess := OnSuccess;
   FOnCancel := OnCancel;
   FCurrentRequestCode := REQUEST_MEDIA_TAKE_PHOTO;
@@ -1613,6 +1620,13 @@ class procedure TPscUtilsMedia.TakeVideo(const OnSuccess: TProc<Jnet_Uri>; const
 var
   Intent: JIntent;
 begin
+  // Check camera permission
+  if TAndroidHelper.Context.checkSelfPermission(StringToJString('android.permission.CAMERA')) <> TJPackageManager.JavaClass.PERMISSION_GRANTED then
+  begin
+    TPscUtils.Toast('Camera permission is required to record videos.', 1);
+    Exit;
+  end;
+
   FOnUriSuccess := OnSuccess;
   FOnCancel := OnCancel;
   FCurrentRequestCode := REQUEST_MEDIA_TAKE_VIDEO;
